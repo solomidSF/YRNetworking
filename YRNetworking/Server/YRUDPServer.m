@@ -10,7 +10,7 @@
 
 // Common
 #import "YRTypes.h"
-#import "YRSessionOVERLOADED.h"
+#import "YRSession.h"
 
 #import "GCDAsyncUdpSocket.h"
 
@@ -23,7 +23,7 @@
     
     dispatch_queue_t _serverQueue;
     
-    NSMutableArray <YRSessionOVERLOADED *> *_activeSessions;
+    NSMutableArray <YRSession *> *_activeSessions;
     long _currentTag;
 }
 
@@ -96,28 +96,28 @@
     _state = YRUDPServerNotReady;
 }
 
-- (YRSessionOVERLOADED *)sessionWithAddress:(NSData*)address {
-    for (YRSessionOVERLOADED *session in _activeSessions) {
+- (YRSession *)sessionWithAddress:(NSData*)address {
+    for (YRSession *session in _activeSessions) {
         if ([session.peerAddress isEqual:address]) {
             return session;
         }
     }
     
-    YRSessionOVERLOADED *newSession = [self createSessionWithAddress:address];
+    YRSession *newSession = [self createSessionWithAddress:address];
     
     [_activeSessions addObject:newSession];
     
     return newSession;
 }
 
-- (YRSessionOVERLOADED *)createSessionWithAddress:(NSData *)address {
+- (YRSession *)createSessionWithAddress:(NSData *)address {
     __typeof(self) __weak weakSelf = self;
     
     YRSessionContext *context = [YRSessionContext new];
     
     context.peerAddress = address;
     
-    context.receiveCallout = ^(YRSessionOVERLOADED *session, NSData *receivedData) {
+    context.receiveCallout = ^(YRSession *session, NSData *receivedData) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -125,7 +125,7 @@
         }
     };
     
-    context.sendCallout = ^(YRSessionOVERLOADED *session, NSData *dataToSend) {
+    context.sendCallout = ^(YRSession *session, NSData *dataToSend) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -135,7 +135,7 @@
         }
     };
 
-    YRSessionOVERLOADED *newSession = [[YRSessionOVERLOADED alloc] initWithContext:context];
+    YRSession *newSession = [[YRSession alloc] initWithContext:context];
     
     [newSession wait];
     
@@ -171,7 +171,7 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        YRSessionOVERLOADED *session = [self sessionWithAddress:address];
+        YRSession *session = [self sessionWithAddress:address];
         
         [session receive:data];
     });

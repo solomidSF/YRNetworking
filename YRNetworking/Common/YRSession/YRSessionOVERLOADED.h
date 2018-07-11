@@ -10,6 +10,7 @@
 
 #import "YRPeer.h"
 #import "YRConfiguration.h"
+#import "YRSessionContext.h"
 
 typedef enum {
     // Session is closed.
@@ -25,18 +26,6 @@ typedef enum {
     // Session is disconnecting from it's peer.
     kYRSessionStateDisconnecting
 } YRSessionState;
-
-@class YRSessionOVERLOADED;
-
-@interface YRSessionContext : NSObject
-
-@property (nonatomic) NSData *peerAddress;
-@property (nonatomic) YRConfiguration *sessionConfig;
-@property (nonatomic, copy) void (^connectionStateCallout) (YRSessionOVERLOADED *session, YRSessionState state);
-@property (nonatomic, copy) void (^sendCallout) (YRSessionOVERLOADED *session, NSData *data);
-@property (nonatomic, copy) id receiveCallout;
-
-@end
 
 @interface YRSessionOVERLOADED : NSObject
 

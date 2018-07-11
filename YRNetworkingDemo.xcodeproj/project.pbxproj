@@ -27,7 +27,6 @@
 		7DA6E85220F51A1900FC7997 /* YRBuffer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83320F51A1900FC7997 /* YRBuffer.m */; };
 		7DA6E85320F51A1900FC7997 /* YRPeer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83620F51A1900FC7997 /* YRPeer.m */; };
 		7DA6E85420F51A1900FC7997 /* YRConfiguration.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83820F51A1900FC7997 /* YRConfiguration.m */; };
-		7DA6E85520F51A1900FC7997 /* YRSessionOVERLOADED.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83B20F51A1900FC7997 /* YRSessionOVERLOADED.m */; };
 		7DA6E85620F51A1900FC7997 /* YRSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83C20F51A1900FC7997 /* YRSession.m */; };
 		7DA6E85720F51A1900FC7997 /* YRSessionContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */; };
 		7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84320F51A1900FC7997 /* YRSendOperation.m */; };
@@ -457,7 +456,6 @@
 				7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */,
 				7DA6E85420F51A1900FC7997 /* YRConfiguration.m in Sources */,
 				7DA6E85720F51A1900FC7997 /* YRSessionContext.m in Sources */,
-				7DA6E85520F51A1900FC7997 /* YRSessionOVERLOADED.m in Sources */,
 				7DA6E85920F51A1900FC7997 /* YRSendingPacketsQueue.m in Sources */,
 				7DA6E85020F51A1900FC7997 /* YRUDPServer.m in Sources */,
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,

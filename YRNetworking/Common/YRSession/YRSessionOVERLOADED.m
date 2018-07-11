@@ -12,25 +12,6 @@
 
 static uint16_t const kYRProtocolVersion = 0x0001;
 
-@interface YRSessionContext () <NSCopying>
-@end
-
-@implementation YRSessionContext
-
-- (id)copyWithZone:(NSZone *)zone {
-    YRSessionContext *cp = [[YRSessionContext allocWithZone:zone] init];
-    
-    cp.peerAddress = self.peerAddress;
-    cp.sessionConfig = self.sessionConfig;
-    cp.connectionStateCallout = self.connectionStateCallout;
-    cp.sendCallout = self.sendCallout;
-    cp.receiveCallout = self.receiveCallout;
-    
-    return cp;
-}
-
-@end
-
 @implementation YRSessionOVERLOADED {
     YRSessionContext *_ctx;
     
