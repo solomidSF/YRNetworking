@@ -8,23 +8,11 @@
 
 @import Foundation;
 
-#import "YRTypes.h"
 #import "YRSessionContext.h"
 
-typedef enum {
-    // Session is closed.
-    kYRSessionStateClosed,
-    // Session is waiting for incoming connection request from it's peer.
-    kYRSessionStateWaiting,
-    // Session is initiating connection.
-    kYRSessionStateInitiating,
-    // Session is establishing connection.
-    kYRSessionStateConnecting,
-    // Session has established connection.
-    kYRSessionStateConnected,
-    // Session is disconnecting from it's peer.
-    kYRSessionStateDisconnecting
-} YRSessionState;
+// Types
+#import "YRTypes.h"
+#import "YRSessionState.h"
 
 /**
  *  Represents session between two peers: local and remote.

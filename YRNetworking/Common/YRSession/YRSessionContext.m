@@ -14,6 +14,7 @@
     YRSessionContext *cp = [[YRSessionContext allocWithZone:zone] init];
     
     cp.peerAddress = self.peerAddress;
+    cp.connectionStateCallout = self.connectionStateCallout;
     cp.sendCallout = self.sendCallout;
     cp.receiveCallout = self.receiveCallout;
     

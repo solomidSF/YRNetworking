@@ -41,6 +41,8 @@
         
         _serverQueue = dispatch_queue_create("com.udpserver.yr", DISPATCH_QUEUE_SERIAL);
         _socket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:_serverQueue];
+        
+        _activeSessions = [NSMutableArray new];
     }
     
     return self;
@@ -117,22 +119,43 @@
     
     context.peerAddress = address;
     
+    context.connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+        __typeof(weakSelf) __strong strongSelf = weakSelf;
+        
+        if (!strongSelf) {
+            return;
+        }
+        
+        NSString *humanReadableState = @[@"Closed",
+                                         @"Waiting",
+                                         @"Initiating",
+                                         @"Connecting",
+                                         @"Connected",
+                                         @"Disconnecting"][newState];
+        
+        NSLog(@"New state: %@", humanReadableState);
+    };
+    
     context.receiveCallout = ^(YRSession *session, NSData *receivedData) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
             return;
         }
+        
+        NSLog(@"Received: %@", [[NSString alloc] initWithData:receivedData encoding:NSUTF8StringEncoding]);
     };
     
     context.sendCallout = ^(YRSession *session, NSData *dataToSend) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
-            NSLog(@"[YRUDPServer]: Will send data: %@ with tag %ld", dataToSend, strongSelf->_currentTag);
-            [strongSelf->_socket sendData:dataToSend toAddress:session.peerAddress withTimeout:0 tag:strongSelf->_currentTag];
-            strongSelf->_currentTag++;
+            return;
         }
+        
+        NSLog(@"[YRUDPServer]: Will send data: %@ with tag %ld", dataToSend, strongSelf->_currentTag);
+        [strongSelf->_socket sendData:dataToSend toAddress:session.peerAddress withTimeout:0 tag:strongSelf->_currentTag];
+        strongSelf->_currentTag++;
     };
 
     YRSession *newSession = [[YRSession alloc] initWithContext:context];

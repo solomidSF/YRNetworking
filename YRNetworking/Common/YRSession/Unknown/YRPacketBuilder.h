@@ -6,8 +6,14 @@
 //  Copyright © 2018 Yuriy Romanchenko. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+@import Foundation;
+
+#import "YRTypes.h"
 
 @interface YRPacketBuilder : NSObject
+
+//+ (void)ackHeader:(YRPacketHeader *)header;
+//+ (void)synHeader:(YRPacketHeader *)header;
+//+ (void)rstHeader:(YRPacketHeader *)header;
 
 @end

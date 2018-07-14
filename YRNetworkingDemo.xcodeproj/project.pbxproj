@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		7D91068220EE897700974F48 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068120EE897700974F48 /* AppDelegate.m */; };
-		7D91068520EE897700974F48 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068420EE897700974F48 /* ViewController.m */; };
+		7D91068520EE897700974F48 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068420EE897700974F48 /* InitialViewController.m */; };
 		7D91068720EE897800974F48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7D91068620EE897800974F48 /* Assets.xcassets */; };
 		7D91068A20EE897800974F48 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7D91068820EE897800974F48 /* Main.storyboard */; };
 		7D91068D20EE897800974F48 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068C20EE897800974F48 /* main.m */; };
@@ -17,7 +17,7 @@
 		7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9106CA20EE902C00974F48 /* GCDAsyncSocket.m */; };
 		7D9106EB20EE902C00974F48 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7D9106DC20EE902C00974F48 /* README.txt */; };
 		7DA6E81020F3F4E200FC7997 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E80F20F3F4E200FC7997 /* AppDelegate.m */; };
-		7DA6E81320F3F4E200FC7997 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E81220F3F4E200FC7997 /* ViewController.m */; };
+		7DA6E81320F3F4E200FC7997 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E81220F3F4E200FC7997 /* InitialViewController.m */; };
 		7DA6E81620F3F4E200FC7997 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7DA6E81420F3F4E200FC7997 /* Main.storyboard */; };
 		7DA6E81820F3F4E500FC7997 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7DA6E81720F3F4E500FC7997 /* Assets.xcassets */; };
 		7DA6E81B20F3F4E500FC7997 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7DA6E81920F3F4E500FC7997 /* LaunchScreen.storyboard */; };
@@ -36,14 +36,17 @@
 		7DA6E85C20F51A1900FC7997 /* YRPacket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84820F51A1900FC7997 /* YRPacket.m */; };
 		7DA6E85D20F51A1900FC7997 /* YRSendingQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84C20F51A1900FC7997 /* YRSendingQueue.m */; };
 		7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */; };
+		7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1A20FA982700486ED9 /* ClientViewController.m */; };
+		7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1D20FA983500486ED9 /* ServerViewController.m */; };
+		7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		7D91067D20EE897700974F48 /* YRNetworkingDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YRNetworkingDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D91068020EE897700974F48 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7D91068120EE897700974F48 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		7D91068320EE897700974F48 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		7D91068420EE897700974F48 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		7D91068320EE897700974F48 /* InitialViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InitialViewController.h; sourceTree = "<group>"; };
+		7D91068420EE897700974F48 /* InitialViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InitialViewController.m; sourceTree = "<group>"; };
 		7D91068620EE897800974F48 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7D91068920EE897800974F48 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		7D91068B20EE897800974F48 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -76,8 +79,8 @@
 		7DA6E80C20F3F4E200FC7997 /* YRNetworkingDemoiOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YRNetworkingDemoiOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DA6E80E20F3F4E200FC7997 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7DA6E80F20F3F4E200FC7997 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		7DA6E81120F3F4E200FC7997 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		7DA6E81220F3F4E200FC7997 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		7DA6E81120F3F4E200FC7997 /* InitialViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = InitialViewController.h; sourceTree = "<group>"; };
+		7DA6E81220F3F4E200FC7997 /* InitialViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = InitialViewController.m; sourceTree = "<group>"; };
 		7DA6E81520F3F4E200FC7997 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		7DA6E81720F3F4E500FC7997 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		7DA6E81A20F3F4E500FC7997 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -114,6 +117,13 @@
 		7DA6E84C20F51A1900FC7997 /* YRSendingQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSendingQueue.m; sourceTree = "<group>"; };
 		7DA6E84E20F51A1900FC7997 /* YRUDPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRUDPClient.h; sourceTree = "<group>"; };
 		7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRUDPClient.m; sourceTree = "<group>"; };
+		7DC4EB1820FA923C00486ED9 /* YRSessionState.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSessionState.h; sourceTree = "<group>"; };
+		7DC4EB1920FA982700486ED9 /* ClientViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ClientViewController.h; sourceTree = "<group>"; };
+		7DC4EB1A20FA982700486ED9 /* ClientViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClientViewController.m; sourceTree = "<group>"; };
+		7DC4EB1C20FA983500486ED9 /* ServerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ServerViewController.h; sourceTree = "<group>"; };
+		7DC4EB1D20FA983500486ED9 /* ServerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ServerViewController.m; sourceTree = "<group>"; };
+		7DC4EB2020FAAFFB00486ED9 /* YRLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRLogger.h; sourceTree = "<group>"; };
+		7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRLogger.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -159,8 +169,12 @@
 				7D9106C520EE902C00974F48 /* 3rdParty */,
 				7D91068020EE897700974F48 /* AppDelegate.h */,
 				7D91068120EE897700974F48 /* AppDelegate.m */,
-				7D91068320EE897700974F48 /* ViewController.h */,
-				7D91068420EE897700974F48 /* ViewController.m */,
+				7D91068320EE897700974F48 /* InitialViewController.h */,
+				7D91068420EE897700974F48 /* InitialViewController.m */,
+				7DC4EB1920FA982700486ED9 /* ClientViewController.h */,
+				7DC4EB1A20FA982700486ED9 /* ClientViewController.m */,
+				7DC4EB1C20FA983500486ED9 /* ServerViewController.h */,
+				7DC4EB1D20FA983500486ED9 /* ServerViewController.m */,
 				7D91068620EE897800974F48 /* Assets.xcassets */,
 				7D91068820EE897800974F48 /* Main.storyboard */,
 				7D91068B20EE897800974F48 /* Info.plist */,
@@ -246,8 +260,8 @@
 			children = (
 				7DA6E80E20F3F4E200FC7997 /* AppDelegate.h */,
 				7DA6E80F20F3F4E200FC7997 /* AppDelegate.m */,
-				7DA6E81120F3F4E200FC7997 /* ViewController.h */,
-				7DA6E81220F3F4E200FC7997 /* ViewController.m */,
+				7DA6E81120F3F4E200FC7997 /* InitialViewController.h */,
+				7DA6E81220F3F4E200FC7997 /* InitialViewController.m */,
 				7DA6E81420F3F4E200FC7997 /* Main.storyboard */,
 				7DA6E81720F3F4E500FC7997 /* Assets.xcassets */,
 				7DA6E81920F3F4E500FC7997 /* LaunchScreen.storyboard */,
@@ -260,6 +274,7 @@
 		7DA6E82B20F51A1900FC7997 /* YRNetworking */ = {
 			isa = PBXGroup;
 			children = (
+				7DC4EB1F20FAAFEC00486ED9 /* Temp */,
 				7DA6E83420F51A1900FC7997 /* Common */,
 				7DA6E82E20F51A1900FC7997 /* Server */,
 				7DA6E84D20F51A1900FC7997 /* Client */,
@@ -274,10 +289,10 @@
 		7DA6E82E20F51A1900FC7997 /* Server */ = {
 			isa = PBXGroup;
 			children = (
-				7DA6E82F20F51A1900FC7997 /* YRUDPConnectedClient.h */,
-				7DA6E83020F51A1900FC7997 /* YRUDPServer.m */,
-				7DA6E83120F51A1900FC7997 /* YRUDPConnectedClient.m */,
 				7DA6E83220F51A1900FC7997 /* YRUDPServer.h */,
+				7DA6E83020F51A1900FC7997 /* YRUDPServer.m */,
+				7DA6E82F20F51A1900FC7997 /* YRUDPConnectedClient.h */,
+				7DA6E83120F51A1900FC7997 /* YRUDPConnectedClient.m */,
 			);
 			path = Server;
 			sourceTree = "<group>";
@@ -298,6 +313,7 @@
 		7DA6E83A20F51A1900FC7997 /* YRSession */ = {
 			isa = PBXGroup;
 			children = (
+				7DC4EB1820FA923C00486ED9 /* YRSessionState.h */,
 				7DA6E83E20F51A1900FC7997 /* YRSession.h */,
 				7DA6E83C20F51A1900FC7997 /* YRSession.m */,
 				7DA6E84B20F51A1900FC7997 /* YRSessionContext.h */,
@@ -312,12 +328,12 @@
 		7DA6E84020F51A1900FC7997 /* Unknown */ = {
 			isa = PBXGroup;
 			children = (
-				7DA6E84120F51A1900FC7997 /* YRPacketsQueue.h */,
 				7DA6E84220F51A1900FC7997 /* YRPacketBuilder.h */,
+				7DA6E84620F51A1900FC7997 /* YRPacketBuilder.m */,
+				7DA6E84120F51A1900FC7997 /* YRPacketsQueue.h */,
 				7DA6E84320F51A1900FC7997 /* YRSendOperation.m */,
 				7DA6E84420F51A1900FC7997 /* YRPacket.h */,
 				7DA6E84520F51A1900FC7997 /* YRSendingPacketsQueue.m */,
-				7DA6E84620F51A1900FC7997 /* YRPacketBuilder.m */,
 				7DA6E84720F51A1900FC7997 /* YRPacketsQueue.m */,
 				7DA6E84820F51A1900FC7997 /* YRPacket.m */,
 				7DA6E84920F51A1900FC7997 /* YRSendOperation.h */,
@@ -333,6 +349,15 @@
 				7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */,
 			);
 			path = Client;
+			sourceTree = "<group>";
+		};
+		7DC4EB1F20FAAFEC00486ED9 /* Temp */ = {
+			isa = PBXGroup;
+			children = (
+				7DC4EB2020FAAFFB00486ED9 /* YRLogger.h */,
+				7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */,
+			);
+			path = Temp;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -445,9 +470,10 @@
 				7DA6E85120F51A1900FC7997 /* YRUDPConnectedClient.m in Sources */,
 				7DA6E85B20F51A1900FC7997 /* YRPacketsQueue.m in Sources */,
 				7DA6E85620F51A1900FC7997 /* YRSession.m in Sources */,
-				7D91068520EE897700974F48 /* ViewController.m in Sources */,
+				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
 				7DA6E85C20F51A1900FC7997 /* YRPacket.m in Sources */,
 				7DA6E85220F51A1900FC7997 /* YRBuffer.m in Sources */,
+				7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */,
 				7DA6E85D20F51A1900FC7997 /* YRSendingQueue.m in Sources */,
 				7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */,
 				7D91068D20EE897800974F48 /* main.m in Sources */,
@@ -461,6 +487,8 @@
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,
 				7DA6E85320F51A1900FC7997 /* YRPeer.m in Sources */,
 				7D91068220EE897700974F48 /* AppDelegate.m in Sources */,
+				7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */,
+				7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -468,7 +496,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7DA6E81320F3F4E200FC7997 /* ViewController.m in Sources */,
+				7DA6E81320F3F4E200FC7997 /* InitialViewController.m in Sources */,
 				7DA6E81E20F3F4E500FC7997 /* main.m in Sources */,
 				7DA6E81020F3F4E200FC7997 /* AppDelegate.m in Sources */,
 			);

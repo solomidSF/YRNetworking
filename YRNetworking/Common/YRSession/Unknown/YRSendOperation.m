@@ -24,13 +24,19 @@
 - (void)start {
     __typeof(self) __weak weakSelf = self;
     
-    _transmissionTimer = [NSTimer scheduledTimerWithTimeInterval:0.5 repeats:NO block:^(NSTimer * _Nonnull timer) {
+    _transmissionTimer = [NSTimer timerWithTimeInterval:2 repeats:NO block:^(NSTimer * _Nonnull timer) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (strongSelf) {
             !strongSelf.onTransmissionTimeout ?: strongSelf.onTransmissionTimeout(strongSelf);
         }
     }];
+    
+    [[NSRunLoop currentRunLoop] addTimer:_transmissionTimer forMode:NSRunLoopCommonModes];
+}
+
+- (void)handleTransmissionTimeout:(NSTimer *)timer {
+    !self.onTransmissionTimeout ?: self.onTransmissionTimeout(self);
 }
 
 - (void)end {

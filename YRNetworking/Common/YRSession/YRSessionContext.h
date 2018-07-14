@@ -8,11 +8,14 @@
 
 @import Foundation;
 
+#import "YRSessionState.h"
+
 @class YRSession;
 
 @interface YRSessionContext : NSObject <NSCopying>
 
 @property (nonatomic) NSData *peerAddress;
+@property (nonatomic, copy) void (^connectionStateCallout) (YRSession *session, YRSessionState newState);
 @property (nonatomic, copy) void (^sendCallout) (YRSession *session, NSData *data);
 @property (nonatomic, copy) void (^receiveCallout) (YRSession *session, NSData *data);
 
