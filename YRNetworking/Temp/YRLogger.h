@@ -11,13 +11,12 @@
 @interface YRLogger : NSObject
 
 @property (nonatomic, readonly) NSString *reporter;
-@property (nonatomic, readonly) NSString *fileName;
 
-- (instancetype)initWithReporter:(NSString *)reporter fileName:(NSString *)fileName;
+- (instancetype)initWithReporter:(NSString *)reporter;
 
-- (void)logDebug:(NSString *)text;
-- (void)logInfo:(NSString *)text;
-- (void)logWarning:(NSString *)text;
-- (void)logError:(NSString *)text;
+- (void)logDebug:(NSString *)format, ...;
+- (void)logInfo:(NSString *)format, ...;
+- (void)logWarning:(NSString *)format, ...;
+- (void)logError:(NSString *)format, ...;
 
 @end

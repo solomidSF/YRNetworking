@@ -7,47 +7,62 @@
 //
 
 #import "YRLogger.h"
+#import "YRSharedLogger.h"
 
 @implementation YRLogger {
     NSFileHandle *_outFile;
 }
 
-- (instancetype)initWithReporter:(NSString *)reporter fileName:(NSString *)fileName {
+- (instancetype)initWithReporter:(NSString *)reporter {
     if (self = [super init]) {
         _reporter = reporter;
-        _fileName = fileName;
-        
-        if (_fileName.length > 0) {
-            [[NSFileManager defaultManager] createFileAtPath:fileName contents:nil attributes:nil];
-
-            _outFile = [NSFileHandle fileHandleForWritingAtPath:_fileName];
-        }
     }
+    
     return self;
 }
 
-- (void)logDebug:(NSString *)text {
-    [self log:text type:@"DEBUG"];
-}
-
-- (void)logInfo:(NSString *)text {
-    [self log:text type:@"INFO"];
-}
-
-- (void)logWarning:(NSString *)text {
-    [self log:text type:@"WARN"];
-}
-
-- (void)logError:(NSString *)text {
-    [self log:text type:@"ERROR"];
-}
-
-- (void)log:(NSString *)text type:(NSString *)type {
-    NSString *stringToLog = [NSString stringWithFormat:@"%@ [%@]: <%@> %@\n", [NSDate date], self.reporter, type, text];
+- (void)logDebug:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
     
-    [[NSFileHandle fileHandleWithStandardError] writeData:[stringToLog dataUsingEncoding:NSUTF8StringEncoding]];
+    NSString *resultingString = [[NSString alloc] initWithFormat:format arguments:args];
     
-    [_outFile writeData:[stringToLog dataUsingEncoding:NSUTF8StringEncoding]];
+    va_end(args);
+    
+    [[YRSharedLogger shared] log:resultingString reporter:self.reporter type:@"DEBUG"];
+}
+
+- (void)logInfo:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    
+    NSString *resultingString = [[NSString alloc] initWithFormat:format arguments:args];
+    
+    va_end(args);
+    
+    [[YRSharedLogger shared] log:resultingString reporter:self.reporter type:@"INFO"];
+}
+                                         
+- (void)logWarning:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    
+    NSString *resultingString = [[NSString alloc] initWithFormat:format arguments:args];
+    
+    va_end(args);
+    
+    [[YRSharedLogger shared] log:resultingString reporter:self.reporter type:@"WARN"];
+}
+
+- (void)logError:(NSString *)format, ... {
+    va_list args;
+    va_start(args, format);
+    
+    NSString *resultingString = [[NSString alloc] initWithFormat:format arguments:args];
+    
+    va_end(args);
+    
+    [[YRSharedLogger shared] log:resultingString reporter:self.reporter type:@"ERROR"];
 }
 
 @end

@@ -9,7 +9,6 @@
 #import "ClientViewController.h"
 #import "YRSession.h"
 #import "GCDAsyncUdpSocket.h"
-#import "YRLogger.h"
 
 #import <arpa/inet.h>
 #import <fcntl.h>
@@ -19,13 +18,15 @@
 #import <sys/socket.h>
 #import <sys/types.h>
 
+#import "YRSharedLogger.h"
+
 @interface ClientViewController ()
 <GCDAsyncUdpSocketDelegate>
 @end
 
 @implementation ClientViewController {
     YRSession *_client;
-    YRLogger *_clientLogger;
+    YRLogger *_uiLogger;
     
     __unsafe_unretained IBOutlet NSTextView *_logTextView;
     
@@ -36,16 +37,27 @@
     [super viewDidLoad];
     // Do view setup here.
     
-    _clientLogger = [[YRLogger alloc] initWithReporter:@"Client" fileName:@"Client.txt"];
-        
-    NSError *rcvError = nil;
+    [YRSharedLogger shared].fileName = @"Client.log";
+    _uiLogger = [[YRSharedLogger shared] loggerWithReporter:@"ClientVC"];
+    
+    NSError *err = nil;
     _sock = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:dispatch_get_main_queue()];
     
-    [_sock bindToPort:0 error:&rcvError];    
-    [_sock beginReceiving:&rcvError];
+    [_sock bindToPort:0 error:&err];
+    
+    if (!err) {
+        [_uiLogger logInfo:@"Did bind to '%d' port", _sock.localPort];
+    } else {
+        [_uiLogger logError:@"Couldn't bind to port with error: %@", err];
+        return;
+    }
+    
+    [_sock beginReceiving:&err];
 
-    if (rcvError) {
-        NSLog(@"Failed to become client with error: %@", rcvError);
+    if (!err) {
+        [_uiLogger logInfo:@"Enabled receiving on port!"];
+    } else {
+        [_uiLogger logError:@"Couldn't begin receiving on port with error: %@", err];
         return;
     }
     
@@ -54,7 +66,7 @@
     struct sockaddr_in nativeAddr4;
     nativeAddr4.sin_len         = sizeof(struct sockaddr_in);
     nativeAddr4.sin_family      = AF_INET;
-    nativeAddr4.sin_port        = htons(77777);
+    nativeAddr4.sin_port        = htons(28016);
     nativeAddr4.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
     memset(&(nativeAddr4.sin_zero), 0, sizeof(nativeAddr4.sin_zero));
 

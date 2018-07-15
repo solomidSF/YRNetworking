@@ -8,6 +8,7 @@
 
 #import "ServerViewController.h"
 #import "YRUDPServer.h"
+#import "YRSharedLogger.h"
 
 @interface ServerViewController ()
 
@@ -20,8 +21,9 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do view setup here.
+    [[YRSharedLogger shared] setFileName:@"Server.log"];
     
-    _server = [YRUDPServer serverWithPort:77777];
+    _server = [YRUDPServer serverWithPort:28016];
     
     NSError *setupError = nil;
     [_server setup:&setupError];

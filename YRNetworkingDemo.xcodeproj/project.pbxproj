@@ -39,6 +39,7 @@
 		7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1A20FA982700486ED9 /* ClientViewController.m */; };
 		7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1D20FA983500486ED9 /* ServerViewController.m */; };
 		7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
+		7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -98,11 +99,9 @@
 		7DA6E83720F51A1900FC7997 /* YRConfiguration.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRConfiguration.h; sourceTree = "<group>"; };
 		7DA6E83820F51A1900FC7997 /* YRConfiguration.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRConfiguration.m; sourceTree = "<group>"; };
 		7DA6E83920F51A1900FC7997 /* YRPeer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRPeer.h; sourceTree = "<group>"; };
-		7DA6E83B20F51A1900FC7997 /* YRSessionOVERLOADED.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSessionOVERLOADED.m; sourceTree = "<group>"; };
 		7DA6E83C20F51A1900FC7997 /* YRSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSession.m; sourceTree = "<group>"; };
 		7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSessionContext.m; sourceTree = "<group>"; };
 		7DA6E83E20F51A1900FC7997 /* YRSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSession.h; sourceTree = "<group>"; };
-		7DA6E83F20F51A1900FC7997 /* YRSessionOVERLOADED.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSessionOVERLOADED.h; sourceTree = "<group>"; };
 		7DA6E84120F51A1900FC7997 /* YRPacketsQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRPacketsQueue.h; sourceTree = "<group>"; };
 		7DA6E84220F51A1900FC7997 /* YRPacketBuilder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRPacketBuilder.h; sourceTree = "<group>"; };
 		7DA6E84320F51A1900FC7997 /* YRSendOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSendOperation.m; sourceTree = "<group>"; };
@@ -124,6 +123,8 @@
 		7DC4EB1D20FA983500486ED9 /* ServerViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ServerViewController.m; sourceTree = "<group>"; };
 		7DC4EB2020FAAFFB00486ED9 /* YRLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRLogger.h; sourceTree = "<group>"; };
 		7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRLogger.m; sourceTree = "<group>"; };
+		7DC4EB2320FB537500486ED9 /* YRSharedLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSharedLogger.h; sourceTree = "<group>"; };
+		7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSharedLogger.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -318,8 +319,6 @@
 				7DA6E83C20F51A1900FC7997 /* YRSession.m */,
 				7DA6E84B20F51A1900FC7997 /* YRSessionContext.h */,
 				7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */,
-				7DA6E83F20F51A1900FC7997 /* YRSessionOVERLOADED.h */,
-				7DA6E83B20F51A1900FC7997 /* YRSessionOVERLOADED.m */,
 				7DA6E84020F51A1900FC7997 /* Unknown */,
 			);
 			path = YRSession;
@@ -354,6 +353,8 @@
 		7DC4EB1F20FAAFEC00486ED9 /* Temp */ = {
 			isa = PBXGroup;
 			children = (
+				7DC4EB2320FB537500486ED9 /* YRSharedLogger.h */,
+				7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */,
 				7DC4EB2020FAAFFB00486ED9 /* YRLogger.h */,
 				7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */,
 			);
@@ -477,6 +478,7 @@
 				7DA6E85D20F51A1900FC7997 /* YRSendingQueue.m in Sources */,
 				7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */,
 				7D91068D20EE897800974F48 /* main.m in Sources */,
+				7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */,
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
 				7DA6E85A20F51A1900FC7997 /* YRPacketBuilder.m in Sources */,
 				7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */,
