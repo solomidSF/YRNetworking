@@ -12,19 +12,24 @@
     NSTimer *_transmissionTimer;
 }
 
-- (instancetype)initWithData:(NSData *)data sequenceNumber:(uint32_t)sequenceNumber {
+- (instancetype)initWithPacket:(YRPacketRef)packet sequenceNumber:(uint32_t)sequenceNumber {
     if (self = [super init]) {
-        _data = data;
+        _packet = packet;
         _sequenceNumber = sequenceNumber;
     }
     
     return self;
 }
 
+- (void)dealloc {
+    YRPacketDestroy(self.packet);
+    _packet = NULL;
+}
+
 - (void)start {
     __typeof(self) __weak weakSelf = self;
     
-    _transmissionTimer = [NSTimer timerWithTimeInterval:2 repeats:NO block:^(NSTimer * _Nonnull timer) {
+    _transmissionTimer = [NSTimer timerWithTimeInterval:4 repeats:NO block:^(NSTimer * _Nonnull timer) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (strongSelf) {

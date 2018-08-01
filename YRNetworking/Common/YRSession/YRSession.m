@@ -7,15 +7,19 @@
 //
 
 #import "YRSession.h"
+#import "YRPacket.h"
+#import "YRLightweightInputStream.h"
+#import "YRLightweightOutputStream.h"
+
+// Will be removed
 #import "YRSendOperation.h"
 
 #import "YRSharedLogger.h"
-
-// TODO: TEMP
+// TODO: Temporary for developing purposes
 #import "GCDAsyncUdpSocket.h"
+#import "YRDebugUtils.h"
 
-static uint32_t const kYRMaxSequenceCount = 65536;
-static uint16_t const kYRProtocolVersion = 0x0001;
+static uint32_t const kYRMaxPacketSize = 65536;
 
 @implementation YRSession {
     YRLogger *_sessionLogger;
@@ -52,10 +56,10 @@ static uint16_t const kYRProtocolVersion = 0x0001;
         [_sessionLogger logInfo:@"[INIT]: Protocol version: %d. Peer address: %@. State callout: %d. Receive callout: %d. Send callout: %d", kYRProtocolVersion,
             address, context.connectionStateCallout != NULL, context.receiveCallout != NULL, context.sendCallout != NULL];
         
-        _sendQueue = [NSMutableArray arrayWithCapacity:kYRMaxSequenceCount];
-        _receiveQueue = [NSMutableArray arrayWithCapacity:kYRMaxSequenceCount];
+        _sendQueue = [NSMutableArray arrayWithCapacity:kYRMaxPacketSize];
+        _receiveQueue = [NSMutableArray arrayWithCapacity:kYRMaxPacketSize];
         
-        for (uint32_t i = 0; i < kYRMaxSequenceCount; i++) {
+        for (uint32_t i = 0; i < kYRMaxPacketSize; i++) {
             _sendQueue[i] = [NSNull null];
             _receiveQueue[i] = [NSNull null];
         }
@@ -80,20 +84,10 @@ static uint16_t const kYRProtocolVersion = 0x0001;
     [_sessionLogger logInfo:@"[CONN_REQ] (%@)", [self humanReadableState:self.state]];
     
     if (self.state == kYRSessionStateClosed) {
-        YRPacketHeader header = {0};
-
-        header.packetDescription = YRPacketDescriptionSYN | kYRProtocolVersion << 6;
-        header.headerLength = sizeof(header);
-        header.sequenceNumber = _sendNextSequenceNumber;
-        header.checksum = [self calculateChecksum:&header];
+        YRPacketRef packet = YRPacketCreateSYN(_sendNextSequenceNumber, 0, NO);
+        YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:packet sequenceNumber:_sendNextSequenceNumber];
 
         _sendNextSequenceNumber++;
-        
-        NSMutableData *packetData = [NSMutableData new];
-        
-        [packetData appendBytes:&header length:sizeof(header)];
-        
-        YRSendOperation *operation = [[YRSendOperation alloc] initWithData:[packetData copy] sequenceNumber:header.sequenceNumber];
         
         [self sendReliably:operation];
         
@@ -118,19 +112,12 @@ static uint16_t const kYRProtocolVersion = 0x0001;
     [_sessionLogger logInfo:@"[CLOSE_REQ] (%@)", [self humanReadableState:self.state]];
     
     if (self.state == kYRSessionStateConnected) {
-        YRPacketHeader outHeader = {0};
-        
-        outHeader.packetDescription = YRPacketDescriptionRST | YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-        outHeader.sequenceNumber = _sendNextSequenceNumber;
-        outHeader.ackNumber = _rcvLatestAckedSegment;
-        outHeader.headerLength = sizeof(YRPacketHeader);
-        
-        outHeader.checksum = [self calculateChecksum:&outHeader];
-        
+        YRPacketRef packet = YRPacketCreateRST(_sendNextSequenceNumber, _rcvLatestAckedSegment, true);
+        YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:packet sequenceNumber:_sendNextSequenceNumber];
+
         _sendNextSequenceNumber++;
         
-        [self sendReliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                                                  sequenceNumber:outHeader.sequenceNumber]];
+        [self sendReliably:operation];
         
         [self transiteToState:kYRSessionStateDisconnecting];
         
@@ -147,17 +134,10 @@ static uint16_t const kYRProtocolVersion = 0x0001;
     }
     
     if (self.state == kYRSessionStateConnecting || self.state == kYRSessionStateInitiating) {
-        // + snd: RST
-        YRPacketHeader outHeader = {0};
-        
-        outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-        outHeader.sequenceNumber = _sendNextSequenceNumber;
-        outHeader.headerLength = sizeof(YRPacketHeader);
-        
-        outHeader.checksum = [self calculateChecksum:&outHeader];
-        
-        [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                                                    sequenceNumber:outHeader.sequenceNumber]];
+        YRPacketRef packet = YRPacketCreateRST(_sendNextSequenceNumber, 0, false);
+        YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:packet sequenceNumber:_sendNextSequenceNumber];
+
+        [self sendUnreliably:operation];
         
         [self transiteToState:kYRSessionStateClosed];
         return;
@@ -174,191 +154,161 @@ static uint16_t const kYRProtocolVersion = 0x0001;
 #pragma mark - Communication
 
 - (void)receive:(NSData *)data {
-    YRPacketHeader header = {0};
-    BOOL shouldResetConnection = NO;
-    BOOL isValidPacket = [self checkIfPacketValid:data outHeader:&header shouldResetConnection:&shouldResetConnection];
+    if (data.length > kYRMaxPacketSize) {
+        [_sessionLogger logWarning:@"[RCV_REQ]: Dropping large packet (%d bytes)", (uint32_t)data.length];
+        // Drop packets with large sizes.
+        return;
+    }
     
-    [_sessionLogger logInfo:@"[RCV_REQ] (%@) Raw Packet: %@", [self humanReadableState:self.state], data];
-    [_sessionLogger logInfo:@"Is valid: %d, should reset connection: %d", isValidPacket, shouldResetConnection];
+    // Create input stream on stack to read incoming packet.
+    uint8_t bufferForStream[kYRLightweightInputStreamSize];
+    YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(data.bytes, data.length, bufferForStream);
+    
+    bool canDeserialize = YRPacketCanDeserializeFromStream(stream);
+    
+    if (!canDeserialize) {
+        // TODO: Error
+        return;
+    }
+    
+    YRPacketRef receivedPacket = YRPacketDeserialize(stream);
+    YRPacketHeaderRef receivedHeader = YRPacketGetHeader(receivedPacket);
+    
+//    BOOL shouldResetConnection = NO;
+    BOOL isValidPacket = YRPacketIsLogicallyValid(receivedPacket);
 
-    if (!isValidPacket) {
+    if (isValidPacket) {
+        [_sessionLogger logInfo:@"[RCV_REQ] (%@) Packet: %@", [self humanReadableState:self.state], [YRDebugUtils packetHeaderShortDescription:YRPacketGetHeader(receivedPacket)]];
+    } else {
+        [_sessionLogger logWarning:@"[RCV_REQ] (%@) Invalid Packet!\n%@", [self humanReadableState:self.state], [YRDebugUtils packetHeaderFullDescription:YRPacketGetHeader(receivedPacket)]];
+        
+        YRPacketDestroy(receivedPacket);
         return;
     }
 
-    if (shouldResetConnection) {
-        [self close];
-        return;
-    }
+//    if (shouldResetConnection) {
+//        [self close];
+//        return;
+//    }
+    
+    BOOL isSYN = YRPacketHeaderIsSYN(receivedHeader);
+    BOOL isRST = YRPacketHeaderIsRST(receivedHeader);
+    BOOL isNUL = YRPacketHeaderIsNUL(receivedHeader);
+    BOOL hasACK = YRPacketHeaderHasACK(receivedHeader);
+
+    YRSequenceNumberType sequenceNumber = YRPacketHeaderGetSequenceNumber(receivedHeader);
+    YRSequenceNumberType ackNumber = YRPacketHeaderGetAckNumber(receivedHeader);
     
     switch (self.state) {
         case kYRSessionStateClosed:
-            if (header.packetDescription & YRPacketDescriptionRST) {
-                return;
+            if (isRST) {
+                break;
             }
             
-            if ((header.packetDescription & YRPacketDescriptionACK) ||
-                (header.packetDescription & YRPacketDescriptionNUL)) {
-                YRPacketHeader outHeader = {0};
+            if (hasACK || isNUL) {
+                YRPacketRef rstPacket = YRPacketCreateRST(ackNumber + 1, 0, false);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:ackNumber + 1];
                 
-                outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = header.ackNumber + 1;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
+                [self sendUnreliably:operation];
             } else {
-                YRPacketHeader outHeader = {0};
-                
-                outHeader.packetDescription = YRPacketDescriptionRST | YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = 0;
-                outHeader.ackNumber = header.sequenceNumber;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
+                YRPacketRef rstPacket = YRPacketCreateRST(0, sequenceNumber, true);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:0];
+
+                [self sendUnreliably:operation];
             }
             
             break;
         case kYRSessionStateWaiting:
             // Waiting for SYN packet.
-            if (header.packetDescription & YRPacketDescriptionSYN) {
-                _rcvLatestAckedSegment = header.sequenceNumber;
-                _rcvInitialSequenceNumber = header.sequenceNumber;
+            if (isSYN) {
+                _rcvLatestAckedSegment = sequenceNumber;
+                _rcvInitialSequenceNumber = sequenceNumber;
                 
-                YRPacketHeader outHeader = {0};
-                
-                outHeader.packetDescription = YRPacketDescriptionSYN | YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = _sendNextSequenceNumber;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                outHeader.ackNumber = _rcvLatestAckedSegment;
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
+                YRPacketRef synAckPacket = YRPacketCreateSYN(_sendNextSequenceNumber, _rcvLatestAckedSegment, true);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:synAckPacket sequenceNumber:_sendNextSequenceNumber];
                 _sendNextSequenceNumber++;
-                
-                YRSendOperation *operation = [[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber];
+
                 [self sendReliably:operation];
                 
                 [self transiteToState:kYRSessionStateConnecting];
                 
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionRST) {
-                return;
+            if (isRST) {
+                break;
             }
             
-            if ((header.packetDescription & YRPacketDescriptionACK) ||
-                (header.packetDescription & YRPacketDescriptionNUL)) {
-                YRPacketHeader outHeader = {0};
-                
-                outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = header.ackNumber + 1;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
-                return;
+            if (hasACK || isNUL) {
+                YRPacketRef rstPacket = YRPacketCreateRST(ackNumber + 1, 0, false);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:_sendNextSequenceNumber];
+
+                [self sendUnreliably:operation];
+                break;
             }
             
             break;
         case kYRSessionStateInitiating:
             // Waiting for SYN/ACK
-            if ((header.packetDescription & YRPacketDescriptionRST) &&
-                (header.packetDescription & YRPacketDescriptionACK)) {
+            if (isRST && hasACK) {
                 // err: Connection refused
                 [_sessionLogger logError:@"Connection refused!"];
                 [self transiteToState:kYRSessionStateClosed];
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionSYN) {
-                _rcvLatestAckedSegment = header.sequenceNumber;
-                _rcvInitialSequenceNumber = header.sequenceNumber;
+            if (isSYN) {
+                _rcvLatestAckedSegment = sequenceNumber;
+                _rcvInitialSequenceNumber = sequenceNumber;
                 
-                if (header.packetDescription & YRPacketDescriptionACK) {
-                    for (uint16_t i = _sendLatestUnackSegment; i < header.ackNumber + 1; i++) {
+                if (hasACK) {
+                    for (uint16_t i = _sendLatestUnackSegment; i < ackNumber + 1; i++) {
                         [_sendQueue[i] end];
                         _sendQueue[i] = [NSNull null];
                     }
 
-                    _sendLatestUnackSegment = header.ackNumber + 1;
+                    _sendLatestUnackSegment = ackNumber + 1;
                     
-                    YRPacketHeader outHeader = {0};
-                    
-                    outHeader.packetDescription = YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                    outHeader.sequenceNumber = _sendNextSequenceNumber;
-                    outHeader.headerLength = sizeof(YRPacketHeader);
-                    outHeader.ackNumber = _rcvLatestAckedSegment;
-                    
-                    outHeader.checksum = [self calculateChecksum:&outHeader];
-                    
-                    [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                        sequenceNumber:outHeader.sequenceNumber]];
+                    YRPacketRef ackPacket = YRPacketCreateACK(_sendNextSequenceNumber, _rcvLatestAckedSegment);
+                    YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:ackPacket sequenceNumber:_sendNextSequenceNumber];
+                    [self sendUnreliably:operation];
                     
                     [self transiteToState:kYRSessionStateConnected];
                 } else {
-                    YRPacketHeader outHeader = {0};
-                    
-                    outHeader.packetDescription = YRPacketDescriptionSYN | YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                    outHeader.sequenceNumber = _sendNextSequenceNumber;
-                    outHeader.headerLength = sizeof(YRPacketHeader);
-                    outHeader.ackNumber = _rcvLatestAckedSegment;
-                    
-                    outHeader.checksum = [self calculateChecksum:&outHeader];
-                    
-                    [self sendReliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                        sequenceNumber:outHeader.sequenceNumber]];
+                    YRPacketRef synAckPacket = YRPacketCreateSYN(_sendNextSequenceNumber, _rcvLatestAckedSegment, true);
+                    YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:synAckPacket sequenceNumber:_sendNextSequenceNumber];
+                    [self sendReliably:operation];
                     
                     [self transiteToState:kYRSessionStateConnecting];
                 }
                 
-                return;
+                break;
             }
             
             break;
         case kYRSessionStateConnecting:
-            if (_rcvInitialSequenceNumber == header.sequenceNumber - 1) {
+            if (_rcvInitialSequenceNumber == sequenceNumber - 1) {
                 // Can process further.
             } else {
-                YRPacketHeader outHeader = {0};
+                YRPacketRef ackPacket = YRPacketCreateACK(_sendNextSequenceNumber, _rcvLatestAckedSegment);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:ackPacket sequenceNumber:_sendNextSequenceNumber];
                 
-                outHeader.packetDescription = YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = _sendNextSequenceNumber;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                outHeader.ackNumber = _rcvLatestAckedSegment;
+                [self sendUnreliably:operation];
                 
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
-                
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionSYN) {
-                YRPacketHeader outHeader = {0};
+            if (isSYN) {
+                YRSequenceNumberType seqNumberToRespond = hasACK ? ackNumber + 1 : 0;
+                YRPacketRef rstPacket = YRPacketCreateRST(seqNumberToRespond, 0, false);
                 
-                outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = (header.packetDescription & YRPacketDescriptionACK) ? header.ackNumber + 1 : 0;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:seqNumberToRespond];
+                [self sendUnreliably:operation];
 
                 [_sessionLogger logError:@"Connection reset!"];
                 
                 [self transiteToState:kYRSessionStateClosed];
-                return;
+                break;
             }
 
             // Not supported in v1
@@ -367,43 +317,33 @@ static uint16_t const kYRProtocolVersion = 0x0001;
 //                return;
 //            }
             
-            if (header.packetDescription & YRPacketDescriptionACK) {
-                if (header.ackNumber == _sendInitialSequenceNumber) {
-                    for (uint16_t i = _sendLatestUnackSegment; i < header.ackNumber + 1; i++) {
+            if (hasACK) {
+                if (ackNumber == _sendInitialSequenceNumber) {
+                    for (uint16_t i = _sendLatestUnackSegment; i < ackNumber + 1; i++) {
                         [_sendQueue[i] end];
                         _sendQueue[i] = [NSNull null];
                     }
 
-                    _sendLatestUnackSegment = header.ackNumber + 1;
+                    _sendLatestUnackSegment = ackNumber + 1;
                     
                     [self transiteToState:kYRSessionStateConnected];
                 } else {
-                    YRPacketHeader outHeader = {0};
+                    YRSequenceNumberType seqNumber = ackNumber + 1;
+                    YRPacketRef rstPacket = YRPacketCreateRST(seqNumber, 0, false);
+                    YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:seqNumber];
                     
-                    outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                    outHeader.sequenceNumber = header.ackNumber + 1;
-                    outHeader.headerLength = sizeof(YRPacketHeader);
-                    
-                    outHeader.checksum = [self calculateChecksum:&outHeader];
-                    
-                    [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                        sequenceNumber:outHeader.sequenceNumber]];
+                    [self sendUnreliably:operation];
                 }
             } else {
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionNUL) {
-                YRPacketHeader outHeader = {0};
+            if (isNUL) {
+                YRSequenceNumberType seqNumber = ackNumber + 1;
+                YRPacketRef rstPacket = YRPacketCreateRST(seqNumber, 0, false);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:seqNumber];
                 
-                outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = (header.packetDescription & YRPacketDescriptionACK) ? header.ackNumber + 1 : 0;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
+                [self sendUnreliably:operation];
             }
             
             // No data should be received in this state. (v1)
@@ -424,81 +364,62 @@ static uint16_t const kYRProtocolVersion = 0x0001;
             
             break;
         case kYRSessionStateConnected:
-            if (_rcvLatestAckedSegment == header.sequenceNumber - 1) {
+            if (_rcvLatestAckedSegment == sequenceNumber - 1) {
                 // Can process further.
             } else {
-                YRPacketHeader outHeader = {0};
+                YRPacketRef ackPacket = YRPacketCreateACK(_sendNextSequenceNumber, _rcvLatestAckedSegment);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:ackPacket sequenceNumber:_sendNextSequenceNumber];
                 
-                outHeader.packetDescription = YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = _sendNextSequenceNumber;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                outHeader.ackNumber = _rcvLatestAckedSegment;
+                [self sendUnreliably:operation];
                 
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionRST) {
+            if (isRST) {
                 // signal: connection reset
                 [_disconnectingTimer invalidate];
                 _disconnectingTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self
                     selector:@selector(handleDisconnectTimeout:) userInfo:nil repeats:NO];
                 
                 [self transiteToState:kYRSessionStateDisconnecting];
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionNUL) {
-                _rcvLatestAckedSegment = header.sequenceNumber;
-                
-                YRPacketHeader outHeader = {0};
-                
-                outHeader.packetDescription = YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = _sendNextSequenceNumber;
-                outHeader.headerLength = sizeof(YRPacketHeader);
-                outHeader.ackNumber = _rcvLatestAckedSegment;
-                
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
+            if (isNUL) {
+                _rcvLatestAckedSegment = sequenceNumber;
+                YRPacketRef ackPacket = YRPacketCreateACK(_sendNextSequenceNumber, _rcvLatestAckedSegment);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:ackPacket sequenceNumber:_sendNextSequenceNumber];
 
-                return;
+                [self sendUnreliably:operation];
+
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionSYN) {
+            if (isSYN) {
                 // + snd: RST
-                YRPacketHeader outHeader = {0};
+                YRSequenceNumberType seqNumber = hasACK ? ackNumber + 1 : 0;
+                YRPacketRef rstPacket = YRPacketCreateRST(seqNumber, 0, false);
+                YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:rstPacket sequenceNumber:seqNumber];
                 
-                outHeader.packetDescription = YRPacketDescriptionRST | (kYRProtocolVersion << 6);
-                outHeader.sequenceNumber = (header.packetDescription & YRPacketDescriptionACK) ? header.ackNumber + 1 : 0;
-                outHeader.headerLength = sizeof(YRPacketHeader);
+                [self sendUnreliably:operation];
                 
-                outHeader.checksum = [self calculateChecksum:&outHeader];
-                
-                [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                    sequenceNumber:outHeader.sequenceNumber]];
-
                 // call: connection reset
                 [self transiteToState:kYRSessionStateClosed];
                 
-                return;
+                break;
             }
             
-            if (header.packetDescription & YRPacketDescriptionACK) {
-                if (_sendLatestUnackSegment <= header.ackNumber &&
-                    header.ackNumber < _sendNextSequenceNumber) {
+            if (hasACK) {
+                if (_sendLatestUnackSegment <= ackNumber &&
+                    ackNumber < _sendNextSequenceNumber) {
 
                     // queue: flush.
-                    for (uint16_t i = _sendLatestUnackSegment; i < header.ackNumber + 1; i++) {
+                    for (uint16_t i = _sendLatestUnackSegment; i < ackNumber + 1; i++) {
                         [_sendQueue[i] end];
                         _sendQueue[i] = [NSNull null];
                     }
                     
-                    _sendLatestUnackSegment = header.ackNumber + 1;
+                    _sendLatestUnackSegment = ackNumber + 1;
                 }
             }
 
@@ -507,25 +428,26 @@ static uint16_t const kYRProtocolVersion = 0x0001;
 //                // queue: flush
 //            }
             
-            if (header.dataLength > 0) {
-                if (header.sequenceNumber == _rcvLatestAckedSegment + 1) {
-                    _rcvLatestAckedSegment = header.sequenceNumber;
+            if (YRPacketHeaderGetPayloadLength(receivedHeader) > 0) {
+                if (sequenceNumber == _rcvLatestAckedSegment + 1) {
+                    _rcvLatestAckedSegment = sequenceNumber;
                     // + snd: ACK
-                    YRPacketHeader outHeader = {0};
+                    YRPacketRef ackPacket = YRPacketCreateACK(_sendNextSequenceNumber, _rcvLatestAckedSegment);
+                    YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:ackPacket sequenceNumber:_sendNextSequenceNumber];
                     
-                    outHeader.packetDescription = YRPacketDescriptionACK | (kYRProtocolVersion << 6);
-                    outHeader.sequenceNumber = _sendNextSequenceNumber;
-                    outHeader.headerLength = sizeof(YRPacketHeader);
-                    outHeader.ackNumber = _rcvLatestAckedSegment;
+                    [self sendUnreliably:operation];
                     
-                    outHeader.checksum = [self calculateChecksum:&outHeader];
+                    // Do callout with data.
+                    YRPayloadLengthType payloadLength = 0;
+                    void *rawPayload = YRPacketGetPayload(receivedPacket, &payloadLength);
                     
-                    [self sendUnreliably:[[YRSendOperation alloc] initWithData:[NSData dataWithBytes:&outHeader length:sizeof(outHeader)]
-                        sequenceNumber:outHeader.sequenceNumber]];
-                    
-                    // Copy data
-                    NSData *rawPacketData = [data subdataWithRange:(NSRange){outHeader.headerLength, outHeader.dataLength}];
-                    _sessionContext.receiveCallout(self, rawPacketData);
+                    if (rawPayload) {
+                        NSData *rawPacketData = [NSData dataWithBytesNoCopy:rawPayload length:payloadLength];
+                        
+                        _sessionContext.receiveCallout(self, rawPacketData);
+                    } else {
+                        // TODO: Packet is not valid? It must be valid if we get here!
+                    }
                 } else {
                     // Not supported in v1
                     // Buffer data
@@ -535,17 +457,19 @@ static uint16_t const kYRProtocolVersion = 0x0001;
             
             break;
         case kYRSessionStateDisconnecting:
-            if (header.packetDescription & YRPacketDescriptionRST) {
+            if (isRST) {
                 [_disconnectingTimer invalidate];
                 
                 [self transiteToState:kYRSessionStateClosed];
             }
             break;
         default:
-            [_sessionLogger logError:@"[RCV_REQ]: <FATAL> Can't handle incoming packet because state is not defined: %d", self.state];
+            [_sessionLogger logError:@"[RCV_REQ] <FATAL> Can't handle incoming packet because state is not defined: %d", self.state];
             NSAssert(NO, @"Can't handle incoming packet because state is not defined: %d", self.state);
             break;
     }
+    
+    YRPacketDestroy(receivedPacket);
 }
 
 - (void)send:(NSData *)data {
@@ -553,25 +477,11 @@ static uint16_t const kYRProtocolVersion = 0x0001;
         // TODO: Error
         return;
     }
-    
-    [_sessionLogger logInfo:@"[SEND_REQ] (%@) Packet: %@", [self humanReadableState:self.state], data];
-    
-    YRPacketHeader header = {0};
-    
-    header.packetDescription = YRPacketDescriptionACK | kYRProtocolVersion << 6;
-    header.headerLength = sizeof(header);
-    header.sequenceNumber = _sendNextSequenceNumber;
-    header.ackNumber = _rcvLatestAckedSegment;
-    header.dataLength = data.length;
 
-    header.checksum = [self calculateChecksum:&header];
-    
-    NSMutableData *rawData = [NSMutableData new];
-    
-    [rawData appendBytes:&header length:sizeof(header)];
-    [rawData appendData:data];
+    [_sessionLogger logInfo:@"[SEND_REQ] (%@)", [self humanReadableState:self.state]];
 
-    YRSendOperation *operation = [[YRSendOperation alloc] initWithData:[rawData copy] sequenceNumber:_sendNextSequenceNumber];
+    YRPacketRef packet = YRPacketCreateWithPayload(_sendNextSequenceNumber, _rcvLatestAckedSegment, data.bytes, data.length);
+    YRSendOperation *operation = [[YRSendOperation alloc] initWithPacket:packet sequenceNumber:_sendNextSequenceNumber];
 
     _sendNextSequenceNumber++;
     
@@ -608,102 +518,85 @@ static uint16_t const kYRProtocolVersion = 0x0001;
  *  Ensures that data length matches correctly /=> ignore.
  *  Strictly speaking that ensures that packet is valid and can't break RUDP logic.
  */
-- (BOOL)checkIfPacketValid:(NSData *)packet outHeader:(YRPacketHeader *)outHeader shouldResetConnection:(BOOL *)shouldReset {
-    // Fill buffer with zeroes
-    char packetBuffer[kYRMaxSequenceCount] = {0};
-    char headerBuffer[kYRMaxSequenceCount] = {0};
-    
-    BOOL stubShouldReset = NO;
-    BOOL *ensuredShouldResetPointer = shouldReset;
-
-    if (!ensuredShouldResetPointer) {
-        ensuredShouldResetPointer = &stubShouldReset;
-    }
-
-    // Verify that received packet size doesn't exceed maximum packet size.
-    if (packet.length > kYRMaxSequenceCount) {
-        // Packet size exceeds maximum segment size.
-        [_sessionLogger logError:@"[PACK_VAL]: Packet size exceeds maximum segment size!"];
-        
-        *ensuredShouldResetPointer = YES;
-        return NO;
-    }
-
-    // Verify that packet size is not less than header size.
-    if (packet.length < YRMinimumPacketHeaderSize) {
-        // Received packet that has less bytes than regular packet header.
-        [_sessionLogger logWarning:@"[PACK_VAL]: Packet size less than packet header!"];
-        
-        return NO;
-    }
-
-    // Get raw packet data.
-    [packet getBytes:packetBuffer range:(NSRange){0, packet.length}];
-
-    uint8_t headerLength = ((YRPacketHeader *)packetBuffer)->headerLength;
-
-    if (headerLength < YRMinimumPacketHeaderSize) {
-        // Received packet has incorrect header length specified.
-        [_sessionLogger logWarning:@"[PACK_VAL]: Header length is incorrect!"];
-        
-        return 0;
-    }
-
-    [packet getBytes:headerBuffer range:(NSRange){0, headerLength}];
-
-    YRPacketHeader *header = (YRPacketHeader *)headerBuffer;
-
-    // Verify checksum.
-    uint32_t checksum = [self calculateChecksum:header];
-
-    if (checksum != header->checksum) {
-        // Checksum mismatch.
-        [_sessionLogger logWarning:@"[PACK_VAL]: Checksum mismatch!"];
-        
-        return NO;
-    }
-
-    // Verify protocol version.
-    if (((header->packetDescription & YRPacketDescriptionProtocolVersionMask) >> 6) != kYRProtocolVersion) {
-        // Protocol version doesn't match.
-        [_sessionLogger logError:@"[PACK_VAL]: Protocol mismatch!"];
-
-        *ensuredShouldResetPointer = YES;
-        return NO;
-    }
-
-    // Verify data length.
-    if ((header->headerLength + header->dataLength) > packet.length) {
-        // Invalid sizes provided.
-        
-        [_sessionLogger logWarning:@"[PACK_VAL]: Header/data sizes mismatch!"];
-
-        return NO;
-    }
-
-    if (outHeader) {
-        memcpy(outHeader, header, headerLength);
-    }
-
-    return YES;
-}
-
-- (uint32_t)calculateChecksum:(YRPacketHeader *)header {
-    uint32_t candidateChecksum = header->checksum;
-    header->checksum = 0;
-    
-    uint32_t checksum = 0;
-    uint32_t *headerPointer = (uint32_t *)header;
-    
-    for (; headerPointer < (uint32_t *)((char *)header + header->headerLength); headerPointer++) {
-        checksum += *headerPointer;
-        checksum <<= 1;
-    }
-    
-    header->checksum = candidateChecksum;
-    
-    return checksum;
-}
+//- (BOOL)checkIfPacketValid:(NSData *)packet outHeader:(YRPacketHeader *)outHeader shouldResetConnection:(BOOL *)shouldReset {
+//    // Fill buffer with zeroes
+//    char packetBuffer[kYRMaxPacketSize] = {0};
+//    char headerBuffer[kYRMaxPacketSize] = {0};
+//
+//    BOOL stubShouldReset = NO;
+//    BOOL *ensuredShouldResetPointer = shouldReset;
+//
+//    if (!ensuredShouldResetPointer) {
+//        ensuredShouldResetPointer = &stubShouldReset;
+//    }
+//
+//    // Verify that received packet size doesn't exceed maximum packet size.
+//    if (packet.length > kYRMaxPacketSize) {
+//        // Packet size exceeds maximum segment size.
+//        [_sessionLogger logError:@"[PACK_VAL]: Packet size exceeds maximum segment size!"];
+//
+//        *ensuredShouldResetPointer = YES;
+//        return NO;
+//    }
+//
+//    // Verify that packet size is not less than header size.
+//    if (packet.length < YRMinimumPacketHeaderSize) {
+//        // Received packet that has less bytes than regular packet header.
+//        [_sessionLogger logWarning:@"[PACK_VAL]: Packet size less than packet header!"];
+//
+//        return NO;
+//    }
+//
+//    // Get raw packet data.
+//    [packet getBytes:packetBuffer range:(NSRange){0, packet.length}];
+//
+//    uint8_t headerLength = ((YRPacketHeader *)packetBuffer)->headerLength;
+//
+//    if (headerLength < YRMinimumPacketHeaderSize) {
+//        // Received packet has incorrect header length specified.
+//        [_sessionLogger logWarning:@"[PACK_VAL]: Header length is incorrect!"];
+//
+//        return 0;
+//    }
+//
+//    [packet getBytes:headerBuffer range:(NSRange){0, headerLength}];
+//
+//    YRPacketHeader *header = (YRPacketHeader *)headerBuffer;
+//
+//    // Verify checksum.
+//    uint32_t checksum = [self calculateChecksum:header];
+//
+//    if (checksum != header->checksum) {
+//        // Checksum mismatch.
+//        [_sessionLogger logWarning:@"[PACK_VAL]: Checksum mismatch!"];
+//
+//        return NO;
+//    }
+//
+//    // Verify protocol version.
+//    if (((header->packetDescription & YRPacketDescriptionProtocolVersionMask) >> 6) != kYRProtocolVersion) {
+//        // Protocol version doesn't match.
+//        [_sessionLogger logError:@"[PACK_VAL]: Protocol mismatch!"];
+//
+//        *ensuredShouldResetPointer = YES;
+//        return NO;
+//    }
+//
+//    // Verify data length.
+//    if ((header->headerLength + header->dataLength) > packet.length) {
+//        // Invalid sizes provided.
+//
+//        [_sessionLogger logWarning:@"[PACK_VAL]: Header/data sizes mismatch!"];
+//
+//        return NO;
+//    }
+//
+//    if (outHeader) {
+//        memcpy(outHeader, header, headerLength);
+//    }
+//
+//    return YES;
+//}
 
 - (void)transiteToState:(YRSessionState)state {
     if (_state != state) {
@@ -715,6 +608,8 @@ static uint16_t const kYRProtocolVersion = 0x0001;
 }
 
 - (void)sendReliably:(YRSendOperation *)operation {
+    YRPacketCopyPayloadInline(operation.packet);
+    
     _sendQueue[operation.sequenceNumber] = operation;
 
     [operation start];
@@ -723,19 +618,35 @@ static uint16_t const kYRProtocolVersion = 0x0001;
     __typeof(YRLogger *) __weak weakLogger = _sessionLogger;
     
     operation.onTransmissionTimeout = ^(YRSendOperation *operation) {
-        [weakLogger logInfo:@"[SEND_TIM]: Seq#: %d, Data: %@.", operation.sequenceNumber, operation.data];
+        [weakLogger logInfo:@"[SEND_TIM]: Header: %@.", [YRDebugUtils packetHeaderShortDescription:YRPacketGetHeader(operation.packet)]];
         
         [weakSelf sendReliably:operation];
     };
     
-    [_sessionLogger logInfo:@"[SEND_REL]: Seq#: %d, Data: %@.", operation.sequenceNumber, operation.data];
-    _sessionContext.sendCallout(self, operation.data);
+    [_sessionLogger logInfo:@"[SEND_REL]: Header: %@", [YRDebugUtils packetHeaderShortDescription:YRPacketGetHeader(operation.packet)]];
+    
+    [self doSend:operation];
 }
 
 - (void)sendUnreliably:(YRSendOperation *)operation {
-    [_sessionLogger logInfo:@"[SEND_UNR]: Seq#: %d, Data: %@.", operation.sequenceNumber, operation.data];
+    [_sessionLogger logInfo:@"[SEND_UNR]: Header: %@.", [YRDebugUtils packetHeaderShortDescription:YRPacketGetHeader(operation.packet)]];
+
+    [self doSend:operation];
+}
+
+- (void)doSend:(YRSendOperation *)operation {
+    YRPayloadLengthType packetLength = YRPacketGetLength(operation.packet);
     
-    _sessionContext.sendCallout(self, operation.data);
+    uint8_t outputStreamBuffer[kYRLightweightOutputStreamSize];
+    uint8_t packetBuffer[packetLength];
+    
+    YRLightweightOutputStreamRef outputStream = YRLightweightOutputStreamCreateAt(packetBuffer, packetLength, outputStreamBuffer);
+    
+    YRPacketSerialize(operation.packet, outputStream);
+    
+    NSData* data = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(outputStream) length:packetLength freeWhenDone:NO];
+    
+    _sessionContext.sendCallout(self, data);
 }
 
 @end

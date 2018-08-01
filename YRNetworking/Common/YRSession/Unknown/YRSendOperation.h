@@ -7,17 +7,18 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "YRPacket.h"
 
 @interface YRSendOperation : NSObject
 
 @property (nonatomic, readonly) uint32_t sequenceNumber;
-@property (nonatomic, readonly) NSData *data;
+@property (nonatomic, readonly) YRPacketRef packet;
 
 @property (nonatomic, readonly) uint8_t retransmissionCount;
 
 @property (nonatomic, copy) void (^onTransmissionTimeout) (YRSendOperation *operation);
 
-- (instancetype)initWithData:(NSData *)data sequenceNumber:(uint32_t)sequenceNumber;
+- (instancetype)initWithPacket:(YRPacketRef)packet sequenceNumber:(uint32_t)sequenceNumber;
 
 - (void)start;
 - (void)end;

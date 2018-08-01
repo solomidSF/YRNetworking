@@ -76,19 +76,19 @@
     _isAcceptingNewConnections = NO;
 }
 
-- (void)disconnectClient:(YRUDPConnectedClient *)client {
-
-}
-
-#pragma mark - Sending
-
-- (void)sendReliably:(id)data to:(YRUDPConnectedClient *)client {
-    
-}
-
-- (void)sendUnreliably:(id)data to:(YRUDPConnectedClient *)client {
-    
-}
+//- (void)disconnectClient:(YRUDPConnectedClient *)client {
+//
+//}
+//
+//#pragma mark - Sending
+//
+//- (void)sendReliably:(id)data to:(YRUDPConnectedClient *)client {
+//
+//}
+//
+//- (void)sendUnreliably:(id)data to:(YRUDPConnectedClient *)client {
+//
+//}
 
 #pragma mark - Private
 
@@ -154,7 +154,7 @@
         }
         
         NSLog(@"[YRUDPServer]: Will send data: %@ with tag %ld", dataToSend, strongSelf->_currentTag);
-        [strongSelf->_socket sendData:dataToSend toAddress:session.peerAddress withTimeout:0 tag:strongSelf->_currentTag];
+        [strongSelf->_socket sendData:[NSData dataWithBytes:dataToSend.bytes length:dataToSend.length] toAddress:session.peerAddress withTimeout:0 tag:strongSelf->_currentTag];
         strongSelf->_currentTag++;
     };
 

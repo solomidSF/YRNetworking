@@ -8,8 +8,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "YRUDPConnectedClient.h"
-
 typedef enum {
     YRUDPServerNotReady,
     YRUDPServerReady,
@@ -21,12 +19,12 @@ typedef enum {
 @property (nonatomic) uint32_t maxConnections;
 
 @property (nonatomic, copy) void (^onSocketDidClose) (YRUDPServer *server, NSError *error);
-@property (nonatomic, copy) void (^onClientConnected) (YRUDPServer *server, YRUDPConnectedClient *client);
-@property (nonatomic, copy) void (^onClientRejected) (YRUDPServer *server, YRUDPConnectedClient *client);
-@property (nonatomic, copy) void (^onClientDisconnected) (YRUDPServer *server, YRUDPConnectedClient *client);
+//@property (nonatomic, copy) void (^onClientConnected) (YRUDPServer *server, YRUDPConnectedClient *client);
+//@property (nonatomic, copy) void (^onClientRejected) (YRUDPServer *server, YRUDPConnectedClient *client);
+//@property (nonatomic, copy) void (^onClientDisconnected) (YRUDPServer *server, YRUDPConnectedClient *client);
 
 @property (nonatomic, readonly) BOOL isAcceptingNewConnections;
-@property (nonatomic, readonly) NSArray <YRUDPConnectedClient *> *clients;
+//@property (nonatomic, readonly) NSArray <YRUDPConnectedClient *> *clients;
 
 + (instancetype)server;
 + (instancetype)serverWithPort:(uint32_t)port;
@@ -38,11 +36,11 @@ typedef enum {
 - (void)continueAcceptingNewConnections;
 - (void)stopAcceptingNewConnections;
 
-- (void)disconnectClient:(YRUDPConnectedClient *)client;
+//- (void)disconnectClient:(YRUDPConnectedClient *)client;
 
 #pragma mark - Sending
 
-- (void)sendReliably:(id)data to:(YRUDPConnectedClient *)client;
-- (void)sendUnreliably:(id)data to:(YRUDPConnectedClient *)client;
+//- (void)sendReliably:(id)data to:(YRUDPConnectedClient *)client;
+//- (void)sendUnreliably:(id)data to:(YRUDPConnectedClient *)client;
 
 @end

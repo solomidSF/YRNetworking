@@ -120,7 +120,8 @@
         
         strongSelf->_logTextView.string = [strongSelf->_logTextView.string stringByAppendingFormat:@"\nAsked to send: %@", data];
         
-        [strongSelf->_sock sendData:data toAddress:address withTimeout:-1 tag:tag++];
+        // GCD goes async on it's own queue and data is created on stack!
+        [strongSelf->_sock sendData:[NSData dataWithBytes:data.bytes length:data.length] toAddress:address withTimeout:-1 tag:tag++];
     };
     
     _client = [[YRSession alloc] initWithContext:ctx];

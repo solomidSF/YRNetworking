@@ -32,6 +32,6 @@
 
 @property (nonatomic, readonly) NSData* peerAddress;
 
-- (instancetype)initWithSYNPacket:(YRSYNPacketHeader)header address:(NSData*)address;
+//- (instancetype)initWithSYNPacket:(YRSYNPacketHeader)header address:(NSData*)address;
 
 @end
