@@ -25,12 +25,13 @@ typedef uint8_t YRSequenceNumberType;
 typedef uint16_t YRPayloadLengthType;
 typedef uint32_t YRChecksumType;
 
+// TODO: Move to another place?
 extern YRProtocolVersionType const kYRProtocolVersion;
+
+#define YRMaximumPacketHeaderSize ((YRHeaderLengthType)(~0))
 
 extern YRHeaderLengthType const kYRPacketHeaderSYNLength;
 extern YRHeaderLengthType const kYRPacketHeaderGenericLength;
-
-#define YRMaximumPacketHeaderSize ((YRHeaderLengthType)(~0) + 1)
 
 enum YRPacketDescription {
     // Synchronization segment. Mutually exclusive with RST && NUL.
@@ -54,7 +55,15 @@ typedef struct YRPacketHeaderSYN *YRPacketHeaderSYNRef;
 typedef struct YRPacketHeaderRST *YRPacketHeaderRSTRef;
 typedef struct YRPacketHeaderEACK *YRPacketHeaderEACKRef;
 
-YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *sequences, YRSequenceNumberType count);
+/**
+ *  Determines how much bytes needed to fit given eacks. (Note: Maximum header size is 255, so on return ioCount will contain how much eacks can be set to header)
+ */
+YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount);
+
+/**
+ *  Determines how much eack's can fit into given length.
+ */
+YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength);
 
 #pragma mark - Configuration
 
@@ -92,5 +101,10 @@ YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header);
 // RST Header
 
 // EACK Header
+
+void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacks, YRSequenceNumberType eacksCount);
+
+YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader);
+YRSequenceNumberType *YRPacketHeaderGetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacksCount);
 
 #endif /* YRPacketHeader_h */

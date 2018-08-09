@@ -7,6 +7,21 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7D32E861211CE48C00269410 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
+		7D32E862211CE49300269410 /* YRSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83C20F51A1900FC7997 /* YRSession.m */; };
+		7D32E863211CE49800269410 /* YRSessionContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */; };
+		7D32E864211CE4CA00269410 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
+		7D32E865211CE4CA00269410 /* YRDebugUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6C20FE923A00575665 /* YRDebugUtils.m */; };
+		7D32E866211CE4CA00269410 /* YRPacketHeader.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6920FE7BF300575665 /* YRPacketHeader.c */; };
+		7D32E867211CE4CA00269410 /* YRPacket.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA852103738200575665 /* YRPacket.c */; };
+		7D32E868211CE4CA00269410 /* YRLightweightInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6F20FFA87700575665 /* YRLightweightInputStream.c */; };
+		7D32E869211CE4CA00269410 /* YRLightweightOutputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA7320FFA88F00575665 /* YRLightweightOutputStream.c */; };
+		7D32E86A211CE4CA00269410 /* YRReceiveOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */; };
+		7D32E86B211CE4CA00269410 /* YRSendOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84320F51A1900FC7997 /* YRSendOperation.m */; };
+		7D32E86C211CE4DD00269410 /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9106C920EE902C00974F48 /* GCDAsyncUdpSocket.m */; };
+		7D32E86D211CE4DD00269410 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9106CA20EE902C00974F48 /* GCDAsyncSocket.m */; };
+		7D32E86E211CE50000269410 /* YRPacketHeaderTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B8B2118928700486DA4 /* YRPacketHeaderTests.m */; };
+		7D32E86F211CE53E00269410 /* YRSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B7A21123CDB00486DA4 /* YRSessionTests.m */; };
 		7D46DA6A20FE7BF300575665 /* YRPacketHeader.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6920FE7BF300575665 /* YRPacketHeader.c */; };
 		7D46DA6D20FE923A00575665 /* YRDebugUtils.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6C20FE923A00575665 /* YRDebugUtils.m */; };
 		7D46DA7020FFA87700575665 /* YRLightweightInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA6F20FFA87700575665 /* YRLightweightInputStream.c */; };
@@ -33,14 +48,23 @@
 		7DA6E85620F51A1900FC7997 /* YRSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83C20F51A1900FC7997 /* YRSession.m */; };
 		7DA6E85720F51A1900FC7997 /* YRSessionContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */; };
 		7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84320F51A1900FC7997 /* YRSendOperation.m */; };
-		7DA6E85920F51A1900FC7997 /* YRSendingPacketsQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84520F51A1900FC7997 /* YRSendingPacketsQueue.m */; };
-		7DA6E85B20F51A1900FC7997 /* YRPacketsQueue.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84720F51A1900FC7997 /* YRPacketsQueue.m */; };
 		7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */; };
 		7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1A20FA982700486ED9 /* ClientViewController.m */; };
 		7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1D20FA983500486ED9 /* ServerViewController.m */; };
 		7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
 		7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
+		7DEB3B7F2113516200486DA4 /* YRReceiveOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7DEB3B7521123B1500486DA4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7D91067520EE897700974F48 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7D91067C20EE897700974F48;
+			remoteInfo = YRNetworkingDemo;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		7D46DA6920FE7BF300575665 /* YRPacketHeader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketHeader.c; sourceTree = "<group>"; };
@@ -106,12 +130,8 @@
 		7DA6E83C20F51A1900FC7997 /* YRSession.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSession.m; sourceTree = "<group>"; };
 		7DA6E83D20F51A1900FC7997 /* YRSessionContext.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSessionContext.m; sourceTree = "<group>"; };
 		7DA6E83E20F51A1900FC7997 /* YRSession.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSession.h; sourceTree = "<group>"; };
-		7DA6E84120F51A1900FC7997 /* YRPacketsQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRPacketsQueue.h; sourceTree = "<group>"; };
 		7DA6E84320F51A1900FC7997 /* YRSendOperation.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSendOperation.m; sourceTree = "<group>"; };
-		7DA6E84520F51A1900FC7997 /* YRSendingPacketsQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRSendingPacketsQueue.m; sourceTree = "<group>"; };
-		7DA6E84720F51A1900FC7997 /* YRPacketsQueue.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRPacketsQueue.m; sourceTree = "<group>"; };
 		7DA6E84920F51A1900FC7997 /* YRSendOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSendOperation.h; sourceTree = "<group>"; };
-		7DA6E84A20F51A1900FC7997 /* YRSendingPacketsQueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSendingPacketsQueue.h; sourceTree = "<group>"; };
 		7DA6E84B20F51A1900FC7997 /* YRSessionContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRSessionContext.h; sourceTree = "<group>"; };
 		7DA6E84E20F51A1900FC7997 /* YRUDPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRUDPClient.h; sourceTree = "<group>"; };
 		7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRUDPClient.m; sourceTree = "<group>"; };
@@ -125,6 +145,13 @@
 		7DC4EB2320FB537500486ED9 /* YRSharedLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSharedLogger.h; sourceTree = "<group>"; };
 		7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSharedLogger.m; sourceTree = "<group>"; };
 		7DC4EB2620FB8B7400486ED9 /* YRPacketHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketHeader.h; sourceTree = "<group>"; };
+		7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YRNetworkingDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		7DEB3B7221123B1500486DA4 /* YRNetworkingDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRNetworkingDemoTests.m; sourceTree = "<group>"; };
+		7DEB3B7421123B1500486DA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		7DEB3B7A21123CDB00486DA4 /* YRSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSessionTests.m; sourceTree = "<group>"; };
+		7DEB3B7D2113516200486DA4 /* YRReceiveOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRReceiveOperation.h; sourceTree = "<group>"; };
+		7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRReceiveOperation.m; sourceTree = "<group>"; };
+		7DEB3B8B2118928700486DA4 /* YRPacketHeaderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRPacketHeaderTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -136,6 +163,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		7DA6E80920F3F4E200FC7997 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7DEB3B6D21123B1500486DA4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -181,6 +215,7 @@
 				7DA6E82B20F51A1900FC7997 /* YRNetworking */,
 				7D91067F20EE897700974F48 /* YRNetworkingDemo */,
 				7DA6E80D20F3F4E200FC7997 /* YRNetworkingDemoiOS */,
+				7DEB3B7121123B1500486DA4 /* YRNetworkingDemoTests */,
 				7D91067E20EE897700974F48 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -190,6 +225,7 @@
 			children = (
 				7D91067D20EE897700974F48 /* YRNetworkingDemo.app */,
 				7DA6E80C20F3F4E200FC7997 /* YRNetworkingDemoiOS.app */,
+				7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -309,6 +345,7 @@
 				7DA6E83420F51A1900FC7997 /* Common */,
 				7DA6E82E20F51A1900FC7997 /* Server */,
 				7DA6E84D20F51A1900FC7997 /* Client */,
+				7DEB3B6B21123AC800486DA4 /* Tests */,
 			);
 			path = YRNetworking;
 			sourceTree = "<group>";
@@ -340,7 +377,7 @@
 				7D46DA882107AD0B00575665 /* Types */,
 				7D46DA872107ABEB00575665 /* Core */,
 				7D46DA7120FFA87E00575665 /* Streams */,
-				7DA6E84020F51A1900FC7997 /* Unknown */,
+				7DA6E84020F51A1900FC7997 /* Temp */,
 				7DC4EB1820FA923C00486ED9 /* YRSessionState.h */,
 				7DA6E83E20F51A1900FC7997 /* YRSession.h */,
 				7DA6E83C20F51A1900FC7997 /* YRSession.m */,
@@ -350,17 +387,15 @@
 			path = YRSession;
 			sourceTree = "<group>";
 		};
-		7DA6E84020F51A1900FC7997 /* Unknown */ = {
+		7DA6E84020F51A1900FC7997 /* Temp */ = {
 			isa = PBXGroup;
 			children = (
-				7DA6E84A20F51A1900FC7997 /* YRSendingPacketsQueue.h */,
-				7DA6E84520F51A1900FC7997 /* YRSendingPacketsQueue.m */,
-				7DA6E84120F51A1900FC7997 /* YRPacketsQueue.h */,
-				7DA6E84720F51A1900FC7997 /* YRPacketsQueue.m */,
+				7DEB3B7D2113516200486DA4 /* YRReceiveOperation.h */,
+				7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */,
 				7DA6E84920F51A1900FC7997 /* YRSendOperation.h */,
 				7DA6E84320F51A1900FC7997 /* YRSendOperation.m */,
 			);
-			path = Unknown;
+			path = Temp;
 			sourceTree = "<group>";
 		};
 		7DA6E84D20F51A1900FC7997 /* Client */ = {
@@ -383,6 +418,24 @@
 				7D46DA6C20FE923A00575665 /* YRDebugUtils.m */,
 			);
 			path = Temp;
+			sourceTree = "<group>";
+		};
+		7DEB3B6B21123AC800486DA4 /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		7DEB3B7121123B1500486DA4 /* YRNetworkingDemoTests */ = {
+			isa = PBXGroup;
+			children = (
+				7DEB3B8B2118928700486DA4 /* YRPacketHeaderTests.m */,
+				7DEB3B7A21123CDB00486DA4 /* YRSessionTests.m */,
+				7DEB3B7221123B1500486DA4 /* YRNetworkingDemoTests.m */,
+				7DEB3B7421123B1500486DA4 /* Info.plist */,
+			);
+			path = YRNetworkingDemoTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -422,6 +475,24 @@
 			productReference = 7DA6E80C20F3F4E200FC7997 /* YRNetworkingDemoiOS.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7DEB3B6F21123B1500486DA4 /* YRNetworkingDemoTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7DEB3B7721123B1500486DA4 /* Build configuration list for PBXNativeTarget "YRNetworkingDemoTests" */;
+			buildPhases = (
+				7DEB3B6C21123B1500486DA4 /* Sources */,
+				7DEB3B6D21123B1500486DA4 /* Frameworks */,
+				7DEB3B6E21123B1500486DA4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7DEB3B7621123B1500486DA4 /* PBXTargetDependency */,
+			);
+			name = YRNetworkingDemoTests;
+			productName = YRNetworkingDemoTests;
+			productReference = 7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -442,6 +513,9 @@
 					7DA6E80B20F3F4E200FC7997 = {
 						CreatedOnToolsVersion = 9.4.1;
 					};
+					7DEB3B6F21123B1500486DA4 = {
+						CreatedOnToolsVersion = 9.4.1;
+					};
 				};
 			};
 			buildConfigurationList = 7D91067820EE897700974F48 /* Build configuration list for PBXProject "YRNetworkingDemo" */;
@@ -459,6 +533,7 @@
 			targets = (
 				7D91067C20EE897700974F48 /* YRNetworkingDemo */,
 				7DA6E80B20F3F4E200FC7997 /* YRNetworkingDemoiOS */,
+				7DEB3B6F21123B1500486DA4 /* YRNetworkingDemoTests */,
 			);
 		};
 /* End PBXProject section */
@@ -485,6 +560,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7DEB3B6E21123B1500486DA4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -492,20 +574,19 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7DA6E85B20F51A1900FC7997 /* YRPacketsQueue.m in Sources */,
 				7DA6E85620F51A1900FC7997 /* YRSession.m in Sources */,
 				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
 				7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */,
 				7D46DA7420FFA88F00575665 /* YRLightweightOutputStream.c in Sources */,
 				7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */,
 				7D91068D20EE897800974F48 /* main.m in Sources */,
+				7DEB3B7F2113516200486DA4 /* YRReceiveOperation.m in Sources */,
 				7D46DA6D20FE923A00575665 /* YRDebugUtils.m in Sources */,
 				7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */,
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
 				7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */,
 				7DA6E85420F51A1900FC7997 /* YRConfiguration.m in Sources */,
 				7DA6E85720F51A1900FC7997 /* YRSessionContext.m in Sources */,
-				7DA6E85920F51A1900FC7997 /* YRSendingPacketsQueue.m in Sources */,
 				7DA6E85020F51A1900FC7997 /* YRUDPServer.m in Sources */,
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,
 				7DA6E85320F51A1900FC7997 /* YRPeer.m in Sources */,
@@ -528,7 +609,37 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7DEB3B6C21123B1500486DA4 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7D32E86F211CE53E00269410 /* YRSessionTests.m in Sources */,
+				7D32E86E211CE50000269410 /* YRPacketHeaderTests.m in Sources */,
+				7D32E86C211CE4DD00269410 /* GCDAsyncUdpSocket.m in Sources */,
+				7D32E86D211CE4DD00269410 /* GCDAsyncSocket.m in Sources */,
+				7D32E864211CE4CA00269410 /* YRLogger.m in Sources */,
+				7D32E865211CE4CA00269410 /* YRDebugUtils.m in Sources */,
+				7D32E866211CE4CA00269410 /* YRPacketHeader.c in Sources */,
+				7D32E867211CE4CA00269410 /* YRPacket.c in Sources */,
+				7D32E868211CE4CA00269410 /* YRLightweightInputStream.c in Sources */,
+				7D32E869211CE4CA00269410 /* YRLightweightOutputStream.c in Sources */,
+				7D32E86A211CE4CA00269410 /* YRReceiveOperation.m in Sources */,
+				7D32E86B211CE4CA00269410 /* YRSendOperation.m in Sources */,
+				7D32E863211CE49800269410 /* YRSessionContext.m in Sources */,
+				7D32E862211CE49300269410 /* YRSession.m in Sources */,
+				7D32E861211CE48C00269410 /* YRSharedLogger.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7DEB3B7621123B1500486DA4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7D91067C20EE897700974F48 /* YRNetworkingDemo */;
+			targetProxy = 7DEB3B7521123B1500486DA4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		7D91068820EE897800974F48 /* Main.storyboard */ = {
@@ -742,6 +853,40 @@
 			};
 			name = Release;
 		};
+		7DEB3B7821123B1500486DA4 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = VTM47V39G2;
+				INFOPLIST_FILE = YRNetworkingDemoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = solomidSF.YRNetworkingDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7DEB3B7921123B1500486DA4 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = VTM47V39G2;
+				INFOPLIST_FILE = YRNetworkingDemoTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = solomidSF.YRNetworkingDemoTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -768,6 +913,15 @@
 			buildConfigurations = (
 				7DA6E81F20F3F4E500FC7997 /* Debug */,
 				7DA6E82020F3F4E500FC7997 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7DEB3B7721123B1500486DA4 /* Build configuration list for PBXNativeTarget "YRNetworkingDemoTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7DEB3B7821123B1500486DA4 /* Debug */,
+				7DEB3B7921123B1500486DA4 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

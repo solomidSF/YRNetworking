@@ -27,8 +27,8 @@ typedef struct YRPacket {
 
 #pragma mark - Prototypes
 
-inline YRPayloadLengthType YRPacketGenericLength(void);
-inline YRPayloadLengthType YRPacketGenericAlignedLength(void);
+static inline YRPayloadLengthType YRPacketGenericLength(void);
+static inline YRPayloadLengthType YRPacketGenericAlignedLength(void);
 void YRPacketFinalize(YRPacketRef packet);
 static inline YRChecksumType YRPacketCalculateChecksum(YRPacketRef packet);
 void *YRPacketGetPayloadPointer(YRPacketRef packet);
@@ -60,6 +60,20 @@ YRPayloadLengthType YRPacketNULLength() {
 
 YRPayloadLengthType YRPacketACKLength() {
     return YRPacketGenericAlignedLength();
+}
+
+YRPayloadLengthType YRPacketEACKLength(YRSequenceNumberType *ioSequencesCount) {
+    return YRPacketEACKLengthWithPayload(ioSequencesCount, 0);
+}
+
+YRPayloadLengthType YRPacketEACKLengthWithPayload(YRSequenceNumberType *ioSequencesCount, YRPayloadLengthType payloadLength) {
+    YRHeaderLengthType headerLength = YRPacketHeaderEACKLength(ioSequencesCount);
+
+    if (payloadLength > 0) {
+        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, 8) + payloadLength;
+    } else {
+        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, 4);
+    }
 }
 
 YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength) {
@@ -131,7 +145,38 @@ YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber, YRSequenceNumberTy
     return packet;
 }
 
-//YRPacketRef YRPacketHeaderCreateEACK();
+YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences, YRSequenceNumberType *ioSequencesCount) {
+    return YRPacketCreateEACKWithPayload(seqNumber, ackNumber, sequences, ioSequencesCount, NULL, 0);
+}
+
+YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences,
+    YRSequenceNumberType *ioSequencesCount, const void *payload, YRPayloadLengthType payloadLength) {
+    YRPacketRef packet = calloc(1, YRPacketEACKLengthWithPayload(ioSequencesCount, payloadLength));
+    YRPacketHeaderRef commonHeader = YRPacketGetHeader(packet);
+    YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)commonHeader;
+    
+    YRPacketHeaderSetSequenceNumber(commonHeader, seqNumber);
+    YRPacketHeaderSetAckNumber(commonHeader, ackNumber);
+    YRPacketHeaderSetHeaderLength(commonHeader, YRPacketHeaderEACKLength(ioSequencesCount));
+    
+    if (ioSequencesCount && *ioSequencesCount > 0) {
+        YRPacketHeaderSetEACKs(eackHeader, sequences, *ioSequencesCount);
+    }
+    
+    YRPacketHeaderSetPayloadLength(commonHeader, payloadLength);
+    
+    if (payloadLength > 0) {
+        memcpy(YRPacketGetPayloadStart(packet), payload, payloadLength);
+        YRPacketHeaderSetCHK(commonHeader);
+        
+        // Add ability to specify to copy bytes or to set as byref
+        //        YRPacketSetFlags(packet, YRPacketFlagIsByRef);
+    }
+    
+    YRPacketFinalize(packet);
+    
+    return packet;
+}
 
 YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, const void *payload, YRPayloadLengthType payloadLength) {
     YRPacketRef packet = calloc(1, YRPacketLengthForPayload(payloadLength));
@@ -188,7 +233,7 @@ void *YRPacketGetPayload(YRPacketRef packet, YRPayloadLengthType *outPayloadSize
 // TODO: Data structure length
 
 YRPayloadLengthType YRPacketGetLength(YRPacketRef packet) {
-    // TODO: Network length
+    // TODO: This is network length
     YRPacketHeaderRef header = YRPacketGetHeader(packet);
     
     YRHeaderLengthType headerLength = YRPacketHeaderGetHeaderLength(header);
@@ -207,10 +252,6 @@ bool YRPacketIsLogicallyValid(YRPacketRef packet) {
     if (YRPacketHeaderGetProtocolVersion(header) != kYRProtocolVersion) {
         return false;
     }
-
-//    if (YRPacketHeaderGetHeaderLength(header) < kYRPacketHeaderGenericLength) {
-//        return false;
-//    }
     
     if (YRPacketHeaderIsSYN(header)) {
         // TODO: Additional check for SYN header
@@ -251,7 +292,7 @@ bool YRPacketCanDeserializeFromStream(YRLightweightInputStreamRef stream) {
     YRHeaderLengthType headerLength = YRLightweightInputStreamReadInt8(stream);
     
     if (headerLength < kYRPacketHeaderGenericLength ||
-        headerLength < YRLightweightInputStreamSize(stream)) {
+        headerLength > YRLightweightInputStreamSize(stream)) {
         return false;
     }
     
@@ -260,9 +301,9 @@ bool YRPacketCanDeserializeFromStream(YRLightweightInputStreamRef stream) {
     
     // 3. Check if payload length matches.
     YRPayloadLengthType payloadLength = YRLightweightInputStreamReadInt16(stream);
-
-    // Checksum
-    YRLightweightInputStreamAdvanceBy(stream, sizeof(YRChecksumType));
+    
+    // Must always return true, because we checked that header length is not greater than stream size.
+    YRLightweightInputStreamSetIndexTo(stream, headerLength);
     
     YRPayloadLengthType realPayloadLength = 0;
     YRLightweightInputSteamMemalignCurrentPointer(stream, &realPayloadLength);
@@ -293,6 +334,16 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
     YRLightweightOutputStreamWriteInt8(stream, ackNumber);
     YRLightweightOutputStreamWriteInt16(stream, payloadLength);
     YRLightweightOutputStreamWriteInt32(stream, checksum);
+    
+    if (YRPacketHeaderHasEACK(header)) {
+        YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+        YRSequenceNumberType eacksCount = 0;
+        YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
+        
+        for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
+            YRLightweightOutputStreamWriteInt8(stream, eacks[i]);
+        }
+    }
     
     if (payloadLength > 0) {
         // Serialize data.
@@ -328,7 +379,20 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
     YRPacketHeaderSetPayloadLength(header, payloadLength);
     YRPacketHeaderSetChecksum(header, checksum);
     
+    if (YRPacketHeaderHasEACK(header)) {
+        // Stream currently points in eack area.
+        YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+        
+        YRSequenceNumberType eacksCount = YRPacketHeaderEACKsCountThatFit(headerLength - YRLightweightInputStreamCurrentIndex(stream));
+        YRPacketHeaderSetEACKs(eackHeader, YRLightweightInputStreamCurrentPointer(stream, NULL), eacksCount);
+    }
+
     if (payloadLength > 0) {
+        if (!YRLightweightInputStreamSetIndexTo(stream, headerLength)) {
+            // Failed to advance index to payload area while header reports that we have payload.
+            return NULL;
+        }
+        
         YRPayloadLengthType realPayloadLengthLeft = 0;
         uintptr_t *rawPayloadAddress = YRLightweightInputSteamMemalignCurrentPointer(stream, &realPayloadLengthLeft);
         

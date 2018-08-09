@@ -123,7 +123,6 @@ typedef struct YRPacketHeaderSYN {
 
 typedef struct YRPacketHeaderEACK {
     YRPacketHeader commonHeader;
-    // EACK-related data
     YRSequenceNumberType eacks[1];
 } YRPacketHeaderEACK;
 
@@ -135,6 +134,37 @@ YRProtocolVersionType const kYRProtocolVersion = 0x01;
 
 YRHeaderLengthType const kYRPacketHeaderSYNLength = sizeof(YRPacketHeaderSYN);
 YRHeaderLengthType const kYRPacketHeaderGenericLength = sizeof(YRPacketHeader);
+
+YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount) {
+    size_t eackTypeSize = sizeof(YRSequenceNumberType);
+    
+    YRSequenceNumberType eacksCount = ioCount ? *ioCount : 0;
+    
+    YRHeaderLengthType bytesTaken = kYRPacketHeaderGenericLength;
+    YRHeaderLengthType bytesLeft = YRMaximumPacketHeaderSize - bytesTaken;
+    
+    if (eacksCount == 0) {
+        return bytesTaken;
+    }
+
+    YRSequenceNumberType eacksThatFit = YRPacketHeaderEACKsCountThatFit(bytesLeft);
+
+    if (eacksCount > eacksThatFit) {
+        eacksCount = eacksThatFit;
+    }
+    
+    if (ioCount) {
+        *ioCount = eacksCount;
+    }
+    
+    return bytesTaken + eacksCount * eackTypeSize;
+}
+
+YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength) {
+    size_t eackTypeSize = sizeof(YRSequenceNumberType);
+
+    return headerLength / eackTypeSize;
+}
 
 #pragma mark - Configuration
 
@@ -208,7 +238,7 @@ bool YRPacketHeaderHasEACK(YRPacketHeaderRef header) {
 }
 
 bool YRPacketHeaderHasACKOrEACK(YRPacketHeaderRef header) {
-    return (header->packetDescription & (YRPacketDescriptionNUL | YRPacketDescriptionEACK)) > 0;
+    return (header->packetDescription & (YRPacketDescriptionACK | YRPacketDescriptionEACK)) > 0;
 }
 
 bool YRPacketHeaderHasCHK(YRPacketHeaderRef header) {
@@ -237,4 +267,36 @@ YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketHeaderRef header) {
 
 YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header) {
     return header->checksum;
+}
+
+#pragma mark - EACK Header
+
+void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacks, YRSequenceNumberType eacksCount) {
+    if (eacksCount > 0) {
+        eackHeader->commonHeader.packetDescription |= YRPacketDescriptionEACK;
+    }
+    
+    for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
+        eackHeader->eacks[i] = eacks[i];
+    }
+}
+
+YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader) {
+    YRHeaderLengthType headerLength = YRPacketHeaderGetHeaderLength(&eackHeader->commonHeader);
+    
+    return YRPacketHeaderEACKsCountThatFit(headerLength - kYRPacketHeaderGenericLength);
+}
+
+YRSequenceNumberType *YRPacketHeaderGetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacksCount) {
+    YRSequenceNumberType resultingEACKsCount = YRPacketHeaderEACKsCount(eackHeader);
+    
+    if (eacksCount) {
+        *eacksCount = resultingEACKsCount;
+    }
+
+    if (resultingEACKsCount > 0) {
+        return eackHeader->eacks;
+    } else {
+        return NULL;
+    }
 }

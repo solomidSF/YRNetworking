@@ -29,7 +29,7 @@
 - (void)start {
     __typeof(self) __weak weakSelf = self;
     
-    _transmissionTimer = [NSTimer timerWithTimeInterval:4 repeats:NO block:^(NSTimer * _Nonnull timer) {
+    _transmissionTimer = [NSTimer timerWithTimeInterval:0.5 repeats:NO block:^(NSTimer * _Nonnull timer) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (strongSelf) {

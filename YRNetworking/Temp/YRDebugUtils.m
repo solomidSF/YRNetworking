@@ -45,6 +45,17 @@
     
     [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Seq#: %d", YRPacketHeaderGetSequenceNumber(header)]];
     [shortDescriptionComponents addObject:[self packetHeaderTypeDescription:header]];
+
+    if (YRPacketHeaderGetPayloadLength(header) > 0) {
+        [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength(header)]];
+    }
+    
+    // 8. EACKS (Possibly)
+    NSString *eacksDescription = [self packetHeaderEACKsDescription:header];
+    
+    if (eacksDescription) {
+        [shortDescriptionComponents addObject:eacksDescription];
+    }
 //    [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Is Logically Valid: %@", YRPacketHeaderIsLogicallyValid(header) ? @"YES" : @"NO"]];
     
     return [shortDescriptionComponents componentsJoinedByString:@" "];
@@ -79,7 +90,35 @@
     // 7. Checksum
     [packetComponents addObject:[NSString stringWithFormat:@"Checksum: %d", YRPacketHeaderGetChecksum(header)]];
     
+    // 8. EACKS (Possibly)
+    NSString *eacksDescription = [self packetHeaderEACKsDescription:header];
+    
+    if (eacksDescription) {
+        [packetComponents addObject:eacksDescription];
+    }
+    
     return [packetComponents componentsJoinedByString:@"\n"];
+}
+
++ (NSString *)packetHeaderEACKsDescription:(YRPacketHeaderRef)header {
+    if (YRPacketHeaderHasEACK(header)) {
+        YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+        
+        YRSequenceNumberType eacksCount = 0;
+        YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
+        
+        NSMutableArray *eacksArray = [NSMutableArray new];
+        
+        for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
+            [eacksArray addObject:@(eacks[i])];
+        }
+        
+        if (eacksArray.count > 0) {
+            return [NSString stringWithFormat:@"EACKS: [%@]", [eacksArray componentsJoinedByString:@"|"]];
+        }
+    }
+    
+    return nil;
 }
 
 @end

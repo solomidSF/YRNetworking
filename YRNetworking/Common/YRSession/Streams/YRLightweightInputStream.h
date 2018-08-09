@@ -21,8 +21,9 @@ YRLightweightInputStreamRef YRLightweightInputStreamCreate(const void *buffer, u
 // Creates stream and places it in outStreamRef
 YRLightweightInputStreamRef YRLightweightInputStreamCreateAt(const void *buffer, uint16_t bufferSize, void *outStreamRef);
 
-void *YRLightweightInputSteamCurrentPointer(YRLightweightInputStreamRef stream, uint16_t *outSizeLeft);
+void *YRLightweightInputStreamCurrentPointer(YRLightweightInputStreamRef stream, uint16_t *outSizeLeft);
 uint16_t YRLightweightInputStreamSize(YRLightweightInputStreamRef stream);
+uint16_t YRLightweightInputStreamCurrentIndex(YRLightweightInputStreamRef stream);
 
 uint8_t YRLightweightInputStreamReadInt8(YRLightweightInputStreamRef stream);
 uint16_t YRLightweightInputStreamReadInt16(YRLightweightInputStreamRef stream);
@@ -31,6 +32,7 @@ uint32_t YRLightweightInputStreamReadInt32(YRLightweightInputStreamRef stream);
 void YRLightweightInputSteamReset(YRLightweightInputStreamRef stream);
 void *YRLightweightInputSteamMemalignCurrentPointer(YRLightweightInputStreamRef stream, uint16_t *outSizeLeft);
 
+bool YRLightweightInputStreamSetIndexTo(YRLightweightInputStreamRef stream, uint16_t index);
 bool YRLightweightInputStreamAdvanceBy(YRLightweightInputStreamRef stream, uint16_t by);
 uint16_t YRLightweightInputStreamBytesLeft(YRLightweightInputStreamRef stream);
 

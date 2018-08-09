@@ -18,11 +18,13 @@ typedef struct YRPacket *YRPacketRef;
 
 #pragma mark - Data Structure Minimum Sizes
 
-inline YRPayloadLengthType YRPacketSYNLength(void);
-inline YRPayloadLengthType YRPacketRSTLength(void);
-inline YRPayloadLengthType YRPacketNULLength(void);
-inline YRPayloadLengthType YRPacketACKLength(void);
-inline YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength);
+YRPayloadLengthType YRPacketSYNLength(void);
+YRPayloadLengthType YRPacketRSTLength(void);
+YRPayloadLengthType YRPacketNULLength(void);
+YRPayloadLengthType YRPacketACKLength(void);
+YRPayloadLengthType YRPacketEACKLength(YRSequenceNumberType *ioSequencesCount);
+YRPayloadLengthType YRPacketEACKLengthWithPayload(YRSequenceNumberType *ioSequencesCount, YRPayloadLengthType payloadLength);
+YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength);
 
 #pragma mark - Factory Methods
 
@@ -30,7 +32,9 @@ YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRSequenceNumberTy
 YRPacketRef YRPacketCreateRST(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK);
 YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);
 YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);
-//YRPacketRef YRPacketHeaderCreateEACK();
+YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences, YRSequenceNumberType *ioSequencesCount);
+YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences,
+    YRSequenceNumberType *ioSequencesCount, const void *payload, YRPayloadLengthType payloadLength);
 YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, const void *payload, YRPayloadLengthType payloadLength);
 // TODO: Add option to create with payload byref or by copy.
 // Byref can be used to send packets unreliably.
