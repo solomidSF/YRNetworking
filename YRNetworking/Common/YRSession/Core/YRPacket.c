@@ -161,7 +161,7 @@ YRPayloadLengthType YRPacketSYNLength() {
 }
 
 YRPayloadLengthType YRPacketRSTLength() {
-    return YRPacketGenericAlignedLength();
+    return YRMakeMultipleTo((kYRPacketHeaderRSTLength + kYRPacketStructureLength), 4);
 }
 
 YRPayloadLengthType YRPacketNULLength() {
@@ -196,7 +196,7 @@ YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength) 
 
 #pragma mark - Factory Methods
 
-YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRConnectionConfiguration configuration, YRSequenceNumberType ackNumber, bool hasACK) {
+YRPacketRef YRPacketCreateSYN(YRConnectionConfiguration configuration, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
     YRPacketRef packet = calloc(1, YRPacketSYNLength());
     YRPacketHeaderRef header = YRPacketGetHeader(packet);
     YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
@@ -215,12 +215,15 @@ YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRConnectionConfig
     return packet;
 }
 
-YRPacketRef YRPacketCreateRST(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
+YRPacketRef YRPacketCreateRST(uint8_t errorCode, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
     YRPacketRef packet = calloc(1, YRPacketRSTLength());
     YRPacketHeaderRef header = YRPacketGetHeader(packet);
     
     YRPacketHeaderSetRST(header);
     YRPacketHeaderSetSequenceNumber(header, seqNumber);
+    
+    YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
+    YRPacketRSTHeaderSetErrorCode(rstHeader, errorCode);
     
     if (hasACK) {
         YRPacketHeaderSetAckNumber(header, ackNumber);
@@ -471,6 +474,10 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
         for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
             YRLightweightOutputStreamWriteInt8(stream, eacks[i]);
         }
+    } else if (YRPacketHeaderIsRST(header)) {
+        YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
+        
+        YRLightweightOutputStreamWriteInt8(stream, YRPacketRSTHeaderGetErrorCode(rstHeader));
     }
     
     if (payloadLength > 0) {
@@ -521,6 +528,10 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
         YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
 
         YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
+    } else if (YRPacketHeaderIsRST(header)) {
+        YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
+        
+        YRPacketRSTHeaderSetErrorCode(rstHeader, YRLightweightInputStreamReadInt8(stream));
     } else if (YRPacketHeaderHasEACK(header)) {
         // Stream currently points in eack area.
         YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
