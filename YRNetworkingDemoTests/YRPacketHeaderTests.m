@@ -187,6 +187,29 @@
     }
 }
 
+- (void)testRSTPacketHeader {
+    for (uint8_t errorCodeIterator = 0; errorCodeIterator < (uint8_t)(~0); errorCodeIterator++) {
+        YRHeaderLengthType headerLength = kYRPacketHeaderRSTLength;
+        
+        uint8_t headerBuffer[headerLength];
+        memset(headerBuffer, 0, headerLength);
+
+        YRPacketHeaderRef header = (YRPacketHeaderRef)headerBuffer;
+        
+        YRPacketHeaderSetRST(header);
+        YRPacketHeaderSetHeaderLength(header, headerLength);
+
+        XCTAssertTrue(YRPacketHeaderIsRST(header));
+        XCTAssertTrue(YRPacketHeaderGetHeaderLength(header) == headerLength);
+        
+        YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
+        
+        YRPacketRSTHeaderSetErrorCode(rstHeader, errorCodeIterator);
+        
+        XCTAssertTrue(YRPacketRSTHeaderGetErrorCode(rstHeader) == errorCodeIterator);
+    }
+}
+
 - (void)testEACKPacketHeader {
     YRHeaderLengthType emptyLength = YRPacketHeaderEACKLength(NULL);
     XCTAssert(emptyLength == kYRPacketHeaderGenericLength);

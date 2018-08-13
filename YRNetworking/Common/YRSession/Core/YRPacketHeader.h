@@ -31,8 +31,9 @@ extern YRProtocolVersionType const kYRProtocolVersion;
 
 #define YRMaximumPacketHeaderSize ((YRHeaderLengthType)(~0))
 
-extern YRHeaderLengthType const kYRPacketHeaderSYNLength;
 extern YRHeaderLengthType const kYRPacketHeaderGenericLength;
+extern YRHeaderLengthType const kYRPacketHeaderSYNLength;
+extern YRHeaderLengthType const kYRPacketHeaderRSTLength;
 
 enum YRPacketDescription {
     // Synchronization segment. Mutually exclusive with RST && NUL.
@@ -102,22 +103,10 @@ YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header);
 void YRPacketSYNHeaderSetConfiguration(YRPacketHeaderSYNRef synHeader, YRConnectionConfiguration configuration);
 YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef synHeader);
 
-// Won't be used, just to commit
-void YRPacketSYNHeaderSetOptions(YRPacketHeaderSYNRef synHeader, uint16_t options);
-void YRPacketSYNHeaderSetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms);
-void YRPacketSYNHeaderSetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms);
-void YRPacketSYNHeaderSetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader, uint8_t maxNumberOfSegments);
-void YRPacketSYNHeaderSetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader, uint16_t maximumSegmentSize);
-void YRPacketSYNHeaderSetMaxRetransmissions(YRPacketHeaderSYNRef synHeader, uint8_t maxRetransmissions);
+#pragma mark - RST Header
 
-uint16_t YRPacketSYNHeaderGetOptions(YRPacketHeaderSYNRef synHeader);
-uint16_t YRPacketSYNHeaderGetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader);
-uint16_t YRPacketSYNHeaderGetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader);
-uint16_t YRPacketSYNHeaderGetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader);
-uint8_t YRPacketSYNHeaderGetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader);
-uint8_t YRPacketSYNHeaderGetMaxRetransmissions(YRPacketHeaderSYNRef synHeader);
-
-// RST Header
+void YRPacketRSTHeaderSetErrorCode(YRPacketHeaderRSTRef rstHeader, uint8_t errCode);
+uint8_t YRPacketRSTHeaderGetErrorCode(YRPacketHeaderRSTRef rstHeader);
 
 #pragma mark - EACK Header
 

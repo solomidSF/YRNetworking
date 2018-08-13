@@ -9,89 +9,6 @@
 #include "YRPacketHeader.h"
 #include <stdlib.h>
 
-// SYN Segment:
-// 0             7 8            15
-//+-+-+-+-+-+-+-+-+---------------+
-//| |A| | | | | | |               |
-//|1|C|0|0|0|0|0|0|       28      |
-//| |K| | | | | | |               |
-//+-+-+-+-+-+-+-+-+---------------+
-//+  Sequence #   +   Ack Number  |
-//+---------------+---------------+
-//| Vers  | Spare | Max # of Out  |
-//|       |       | standing Segs |
-//+---------------+---------------+
-//| Option Flags  |     Spare     |
-//+---------------+---------------+
-//|      Maximum Segment Size     |
-//+---------------+---------------+
-//| Retransmission Timeout Value  |
-//+---------------+---------------+
-//| Cumulative Ack Timeout Value  |
-//+---------------+---------------+
-//|   Null Segment Timeout Value  |
-//+---------------+---------------+
-//| Transfer State Timeout Value  |
-//+---------------+---------------+
-//|  Max Retrans  | Max Cum Ack   |
-//+---------------+---------------+
-//| Max Out of Seq| Max Auto Reset|
-//+---------------+---------------+
-//|    Connection Identifier      |
-//+                               +
-//|      (32 bits in length)      |
-//+---------------+---------------+
-//|           Checksum            |
-//+---------------+---------------+
-
-// ACK segment:
-// 0 1 2 3 4 5 6 7 8            15
-//+-+-+-+-+-+-+-+-+---------------+
-//|0|1|0|0|0|0|0|0|       6       |
-//+-+-+-+-+-+-+-+-+---------------+
-//| Sequence #    |   Ack Number  |
-//+---------------+---------------+
-//|           Checksum            |
-//+---------------+---------------+
-
-// EACK segment:
-// 0 1 2 3 4 5 6 7 8            15
-//+-+-+-+-+-+-+-+-+---------------+
-//|0|1|1|0|0|0|0|0|     N + 6     |
-//+-+-+-+-+-+-+-+-+---------------+
-//| Sequence #    |   Ack Number  |
-//+---------------+---------------+
-//|1st out of seq |2nd out of seq |
-//|  ack number   |   ack number  |
-//+---------------+---------------+
-//|  . . .        |Nth out of seq |
-//|               |   ack number  |
-//+---------------+---------------+
-//|            Checksum           |
-//+---------------+---------------+
-
-// RST segment:
-// 0 1 2 3 4 5 6 7 8            15
-//+-+-+-+-+-+-+-+-+---------------+
-//| |A| | | | | | |               |
-//|0|C|0|1|0|0|0|0|        6      |
-//| |K| | | | | | |               |
-//+-+-+-+-+-+-+-+-+---------------+
-//| Sequence #    |   Ack Number  |
-//+---------------+---------------+
-//|         Header Checksum       |
-//+---------------+---------------+
-
-// NUL segment:
-// 0 1 2 3 4 5 6 7 8            15
-//+-+-+-+-+-+-+-+-+---------------+
-//|0|1|0|0|1|0|0|0|       6       |
-//+-+-+-+-+-+-+-+-+---------------+
-//| Sequence #    |  Ack Number   |
-//+---------------+---------------+
-//|            Checksum           |
-//+---------------+---------------+
-
 #pragma mark - Data Structures
 
 #pragma pack(push, 1)
@@ -112,6 +29,12 @@ typedef struct YRPacketHeaderSYN {
     YRConnectionConfiguration connectionConfiguration;
 } YRPacketHeaderSYN;
 
+typedef struct YRPacketHeaderRST {
+    YRPacketHeader commonHeader;
+    // RST-related data
+    uint8_t errorCode;
+} YRPacketHeaderRST;
+
 typedef struct YRPacketHeaderEACK {
     YRPacketHeader commonHeader;
     // EACK-related data
@@ -124,8 +47,9 @@ typedef struct YRPacketHeaderEACK {
 
 YRProtocolVersionType const kYRProtocolVersion = 0x01;
 
-YRHeaderLengthType const kYRPacketHeaderSYNLength = sizeof(YRPacketHeaderSYN);
 YRHeaderLengthType const kYRPacketHeaderGenericLength = sizeof(YRPacketHeader);
+YRHeaderLengthType const kYRPacketHeaderSYNLength = sizeof(YRPacketHeaderSYN);
+YRHeaderLengthType const kYRPacketHeaderRSTLength = sizeof(YRPacketHeaderRST);
 
 YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount) {
     size_t eackTypeSize = sizeof(YRSequenceNumberType);
@@ -271,53 +195,15 @@ YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef
     return synHeader->connectionConfiguration;
 }
 
-//void YRPacketSYNHeaderSetOptions(YRPacketHeaderSYNRef synHeader, uint16_t options) {
-//    synHeader->options = options;
-//}
-//
-//void YRPacketSYNHeaderSetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms) {
-//    synHeader->retransmissionTimeoutValue = ms;
-//}
-//
-//void YRPacketSYNHeaderSetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms) {
-//    synHeader->nullSegmentTimeoutValue = ms;
-//}
-//
-//void YRPacketSYNHeaderSetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader, uint16_t maximumSegmentSize) {
-//    synHeader->maximumSegmentSize = maximumSegmentSize;
-//}
-//
-//void YRPacketSYNHeaderSetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader, uint8_t maxNumberOfSegments) {
-//    synHeader->maxNumberOfOutstandingSegments = maxNumberOfSegments;
-//}
-//
-//void YRPacketSYNHeaderSetMaxRetransmissions(YRPacketHeaderSYNRef synHeader, uint8_t maxRetransmissions) {
-//    synHeader->maxRetransmissions = maxRetransmissions;
-//}
-//
-//uint16_t YRPacketSYNHeaderGetOptions(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->options;
-//}
-//
-//uint16_t YRPacketSYNHeaderGetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->retransmissionTimeoutValue;
-//}
-//
-//uint16_t YRPacketSYNHeaderGetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->nullSegmentTimeoutValue;
-//}
-//
-//uint16_t YRPacketSYNHeaderGetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->maximumSegmentSize;
-//}
-//
-//uint8_t YRPacketSYNHeaderGetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->maxNumberOfOutstandingSegments;
-//}
-//
-//uint8_t YRPacketSYNHeaderGetMaxRetransmissions(YRPacketHeaderSYNRef synHeader) {
-//    return synHeader->maxRetransmissions;
-//}
+#pragma mark - RST Header
+
+void YRPacketRSTHeaderSetErrorCode(YRPacketHeaderRSTRef rstHeader, uint8_t errCode) {
+    rstHeader->errorCode = errCode;
+}
+
+uint8_t YRPacketRSTHeaderGetErrorCode(YRPacketHeaderRSTRef rstHeader) {
+    return rstHeader->errorCode;
+}
 
 #pragma mark - EACK Header
 
