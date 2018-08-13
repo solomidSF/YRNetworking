@@ -27,13 +27,13 @@
     [super tearDown];
 }
 
-- (void)testPacketHeaderConsistency {
+- (void)testGenericPacketHeader {
     BOOL traverseAllSeqAndAcks = NO;
     BOOL traverseAllHeaderValues = NO;
     BOOL traverseAllPayloadValues = NO;
     BOOL traverseAllChecksumValues = NO;
     
-    uint32_t seqAndAckIterations = traverseAllSeqAndAcks ? (YRSequenceNumberType)(~0) : 63;
+    uint32_t seqAndAckIterations = traverseAllSeqAndAcks ? (YRSequenceNumberType)(~0) : 31;
     uint32_t headerIterations = traverseAllHeaderValues ? (YRHeaderLengthType)(~0) : 15;
     uint32_t payloadIterations = traverseAllPayloadValues ? (YRPayloadLengthType)(~0) : 15;
     uint32_t checksumIterations = traverseAllChecksumValues ? (YRChecksumType)(~0) : 15;
@@ -66,7 +66,7 @@
                                                 YRProtocolVersionType protocolVersion = protocolVersionIterator;
                                                 YRHeaderLengthType headerLength = headerLengthIterator * (YRHeaderLengthType)(~0) / (headerIterations);
                                                 YRPayloadLengthType payloadLength = payloadLengthIterator * (YRPayloadLengthType)(~0) / (payloadIterations);
-                                                YRChecksumType checksum = checksumIterator * (YRChecksumType)(~0) / (checksumIterations - 1);
+                                                YRChecksumType checksum = checksumIterator * (YRChecksumType)(~0) / (checksumIterations);
                                                 
                                                 // 2. When
                                                 // Set header variables.
@@ -130,6 +130,55 @@
                                     }
                                 }
                             }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+- (void)testSYNPacketHeader {
+    for (uint16_t optionsIterator = 0; optionsIterator <= 15; optionsIterator++) {
+        for (uint16_t retransmissionIterator = 0; retransmissionIterator <= 15; retransmissionIterator++) {
+            for (uint16_t nullTimeoutIterator = 0; nullTimeoutIterator <= 15; nullTimeoutIterator++) {
+                for (uint16_t maxSegmentSizeIterator = 0; maxSegmentSizeIterator <= 15; maxSegmentSizeIterator++) {
+                    for (uint8_t maxNumberOfSegmentsIterator = 0; maxNumberOfSegmentsIterator <= 15; maxNumberOfSegmentsIterator++) {
+                        for (uint8_t maxRetransmissionsIterator = 0; maxRetransmissionsIterator <= 15; maxRetransmissionsIterator++) {
+                            YRHeaderLengthType headerLength = kYRPacketHeaderSYNLength;
+                            
+                            uint8_t headerBuffer[headerLength];
+                            memset(headerBuffer, 0, headerLength);
+
+                            YRConnectionConfiguration configuration = {
+                                .options = optionsIterator * (uint16_t)(~0) / 15,
+                                .retransmissionTimeoutValue = retransmissionIterator * (uint16_t)(~0) / 15,
+                                .nullSegmentTimeoutValue = nullTimeoutIterator * (uint16_t)(~0) / 15,
+                                .maximumSegmentSize = maxSegmentSizeIterator * (uint16_t)(~0) / 15,
+                                .maxNumberOfOutstandingSegments = maxNumberOfSegmentsIterator * (uint8_t)(~0) / 15,
+                                .maxRetransmissions = maxRetransmissionsIterator * (uint8_t)(~0) / 15,
+                            };
+                            
+                            YRPacketHeaderRef header = (YRPacketHeaderRef)headerBuffer;
+                            
+                            YRPacketHeaderSetSYN(header);
+                            YRPacketHeaderSetHeaderLength(header, headerLength);
+                            
+                            XCTAssertTrue(YRPacketHeaderIsSYN(header));
+                            XCTAssertTrue(YRPacketHeaderGetHeaderLength(header) == headerLength);
+                            
+                            YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
+                            
+                            YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
+                            
+                            YRConnectionConfiguration returnedConfiguration = YRPacketSYNHeaderGetConfiguration(synHeader);
+                            
+                            XCTAssertTrue(returnedConfiguration.options == configuration.options);
+                            XCTAssertTrue(returnedConfiguration.retransmissionTimeoutValue == configuration.retransmissionTimeoutValue);
+                            XCTAssertTrue(returnedConfiguration.nullSegmentTimeoutValue == configuration.nullSegmentTimeoutValue);
+                            XCTAssertTrue(returnedConfiguration.maximumSegmentSize == configuration.maximumSegmentSize);
+                            XCTAssertTrue(returnedConfiguration.maxNumberOfOutstandingSegments == configuration.maxNumberOfOutstandingSegments);
+                            XCTAssertTrue(returnedConfiguration.maxRetransmissions == configuration.maxRetransmissions);
                         }
                     }
                 }

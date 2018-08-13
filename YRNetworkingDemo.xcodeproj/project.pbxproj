@@ -145,6 +145,7 @@
 		7DC4EB2320FB537500486ED9 /* YRSharedLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSharedLogger.h; sourceTree = "<group>"; };
 		7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSharedLogger.m; sourceTree = "<group>"; };
 		7DC4EB2620FB8B7400486ED9 /* YRPacketHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketHeader.h; sourceTree = "<group>"; };
+		7DE17C102121E49C001C3C72 /* YRConnectionConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRConnectionConfiguration.h; sourceTree = "<group>"; };
 		7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YRNetworkingDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		7DEB3B7221123B1500486DA4 /* YRNetworkingDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRNetworkingDemoTests.m; sourceTree = "<group>"; };
 		7DEB3B7421123B1500486DA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -193,6 +194,7 @@
 		7D46DA872107ABEB00575665 /* Core */ = {
 			isa = PBXGroup;
 			children = (
+				7DE17C102121E49C001C3C72 /* YRConnectionConfiguration.h */,
 				7DC4EB2620FB8B7400486ED9 /* YRPacketHeader.h */,
 				7D46DA6920FE7BF300575665 /* YRPacketHeader.c */,
 				7D46DA842103738200575665 /* YRPacket.h */,
@@ -345,7 +347,6 @@
 				7DA6E83420F51A1900FC7997 /* Common */,
 				7DA6E82E20F51A1900FC7997 /* Server */,
 				7DA6E84D20F51A1900FC7997 /* Client */,
-				7DEB3B6B21123AC800486DA4 /* Tests */,
 			);
 			path = YRNetworking;
 			sourceTree = "<group>";
@@ -418,13 +419,6 @@
 				7D46DA6C20FE923A00575665 /* YRDebugUtils.m */,
 			);
 			path = Temp;
-			sourceTree = "<group>";
-		};
-		7DEB3B6B21123AC800486DA4 /* Tests */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Tests;
 			sourceTree = "<group>";
 		};
 		7DEB3B7121123B1500486DA4 /* YRNetworkingDemoTests */ = {

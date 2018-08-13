@@ -98,7 +98,7 @@
 
 typedef struct YRPacketHeader {
     YRChecksumType checksum;
-    YRPayloadLengthType payloadLength; // will be variable
+    YRPayloadLengthType payloadLength;
     YRSequenceNumberType sequenceNumber;
     YRSequenceNumberType ackNumber;
     YRPacketDescriptionType packetDescription;
@@ -109,20 +109,12 @@ typedef struct YRPacketHeader {
 typedef struct YRPacketHeaderSYN {
     YRPacketHeader commonHeader;
     // SYN-related data
-    //    uint8_t maxNumberOfOutstandingSegments;
-    //    uint16_t flags;
-    //    uint16_t maximumSegmentSize;
-    //    uint16_t retransmissionTimeoutValue; // ms
-    //    uint16_t cumulativeAckTimeoutValue; // ms
-    //    uint16_t nullSegmentTimeoutValue; // ms
-    //    uint8_t maxRetransmissions;
-    //    uint8_t maxCumulativeAck;
-    //    uint8_t maxOutOfSequence;
-    //    uint32_t connectionIdentifier;
+    YRConnectionConfiguration connectionConfiguration;
 } YRPacketHeaderSYN;
 
 typedef struct YRPacketHeaderEACK {
     YRPacketHeader commonHeader;
+    // EACK-related data
     YRSequenceNumberType eacks[1];
 } YRPacketHeaderEACK;
 
@@ -268,6 +260,64 @@ YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketHeaderRef header) {
 YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header) {
     return header->checksum;
 }
+
+#pragma mark - SYN Header
+
+void YRPacketSYNHeaderSetConfiguration(YRPacketHeaderSYNRef synHeader, YRConnectionConfiguration configuration) {
+    synHeader->connectionConfiguration = configuration;
+}
+
+YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef synHeader) {
+    return synHeader->connectionConfiguration;
+}
+
+//void YRPacketSYNHeaderSetOptions(YRPacketHeaderSYNRef synHeader, uint16_t options) {
+//    synHeader->options = options;
+//}
+//
+//void YRPacketSYNHeaderSetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms) {
+//    synHeader->retransmissionTimeoutValue = ms;
+//}
+//
+//void YRPacketSYNHeaderSetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms) {
+//    synHeader->nullSegmentTimeoutValue = ms;
+//}
+//
+//void YRPacketSYNHeaderSetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader, uint16_t maximumSegmentSize) {
+//    synHeader->maximumSegmentSize = maximumSegmentSize;
+//}
+//
+//void YRPacketSYNHeaderSetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader, uint8_t maxNumberOfSegments) {
+//    synHeader->maxNumberOfOutstandingSegments = maxNumberOfSegments;
+//}
+//
+//void YRPacketSYNHeaderSetMaxRetransmissions(YRPacketHeaderSYNRef synHeader, uint8_t maxRetransmissions) {
+//    synHeader->maxRetransmissions = maxRetransmissions;
+//}
+//
+//uint16_t YRPacketSYNHeaderGetOptions(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->options;
+//}
+//
+//uint16_t YRPacketSYNHeaderGetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->retransmissionTimeoutValue;
+//}
+//
+//uint16_t YRPacketSYNHeaderGetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->nullSegmentTimeoutValue;
+//}
+//
+//uint16_t YRPacketSYNHeaderGetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->maximumSegmentSize;
+//}
+//
+//uint8_t YRPacketSYNHeaderGetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->maxNumberOfOutstandingSegments;
+//}
+//
+//uint8_t YRPacketSYNHeaderGetMaxRetransmissions(YRPacketHeaderSYNRef synHeader) {
+//    return synHeader->maxRetransmissions;
+//}
 
 #pragma mark - EACK Header
 

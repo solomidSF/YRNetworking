@@ -86,11 +86,13 @@ YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength) 
 
 #pragma mark - Factory Methods
 
-YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
+YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRConnectionConfiguration configuration, YRSequenceNumberType ackNumber, bool hasACK) {
     YRPacketRef packet = calloc(1, YRPacketSYNLength());
     YRPacketHeaderRef header = YRPacketGetHeader(packet);
+    YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
     
     YRPacketHeaderSetSYN(header);
+    YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
     YRPacketHeaderSetSequenceNumber(header, seqNumber);
  
     if (hasACK) {
@@ -231,6 +233,9 @@ void *YRPacketGetPayload(YRPacketRef packet, YRPayloadLengthType *outPayloadSize
 }
 
 // TODO: Data structure length
+YRPayloadLengthType YRPacketGetDataStructureLength(YRPacketRef packet) {
+    return 0;
+}
 
 YRPayloadLengthType YRPacketGetLength(YRPacketRef packet) {
     // TODO: This is network length
@@ -247,6 +252,7 @@ YRPayloadLengthType YRPacketGetLength(YRPacketRef packet) {
 }
 
 bool YRPacketIsLogicallyValid(YRPacketRef packet) {
+    // TODO: Return error codes
     YRPacketHeaderRef header = YRPacketGetHeader(packet);
     
     if (YRPacketHeaderGetProtocolVersion(header) != kYRProtocolVersion) {
@@ -255,7 +261,7 @@ bool YRPacketIsLogicallyValid(YRPacketRef packet) {
     
     if (YRPacketHeaderIsSYN(header)) {
         // TODO: Additional check for SYN header
-        return !YRPacketHeaderIsRST(header) && !YRPacketHeaderIsNUL(header) && (YRPacketHeaderGetPayloadLength(header) == 0);
+        return !YRPacketHeaderIsRST(header) && !YRPacketHeaderIsNUL(header) && (YRPacketHeaderGetPayloadLength(header) == 0) && (!YRPacketHeaderHasEACK(header));
     }
     
     if (YRPacketHeaderIsRST(header)) {
@@ -299,6 +305,8 @@ bool YRPacketCanDeserializeFromStream(YRLightweightInputStreamRef stream) {
     // Seq# && Ack#
     YRLightweightInputStreamAdvanceBy(stream, sizeof(YRSequenceNumberType) * 2);
     
+    // TODO: Packet-specific validation??
+    
     // 3. Check if payload length matches.
     YRPayloadLengthType payloadLength = YRLightweightInputStreamReadInt16(stream);
     
@@ -335,7 +343,17 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
     YRLightweightOutputStreamWriteInt16(stream, payloadLength);
     YRLightweightOutputStreamWriteInt32(stream, checksum);
     
-    if (YRPacketHeaderHasEACK(header)) {
+    // TODO: Packet-specific serializing
+    if (YRPacketHeaderIsSYN(header)) {
+        YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
+        YRConnectionConfiguration configuration = YRPacketSYNHeaderGetConfiguration(synHeader);
+        
+        YRLightweightOutputStreamWriteInt16(stream, configuration.options);
+        YRLightweightOutputStreamWriteInt16(stream, configuration.retransmissionTimeoutValue);
+        YRLightweightOutputStreamWriteInt16(stream, configuration.maximumSegmentSize);
+        YRLightweightOutputStreamWriteInt8(stream, configuration.maxNumberOfOutstandingSegments);
+        YRLightweightOutputStreamWriteInt8(stream, configuration.maxRetransmissions);
+    } else if (YRPacketHeaderHasEACK(header)) {
         YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
         YRSequenceNumberType eacksCount = 0;
         YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
@@ -379,7 +397,21 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
     YRPacketHeaderSetPayloadLength(header, payloadLength);
     YRPacketHeaderSetChecksum(header, checksum);
     
-    if (YRPacketHeaderHasEACK(header)) {
+    // TODO: Packet-specific parsing.
+    if (YRPacketHeaderIsSYN(header)) {
+        // Stream currently points in SYN area.
+        YRConnectionConfiguration configuration = {0};
+        
+        configuration.options = YRLightweightInputStreamReadInt16(stream);
+        configuration.retransmissionTimeoutValue = YRLightweightInputStreamReadInt16(stream);
+        configuration.maximumSegmentSize = configuration.nullSegmentTimeoutValue = YRLightweightInputStreamReadInt16(stream);
+        configuration.maxNumberOfOutstandingSegments = YRLightweightInputStreamReadInt8(stream);
+        configuration.maxRetransmissions = YRLightweightInputStreamReadInt8(stream);
+        
+        YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
+
+        YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
+    } else if (YRPacketHeaderHasEACK(header)) {
         // Stream currently points in eack area.
         YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
         

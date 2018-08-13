@@ -28,7 +28,7 @@ YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength);
 
 #pragma mark - Factory Methods
 
-YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK);
+YRPacketRef YRPacketCreateSYN(YRSequenceNumberType seqNumber, YRConnectionConfiguration configuration, YRSequenceNumberType ackNumber, bool hasACK);
 YRPacketRef YRPacketCreateRST(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK);
 YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);
 YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);

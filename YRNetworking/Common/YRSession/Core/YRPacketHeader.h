@@ -11,6 +11,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "YRConnectionConfiguration.h"
 
 #pragma mark - Declarations
 
@@ -96,11 +97,29 @@ YRSequenceNumberType YRPacketHeaderGetAckNumber(YRPacketHeaderRef header);
 YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketHeaderRef header);
 YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header);
 
-// SYN Header
+#pragma mark - SYN Header
+
+void YRPacketSYNHeaderSetConfiguration(YRPacketHeaderSYNRef synHeader, YRConnectionConfiguration configuration);
+YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef synHeader);
+
+// Won't be used, just to commit
+void YRPacketSYNHeaderSetOptions(YRPacketHeaderSYNRef synHeader, uint16_t options);
+void YRPacketSYNHeaderSetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms);
+void YRPacketSYNHeaderSetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader, uint16_t ms);
+void YRPacketSYNHeaderSetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader, uint8_t maxNumberOfSegments);
+void YRPacketSYNHeaderSetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader, uint16_t maximumSegmentSize);
+void YRPacketSYNHeaderSetMaxRetransmissions(YRPacketHeaderSYNRef synHeader, uint8_t maxRetransmissions);
+
+uint16_t YRPacketSYNHeaderGetOptions(YRPacketHeaderSYNRef synHeader);
+uint16_t YRPacketSYNHeaderGetRetransmissionTimeout(YRPacketHeaderSYNRef synHeader);
+uint16_t YRPacketSYNHeaderGetNULSegmentTimeout(YRPacketHeaderSYNRef synHeader);
+uint16_t YRPacketSYNHeaderGetMaximumSegmentSize(YRPacketHeaderSYNRef synHeader);
+uint8_t YRPacketSYNHeaderGetMaximumNumberOfOutstandingSegments(YRPacketHeaderSYNRef synHeader);
+uint8_t YRPacketSYNHeaderGetMaxRetransmissions(YRPacketHeaderSYNRef synHeader);
 
 // RST Header
 
-// EACK Header
+#pragma mark - EACK Header
 
 void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacks, YRSequenceNumberType eacksCount);
 

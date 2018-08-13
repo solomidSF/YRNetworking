@@ -25,6 +25,9 @@ static uint32_t const kYRMaxPacketSize = 65535;
 @implementation YRSession {
     YRLogger *_sessionLogger;
     
+    YRConnectionConfiguration _localConfiguration;
+    YRConnectionConfiguration _remoteConfiguration;
+    
     YRSessionContext *_sessionContext;
     
     NSMutableArray *_sendQueue;
@@ -50,6 +53,15 @@ static uint32_t const kYRMaxPacketSize = 65535;
 
 - (instancetype)initWithContext:(YRSessionContext *)context {
     if (self = [super init]) {
+        _localConfiguration = (YRConnectionConfiguration) {
+            .options = 0,
+            .retransmissionTimeoutValue = 1000,
+            .nullSegmentTimeoutValue = 3000,
+            .maximumSegmentSize = 1200,
+            .maxNumberOfOutstandingSegments = 20,
+            .maxRetransmissions = 5,
+        };
+        
         _sessionContext = [context copy];
         
         NSString *address = [NSString stringWithFormat:@"%@:%d", [GCDAsyncUdpSocket hostFromAddress:context.peerAddress], [GCDAsyncUdpSocket portFromAddress:context.peerAddress]];
@@ -90,7 +102,7 @@ static uint32_t const kYRMaxPacketSize = 65535;
         _isInitiator = YES;
         [self transiteToState:kYRSessionStateInitiating];
 
-        YRPacketRef packet = YRPacketCreateSYN(_sendNextSequenceNumber, 0, NO);
+        YRPacketRef packet = YRPacketCreateSYN(_sendNextSequenceNumber, _localConfiguration, 0, NO);
         _sendNextSequenceNumber++;
         
         [self sendPacketReliably:packet];
@@ -158,6 +170,10 @@ static uint32_t const kYRMaxPacketSize = 65535;
         return;
     }
     
+    if (data.length > _localConfiguration.maximumSegmentSize) {
+        return;
+    }
+    
     // Create input stream on stack to read incoming packet.
     uint8_t bufferForStream[kYRLightweightInputStreamSize];
     YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(data.bytes, data.length, bufferForStream);
@@ -221,9 +237,14 @@ static uint32_t const kYRMaxPacketSize = 65535;
                 _rcvLatestAckedSegment = sequenceNumber;
                 _rcvInitialSequenceNumber = sequenceNumber;
                 
+                YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)receivedHeader;
+                
+                _remoteConfiguration = YRPacketSYNHeaderGetConfiguration(synHeader);
+                
                 [self transiteToState:kYRSessionStateConnecting];
 
-                YRPacketRef synAckPacket = YRPacketCreateSYN(_sendNextSequenceNumber, _rcvLatestAckedSegment, true);
+                YRPacketRef synAckPacket = YRPacketCreateSYN(_sendNextSequenceNumber, _localConfiguration,
+                    _rcvLatestAckedSegment, true);
                 _sendNextSequenceNumber++;
 
                 [self sendPacketReliably:synAckPacket];
@@ -256,6 +277,10 @@ static uint32_t const kYRMaxPacketSize = 65535;
                 _rcvLatestAckedSegment = sequenceNumber;
                 _rcvInitialSequenceNumber = sequenceNumber;
                 
+                YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)receivedHeader;
+                
+                _remoteConfiguration = YRPacketSYNHeaderGetConfiguration(synHeader);
+                
                 if (hasACK) {
                     for (uint16_t i = _sendLatestUnackSegment; i < ackNumber + 1; i++) {
                         if ([_sendQueue[i] isKindOfClass:[YRSendOperation class]]) {
@@ -275,7 +300,8 @@ static uint32_t const kYRMaxPacketSize = 65535;
                     // TODO: This flow is strange as rfc describes.
                     // if SYN & SYN rcved on both sides, SYN/ACK will be ignored on both sides which will result in ACK sent by both peer = connected.
                     // if - & SYN/ACK rcvd = SYN/ACK side will resend SYN/ACK.
-                    YRPacketRef synAckPacket = YRPacketCreateSYN(_sendInitialSequenceNumber, _rcvLatestAckedSegment, true);
+                    YRPacketRef synAckPacket = YRPacketCreateSYN(_sendInitialSequenceNumber, _localConfiguration,
+                        _rcvLatestAckedSegment, true);
                     [self sendPacketReliably:synAckPacket];
                 }
                 
