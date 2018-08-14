@@ -309,8 +309,18 @@ static uint32_t const kYRMaxPacketSize = 65535;
             }
             
             break;
-        case kYRSessionStateConnecting:
-            if (_rcvInitialSequenceNumber < sequenceNumber) {
+        case kYRSessionStateConnecting: {
+            YRSequenceNumberType expectedToReceive = _rcvLatestAckedSegment + 1;
+
+            BOOL willWrapAround = (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments) < expectedToReceive;
+
+            BOOL canProcessPacket = expectedToReceive <= sequenceNumber && sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+
+            if (willWrapAround) {
+                canProcessPacket = expectedToReceive <= sequenceNumber || sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+            }
+
+            if (canProcessPacket) {
                 // Can process further.
             } else {
                 [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
@@ -374,7 +384,7 @@ static uint32_t const kYRMaxPacketSize = 65535;
             
             YRPayloadLengthType payloadLength = YRPacketHeaderGetPayloadLength(receivedHeader);
             if (isNUL || payloadLength > 0) {
-                if (sequenceNumber == _rcvLatestAckedSegment + 1) {
+                if (sequenceNumber == expectedToReceive) {
                     _rcvLatestAckedSegment = sequenceNumber;
 
                     if (payloadLength > 0) {
@@ -408,10 +418,20 @@ static uint32_t const kYRMaxPacketSize = 65535;
                 
                 [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
             }
-            
+            }
             break;
-        case kYRSessionStateConnected:
-            if (_rcvLatestAckedSegment < sequenceNumber) {
+        case kYRSessionStateConnected: {
+            YRSequenceNumberType expectedToReceive = _rcvLatestAckedSegment + 1;
+            
+            BOOL willWrapAround = (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments) < expectedToReceive;
+            
+            BOOL canProcessPacket = expectedToReceive <= sequenceNumber && sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+            
+            if (willWrapAround) {
+                canProcessPacket = expectedToReceive <= sequenceNumber || sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+            }
+            
+            if (canProcessPacket) {
                 // Can process further.
             } else {
                 [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
@@ -441,19 +461,20 @@ static uint32_t const kYRMaxPacketSize = 65535;
             }
             
             if (hasACK) {
-                if (_sendLatestUnackSegment <= ackNumber &&
-                    ackNumber < _sendNextSequenceNumber) {
+//                if (_sendLatestUnackSegment <= ackNumber &&
+//                    ackNumber < _sendNextSequenceNumber) {
 
                     // queue: flush.
-                    for (YRSequenceNumberType i = _sendLatestUnackSegment; i < ackNumber + 1; i++) {
+                YRSequenceNumberType newLatestUnackSegment = ackNumber + 1;
+                    for (YRSequenceNumberType i = _sendLatestUnackSegment; i != newLatestUnackSegment; i++) {
                         if ([_sendQueue[i] isKindOfClass:[YRSendOperation class]]) {
                             [_sendQueue[i] end];
                             _sendQueue[i] = [NSNull null];
                         }
                     }
                     
-                    _sendLatestUnackSegment = ackNumber + 1;
-                }
+                    _sendLatestUnackSegment = newLatestUnackSegment;
+//                }
             }
             
             if (hasEACK) {
@@ -484,7 +505,7 @@ static uint32_t const kYRMaxPacketSize = 65535;
             }
             
             if (YRPacketHeaderGetPayloadLength(receivedHeader) > 0) {
-                if (sequenceNumber == _rcvLatestAckedSegment + 1) {
+                if (sequenceNumber == expectedToReceive) {
                     _rcvLatestAckedSegment = sequenceNumber;
                     
                     // Do callout with data.
@@ -517,7 +538,7 @@ static uint32_t const kYRMaxPacketSize = 65535;
                 
                 [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
             }
-            
+            }
             break;
         case kYRSessionStateDisconnecting:
             if (isRST) {

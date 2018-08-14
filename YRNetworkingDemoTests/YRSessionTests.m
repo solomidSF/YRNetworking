@@ -298,4 +298,52 @@
     [_sessionTwo receive:bytes];
 }
 
+- (void)testSequenceNumberWrapAround {
+    XCTestExpectation *expectation = [self expectationWithDescription:@"Simultaneous connection established."];
+    
+    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+        if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
+            [expectation fulfill];
+        }
+    };
+    
+    [_sessionTwo wait];
+    [_sessionOne connect];
+    
+    [self waitForExpectationsWithTimeout:5 handler:nil];
+    
+    XCTestExpectation *wrapAroundSuccessExpectation = [self expectationWithDescription:@"All packets received."];
+
+    __block int32_t expectedToReceive = 0;
+    
+    uint32_t packetsToSend = 1024;
+
+    void (^rcvCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *rcvedData) {
+        XCTAssertTrue(rcvedData.length == sizeof(expectedToReceive), @"Payload size mismatch!");
+        
+        int received = 0;
+        
+        [rcvedData getBytes:&received length:rcvedData.length];
+        
+        XCTAssertTrue(received == expectedToReceive, @"Incorrect callout sequence for receiving session!");
+        
+        expectedToReceive++;
+        
+        if (expectedToReceive == packetsToSend) {
+            [wrapAroundSuccessExpectation fulfill];
+        }
+    };
+    
+    _sessionTwoReceiveCallout = rcvCallout;
+//    _simulateLatency = YES;
+    
+    for (int i = 0; i < packetsToSend; i++) {
+        NSData *payload = [NSData dataWithBytes:&i length:sizeof(int)];
+        
+        [_sessionOne send:payload];
+    }
+    
+    [self waitForExpectations:@[wrapAroundSuccessExpectation] timeout:5];
+}
+
 @end
