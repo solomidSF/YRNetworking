@@ -22,7 +22,7 @@ static uint8_t const kYRProtocolVersionOffset = 6;
 typedef uint8_t YRPacketDescriptionType;
 typedef uint8_t YRProtocolVersionType;
 typedef uint8_t YRHeaderLengthType;
-typedef uint8_t YRSequenceNumberType;
+typedef uint16_t YRSequenceNumberType;
 typedef uint16_t YRPayloadLengthType;
 typedef uint32_t YRChecksumType;
 

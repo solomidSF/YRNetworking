@@ -451,8 +451,8 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
 
     YRLightweightOutputStreamWriteInt8(stream, packetDescription);
     YRLightweightOutputStreamWriteInt8(stream, headerLength);
-    YRLightweightOutputStreamWriteInt8(stream, seqNumber);
-    YRLightweightOutputStreamWriteInt8(stream, ackNumber);
+    YRLightweightOutputStreamWriteInt16(stream, seqNumber);
+    YRLightweightOutputStreamWriteInt16(stream, ackNumber);
     YRLightweightOutputStreamWriteInt16(stream, payloadLength);
     YRLightweightOutputStreamWriteInt32(stream, checksum);
     
@@ -472,7 +472,7 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
         YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
         
         for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
-            YRLightweightOutputStreamWriteInt8(stream, eacks[i]);
+            YRLightweightOutputStreamWriteInt16(stream, eacks[i]);
         }
     } else if (YRPacketHeaderIsRST(header)) {
         YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
@@ -498,8 +498,8 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
 
     YRPacketDescriptionType packetDescription = YRLightweightInputStreamReadInt8(stream);
     YRHeaderLengthType headerLength = YRLightweightInputStreamReadInt8(stream);
-    YRSequenceNumberType seqNumber = YRLightweightInputStreamReadInt8(stream);
-    YRSequenceNumberType ackNumber = YRLightweightInputStreamReadInt8(stream);
+    YRSequenceNumberType seqNumber = YRLightweightInputStreamReadInt16(stream);
+    YRSequenceNumberType ackNumber = YRLightweightInputStreamReadInt16(stream);
     YRPayloadLengthType payloadLength = YRLightweightInputStreamReadInt16(stream);
     YRChecksumType checksum = YRLightweightInputStreamReadInt32(stream);
     
@@ -537,7 +537,16 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
         YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
         
         YRSequenceNumberType eacksCount = YRPacketHeaderEACKsCountThatFit(headerLength - YRLightweightInputStreamCurrentIndex(stream));
-        YRPacketHeaderSetEACKs(eackHeader, YRLightweightInputStreamCurrentPointer(stream, NULL), eacksCount);
+        // TODO: Data is in big endian format
+        
+        YRSequenceNumberType eacks[eacksCount];
+        memset(eacks, 0, sizeof(YRSequenceNumberType) * eacksCount);
+        
+        for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
+            eacks[i] = YRLightweightInputStreamReadInt16(stream);
+        }
+
+        YRPacketHeaderSetEACKs(eackHeader, eacks, eacksCount);
     }
 
     if (payloadLength > 0) {

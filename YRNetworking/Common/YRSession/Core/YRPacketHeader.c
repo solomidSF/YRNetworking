@@ -8,6 +8,7 @@
 
 #include "YRPacketHeader.h"
 #include <stdlib.h>
+#include <string.h>
 
 #pragma mark - Data Structures
 
@@ -212,9 +213,7 @@ void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberTy
         eackHeader->commonHeader.packetDescription |= YRPacketDescriptionEACK;
     }
     
-    for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
-        eackHeader->eacks[i] = eacks[i];
-    }
+    memcpy(eackHeader->eacks, eacks, eacksCount * sizeof(YRSequenceNumberType));
 }
 
 YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader) {

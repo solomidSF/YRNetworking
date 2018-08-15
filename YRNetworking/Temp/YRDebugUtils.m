@@ -44,6 +44,11 @@
     NSMutableArray *shortDescriptionComponents = [NSMutableArray new];
     
     [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Seq#: %d", YRPacketHeaderGetSequenceNumber(header)]];
+
+    if (YRPacketHeaderHasACK(header)) {
+        [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Ack: %d", YRPacketHeaderGetAckNumber(header)]];
+    }
+    
     [shortDescriptionComponents addObject:[self packetHeaderTypeDescription:header]];
 
     if (YRPacketHeaderGetPayloadLength(header) > 0) {
@@ -114,7 +119,7 @@
         }
         
         if (eacksArray.count > 0) {
-            return [NSString stringWithFormat:@"EACKS: [%@]", [eacksArray componentsJoinedByString:@"|"]];
+            return [NSString stringWithFormat:@"EACKS (%d): [%@]", eacksCount, [eacksArray componentsJoinedByString:@"|"]];
         }
     }
     

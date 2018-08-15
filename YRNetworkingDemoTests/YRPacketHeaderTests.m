@@ -214,7 +214,7 @@
     YRHeaderLengthType emptyLength = YRPacketHeaderEACKLength(NULL);
     XCTAssert(emptyLength == kYRPacketHeaderGenericLength);
     
-    uint8_t sequencesArray[(YRSequenceNumberType)(~0)];
+    YRSequenceNumberType sequencesArray[(YRSequenceNumberType)(~0)];
     memset(sequencesArray, 0, (YRSequenceNumberType)(~0));
     
     YRSequenceNumberType *sequences = sequencesArray;
@@ -255,7 +255,7 @@
             XCTAssertTrue(returnedSequences[seqToTestIterator] == sequences[seqToTestIterator]);
         }
         
-        NSLog(@"%@", [YRDebugUtils packetHeaderFullDescription:header]);
+//        NSLog(@"%@", [YRDebugUtils packetHeaderFullDescription:header]);
     }
 }
 

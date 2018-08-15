@@ -20,7 +20,7 @@
 #import "GCDAsyncUdpSocket.h"
 #import "YRDebugUtils.h"
 
-static uint32_t const kYRMaxPacketSize = 65535;
+static uint32_t const kYRMaxPacketSize = 65536;
 
 @implementation YRSession {
     YRLogger *_sessionLogger;

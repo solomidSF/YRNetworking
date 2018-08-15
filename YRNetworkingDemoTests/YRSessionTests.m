@@ -191,22 +191,79 @@
 
     [self waitForExpectationsWithTimeout:5 handler:nil];
     
+    YRSequenceNumberType packetsToSend = 274;
+    
+    YRConnectionConfiguration sessionTwoConfiguration = {0};
+    [[_sessionTwo valueForKey:@"_localConfiguration"] getValue:&sessionTwoConfiguration];
+    
+    uint32_t dummyPayload = 0;
+
     YRSequenceNumberType nextSeq = [[_sessionOne valueForKey:@"_sendNextSequenceNumber"] intValue];
     YRSequenceNumberType lastAckedSeq = [[_sessionOne valueForKey:@"_rcvLatestAckedSegment"] intValue];
 
-    YRSequenceNumberType packetsToSend = 240;
-    
-    for (int i = 1; i < packetsToSend + 1; i++) {
-        YRPacketRef outOfSeqPacket = YRPacketCreateWithPayload(nextSeq + i, lastAckedSeq, &i, sizeof(int));
-        uint8_t buffer[YRPacketGetLength(outOfSeqPacket)];
-
+    for (int i = 0; i < packetsToSend; dummyPayload++) {
+        uint32_t expectedPayload = dummyPayload;
+        uint32_t packetsSent = 0;
+        
+        for (uint16_t maxOutOfSeqIterator = 0; maxOutOfSeqIterator < sessionTwoConfiguration.maxNumberOfOutstandingSegments && i < packetsToSend; maxOutOfSeqIterator++, i++, packetsSent++) {
+            dummyPayload++;
+            YRSequenceNumberType outOfSeqSegmentOffset = maxOutOfSeqIterator + 1;
+            
+            YRPacketRef outOfSeqPacket = YRPacketCreateWithPayload(nextSeq + outOfSeqSegmentOffset, lastAckedSeq, &dummyPayload, sizeof(int));
+            uint8_t buffer[YRPacketGetLength(outOfSeqPacket)];
+            
+            uint8 bufferForStream[kYRLightweightOutputStreamSize];
+            YRLightweightOutputStreamRef stream = YRLightweightOutputStreamCreateAt(buffer, YRPacketGetLength(outOfSeqPacket), bufferForStream);
+            
+            YRPacketSerialize(outOfSeqPacket, stream);
+            
+            NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(outOfSeqPacket) freeWhenDone:NO];
+            
+            void (^sendCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *dataToSend) {
+                uint8_t bufferForStream[kYRLightweightInputStreamSize];
+                
+                YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(dataToSend.bytes, dataToSend.length, bufferForStream);
+                
+                XCTAssertTrue(YRPacketCanDeserializeFromStream(stream), @"Can't deserialize packet!");
+                
+                YRPacketRef outgoingPacket = YRPacketDeserialize(stream);
+                
+                XCTAssertTrue(outgoingPacket != NULL, @"Packet could be deserialized but deserialization function returned NULL");
+                
+                YRPacketHeaderRef header = YRPacketGetHeader(outgoingPacket);
+                
+                XCTAssertTrue(YRPacketHeaderHasEACK(header), @"Packet header MUST have EACK(s)");
+                
+                YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+                
+                YRSequenceNumberType eacksCount = 0;
+                
+                YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
+                
+                XCTAssertTrue(eacksCount == outOfSeqSegmentOffset);
+                
+                for (YRSequenceNumberType iterator = 0; iterator < eacksCount; iterator++) {
+                    XCTAssertTrue(eacks[iterator] == nextSeq + (iterator + 1), @"Invalid EACK format in header!");
+                }
+                
+                YRPacketDestroy(outgoingPacket);
+            };
+            
+            _sessionTwoSendCallout = sendCallout;
+            
+            [_sessionTwo receive:bytes];
+        }
+        
+        YRPacketRef correctSeqPacket = YRPacketCreateWithPayload(nextSeq, lastAckedSeq, &expectedPayload, sizeof(int));
+        uint8_t buffer[YRPacketGetLength(correctSeqPacket)];
+        
         uint8 bufferForStream[kYRLightweightOutputStreamSize];
-        YRLightweightOutputStreamRef stream = YRLightweightOutputStreamCreateAt(buffer, YRPacketGetLength(outOfSeqPacket), bufferForStream);
+        YRLightweightOutputStreamRef stream = YRLightweightOutputStreamCreateAt(buffer, YRPacketGetLength(correctSeqPacket), bufferForStream);
         
-        YRPacketSerialize(outOfSeqPacket, stream);
+        YRPacketSerialize(correctSeqPacket, stream);
         
-        NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(outOfSeqPacket) freeWhenDone:NO];
-
+        NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(correctSeqPacket) freeWhenDone:NO];
+        
         void (^sendCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *dataToSend) {
             uint8_t bufferForStream[kYRLightweightInputStreamSize];
             
@@ -220,85 +277,48 @@
             
             YRPacketHeaderRef header = YRPacketGetHeader(outgoingPacket);
             
-            XCTAssertTrue(YRPacketHeaderHasEACK(header), @"Packet header MUST have EACK(s)");
+            XCTAssertTrue(!YRPacketHeaderHasEACK(header), @"Packet header MUST not have EACK");
             
-            YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+            XCTAssertTrue(YRPacketHeaderHasACK(header), @"Packet header MUST have ACK");
             
-            YRSequenceNumberType eacksCount = 0;
+            YRSequenceNumberType ackNumber = YRPacketHeaderGetAckNumber(header);
             
-            YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(eackHeader, &eacksCount);
+            XCTAssertTrue(ackNumber == nextSeq + packetsSent, @"Unexpected ACK by session two.");
             
-            XCTAssertTrue(eacksCount == i);
-            
-            for (YRSequenceNumberType iterator = 0; iterator < eacksCount; iterator++) {
-                XCTAssertTrue(eacks[iterator] == nextSeq + (iterator + 1), @"Invalid EACK format in header!");
-            }
-
             YRPacketDestroy(outgoingPacket);
         };
         
+        __block int expectedToReceive = expectedPayload;
+        
+        void (^rcvCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *rcvedData) {
+            XCTAssertTrue(rcvedData.length == sizeof(expectedToReceive), @"Payload size mismatch!");
+            
+            int received = 0;
+            
+            [rcvedData getBytes:&received length:rcvedData.length];
+            
+            XCTAssertTrue(received == expectedToReceive, @"Incorrect callout sequence for receiving session!");
+            
+            expectedToReceive++;
+        };
+        
         _sessionTwoSendCallout = sendCallout;
+        _sessionTwoReceiveCallout = rcvCallout;
         
         [_sessionTwo receive:bytes];
+        
+        _sessionTwoSendCallout = nil;
+        _sessionTwoReceiveCallout = nil;
+        
+        nextSeq += packetsSent;
+        // We've sent correct sequence to receive all acks.
+        nextSeq++;
     }
-
-    int payloadWithZero = 0;
-    
-    YRPacketRef correctSeqPacket = YRPacketCreateWithPayload(nextSeq, lastAckedSeq, &payloadWithZero, sizeof(int));
-    uint8_t buffer[YRPacketGetLength(correctSeqPacket)];
-    
-    uint8 bufferForStream[kYRLightweightOutputStreamSize];
-    YRLightweightOutputStreamRef stream = YRLightweightOutputStreamCreateAt(buffer, YRPacketGetLength(correctSeqPacket), bufferForStream);
-    
-    YRPacketSerialize(correctSeqPacket, stream);
-    
-    NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(correctSeqPacket) freeWhenDone:NO];
-
-    void (^sendCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *dataToSend) {
-        uint8_t bufferForStream[kYRLightweightInputStreamSize];
-        
-        YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(dataToSend.bytes, dataToSend.length, bufferForStream);
-        
-        XCTAssertTrue(YRPacketCanDeserializeFromStream(stream), @"Can't deserialize packet!");
-        
-        YRPacketRef outgoingPacket = YRPacketDeserialize(stream);
-        
-        XCTAssertTrue(outgoingPacket != NULL, @"Packet could be deserialized but deserialization function returned NULL");
-        
-        YRPacketHeaderRef header = YRPacketGetHeader(outgoingPacket);
-        
-        XCTAssertTrue(!YRPacketHeaderHasEACK(header), @"Packet header MUST not have EACK");
-        
-        XCTAssertTrue(YRPacketHeaderHasACK(header), @"Packet header MUST have ACK");
-        
-        YRSequenceNumberType ackNumber = YRPacketHeaderGetAckNumber(header);
-        
-        XCTAssertTrue(ackNumber == nextSeq + packetsToSend, @"Unexpected ACK by session two.");
-        
-        YRPacketDestroy(outgoingPacket);
-    };
-    
-    __block int expectedToReceive = 0;
-    
-    void (^rcvCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *rcvedData) {
-        XCTAssertTrue(rcvedData.length == sizeof(expectedToReceive), @"Payload size mismatch!");
-        
-        int received = 0;
-        
-        [rcvedData getBytes:&received length:rcvedData.length];
-        
-        XCTAssertTrue(received == expectedToReceive, @"Incorrect callout sequence for receiving session!");
-        
-        expectedToReceive++;
-    };
-    
-    _sessionTwoSendCallout = sendCallout;
-    _sessionTwoReceiveCallout = rcvCallout;
-    
-    [_sessionTwo receive:bytes];
 }
 
 - (void)testSequenceNumberWrapAround {
+    [_sessionOne setValue:@(65500) forKey:@"_sendNextSequenceNumber"];
+    
     XCTestExpectation *expectation = [self expectationWithDescription:@"Simultaneous connection established."];
     
     _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
