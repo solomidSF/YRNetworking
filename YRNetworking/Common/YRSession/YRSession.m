@@ -382,7 +382,12 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 }
             }
             
-            YRPayloadLengthType payloadLength = YRPacketHeaderGetPayloadLength(receivedHeader);
+            YRPayloadLengthType payloadLength = 0;
+            
+            if (YRPacketHeaderHasPayloadLength(receivedHeader)) {
+                payloadLength = YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)receivedHeader);
+            }
+            
             if (isNUL || payloadLength > 0) {
                 if (sequenceNumber == expectedToReceive) {
                     _rcvLatestAckedSegment = sequenceNumber;
@@ -423,12 +428,13 @@ static uint32_t const kYRMaxPacketSize = 65536;
         case kYRSessionStateConnected: {
             YRSequenceNumberType expectedToReceive = _rcvLatestAckedSegment + 1;
             
-            BOOL willWrapAround = (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments) < expectedToReceive;
+            YRSequenceNumberType maxSegmentThatCanBeReceived = expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments;
+            BOOL willWrapAround = maxSegmentThatCanBeReceived < expectedToReceive;
             
-            BOOL canProcessPacket = expectedToReceive <= sequenceNumber && sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+            BOOL canProcessPacket = expectedToReceive <= sequenceNumber && sequenceNumber <= maxSegmentThatCanBeReceived;
             
             if (willWrapAround) {
-                canProcessPacket = expectedToReceive <= sequenceNumber || sequenceNumber <= (expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments);
+                canProcessPacket = expectedToReceive <= sequenceNumber || sequenceNumber <= maxSegmentThatCanBeReceived;
             }
             
             if (canProcessPacket) {
@@ -504,7 +510,8 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 break;
             }
             
-            if (YRPacketHeaderGetPayloadLength(receivedHeader) > 0) {
+            if (YRPacketHeaderHasPayloadLength(receivedHeader) &&
+                YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)receivedHeader) > 0) {
                 if (sequenceNumber == expectedToReceive) {
                     _rcvLatestAckedSegment = sequenceNumber;
                     

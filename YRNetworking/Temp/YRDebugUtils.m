@@ -51,8 +51,8 @@
     
     [shortDescriptionComponents addObject:[self packetHeaderTypeDescription:header]];
 
-    if (YRPacketHeaderGetPayloadLength(header) > 0) {
-        [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength(header)]];
+    if (YRPacketHeaderHasPayloadLength(header) && YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header) > 0) {
+        [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header)]];
     }
     
     // 8. EACKS (Possibly)
@@ -61,7 +61,6 @@
     if (eacksDescription) {
         [shortDescriptionComponents addObject:eacksDescription];
     }
-//    [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Is Logically Valid: %@", YRPacketHeaderIsLogicallyValid(header) ? @"YES" : @"NO"]];
     
     return [shortDescriptionComponents componentsJoinedByString:@" "];
 }
@@ -90,7 +89,9 @@
     [packetComponents addObject:[NSString stringWithFormat:@"Latest Ack'ed Seq #: %d", YRPacketHeaderGetAckNumber(header)]];
     
     // 5. Data Length
-    [packetComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength(header)]];
+    if (YRPacketHeaderHasPayloadLength(header)) {
+        [packetComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header)]];
+    }
     
     // 7. Checksum
     [packetComponents addObject:[NSString stringWithFormat:@"Checksum: %d", YRPacketHeaderGetChecksum(header)]];

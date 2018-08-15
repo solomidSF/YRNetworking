@@ -8,7 +8,7 @@
 
 #include "YRPacketHeader.h"
 #include <stdlib.h>
-#include <string.h>
+#include <string.h> // for memcpy
 
 #pragma mark - Data Structures
 
@@ -16,12 +16,19 @@
 
 typedef struct YRPacketHeader {
     YRChecksumType checksum;
-    YRPayloadLengthType payloadLength;
     YRSequenceNumberType sequenceNumber;
     YRSequenceNumberType ackNumber;
     YRPacketDescriptionType packetDescription;
     YRHeaderLengthType headerLength;
     // void *variableData;
+    
+//     What if we create a union here?
+//    union {
+//        uint8_t errorCode; // For RST
+//        YRConnectionConfiguration connectionConfiguration; // For SYN
+//        YRSequenceNumberType eacks[1];
+//        YRPayloadLengthType payloadLength;
+//    } packetSpecificData;
 } YRPacketHeader;
 
 typedef struct YRPacketHeaderSYN {
@@ -36,11 +43,20 @@ typedef struct YRPacketHeaderRST {
     uint8_t errorCode;
 } YRPacketHeaderRST;
 
+typedef struct YRPacketPayloadHeader {
+    YRPacketHeader base;
+    YRPayloadLengthType payloadLength;
+} YRPacketPayloadHeader;
+
 typedef struct YRPacketHeaderEACK {
-    YRPacketHeader commonHeader;
+    YRPacketPayloadHeader payloadHeader;
     // EACK-related data
     YRSequenceNumberType eacks[1];
 } YRPacketHeaderEACK;
+
+typedef struct YRPacketHeaderACK {
+    YRPacketPayloadHeader payloadHeader;
+} YRPacketHeaderACK;
 
 #pragma pack(pop)
 
@@ -51,13 +67,14 @@ YRProtocolVersionType const kYRProtocolVersion = 0x01;
 YRHeaderLengthType const kYRPacketHeaderGenericLength = sizeof(YRPacketHeader);
 YRHeaderLengthType const kYRPacketHeaderSYNLength = sizeof(YRPacketHeaderSYN);
 YRHeaderLengthType const kYRPacketHeaderRSTLength = sizeof(YRPacketHeaderRST);
+YRHeaderLengthType const kYRPacketPayloadHeaderLength = sizeof(YRPacketPayloadHeader);
 
 YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount) {
     size_t eackTypeSize = sizeof(YRSequenceNumberType);
     
     YRSequenceNumberType eacksCount = ioCount ? *ioCount : 0;
     
-    YRHeaderLengthType bytesTaken = kYRPacketHeaderGenericLength;
+    YRHeaderLengthType bytesTaken = kYRPacketPayloadHeaderLength;
     YRHeaderLengthType bytesLeft = YRMaximumPacketHeaderSize - bytesTaken;
     
     if (eacksCount == 0) {
@@ -122,10 +139,6 @@ void YRPacketHeaderSetCHK(YRPacketHeaderRef header) {
     header->packetDescription |= YRPacketDescriptionCHK;
 }
 
-void YRPacketHeaderSetPayloadLength(YRPacketHeaderRef header, YRPayloadLengthType length) {
-    header->payloadLength = length;
-}
-
 void YRPacketHeaderSetChecksum(YRPacketHeaderRef header, YRChecksumType checksum) {
     header->checksum = checksum;
 }
@@ -178,10 +191,6 @@ YRSequenceNumberType YRPacketHeaderGetAckNumber(YRPacketHeaderRef header) {
     return header->ackNumber;
 }
 
-YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketHeaderRef header) {
-    return header->payloadLength;
-}
-
 YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header) {
     return header->checksum;
 }
@@ -206,20 +215,35 @@ uint8_t YRPacketRSTHeaderGetErrorCode(YRPacketHeaderRSTRef rstHeader) {
     return rstHeader->errorCode;
 }
 
+#pragma mark - Payload Header
+
+bool YRPacketHeaderHasPayloadLength(YRPacketHeaderRef header) {
+    YRPacketDescriptionType packetDescriptionWithoutProtocol = header->packetDescription & (~(0x11 << kYRProtocolVersionOffset));
+    return (packetDescriptionWithoutProtocol & (~(YRPacketDescriptionACK | YRPacketDescriptionEACK | YRPacketDescriptionCHK))) == 0;
+}
+
+void YRPacketHeaderSetPayloadLength(YRPacketPayloadHeaderRef header, YRPayloadLengthType length) {
+    header->payloadLength = length;
+}
+
+YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketPayloadHeaderRef header) {
+    return header->payloadLength;
+}
+
 #pragma mark - EACK Header
 
 void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacks, YRSequenceNumberType eacksCount) {
     if (eacksCount > 0) {
-        eackHeader->commonHeader.packetDescription |= YRPacketDescriptionEACK;
+        eackHeader->payloadHeader.base.packetDescription |= YRPacketDescriptionEACK;
     }
     
     memcpy(eackHeader->eacks, eacks, eacksCount * sizeof(YRSequenceNumberType));
 }
 
 YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader) {
-    YRHeaderLengthType headerLength = YRPacketHeaderGetHeaderLength(&eackHeader->commonHeader);
+    YRHeaderLengthType headerLength = YRPacketHeaderGetHeaderLength(&eackHeader->payloadHeader.base);
     
-    return YRPacketHeaderEACKsCountThatFit(headerLength - kYRPacketHeaderGenericLength);
+    return YRPacketHeaderEACKsCountThatFit(headerLength - kYRPacketPayloadHeaderLength);
 }
 
 YRSequenceNumberType *YRPacketHeaderGetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacksCount) {

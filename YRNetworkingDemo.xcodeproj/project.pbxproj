@@ -53,6 +53,7 @@
 		7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1D20FA983500486ED9 /* ServerViewController.m */; };
 		7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
 		7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
+		7DE17C122124CEBF001C3C72 /* YRPacketTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE17C112124CEBF001C3C72 /* YRPacketTests.m */; };
 		7DEB3B7F2113516200486DA4 /* YRReceiveOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */; };
 /* End PBXBuildFile section */
 
@@ -146,8 +147,8 @@
 		7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSharedLogger.m; sourceTree = "<group>"; };
 		7DC4EB2620FB8B7400486ED9 /* YRPacketHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketHeader.h; sourceTree = "<group>"; };
 		7DE17C102121E49C001C3C72 /* YRConnectionConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRConnectionConfiguration.h; sourceTree = "<group>"; };
+		7DE17C112124CEBF001C3C72 /* YRPacketTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRPacketTests.m; sourceTree = "<group>"; };
 		7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YRNetworkingDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		7DEB3B7221123B1500486DA4 /* YRNetworkingDemoTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRNetworkingDemoTests.m; sourceTree = "<group>"; };
 		7DEB3B7421123B1500486DA4 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7DEB3B7A21123CDB00486DA4 /* YRSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSessionTests.m; sourceTree = "<group>"; };
 		7DEB3B7D2113516200486DA4 /* YRReceiveOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRReceiveOperation.h; sourceTree = "<group>"; };
@@ -425,8 +426,8 @@
 			isa = PBXGroup;
 			children = (
 				7DEB3B8B2118928700486DA4 /* YRPacketHeaderTests.m */,
+				7DE17C112124CEBF001C3C72 /* YRPacketTests.m */,
 				7DEB3B7A21123CDB00486DA4 /* YRSessionTests.m */,
-				7DEB3B7221123B1500486DA4 /* YRNetworkingDemoTests.m */,
 				7DEB3B7421123B1500486DA4 /* Info.plist */,
 			);
 			path = YRNetworkingDemoTests;
@@ -607,6 +608,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7DE17C122124CEBF001C3C72 /* YRPacketTests.m in Sources */,
 				7D32E86F211CE53E00269410 /* YRSessionTests.m in Sources */,
 				7D32E86E211CE50000269410 /* YRPacketHeaderTests.m in Sources */,
 				7D32E86C211CE4DD00269410 /* GCDAsyncUdpSocket.m in Sources */,

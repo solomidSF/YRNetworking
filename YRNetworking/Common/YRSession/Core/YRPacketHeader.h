@@ -34,6 +34,14 @@ extern YRProtocolVersionType const kYRProtocolVersion;
 extern YRHeaderLengthType const kYRPacketHeaderGenericLength;
 extern YRHeaderLengthType const kYRPacketHeaderSYNLength;
 extern YRHeaderLengthType const kYRPacketHeaderRSTLength;
+extern YRHeaderLengthType const kYRPacketPayloadHeaderLength;
+
+//typedef union {
+//    YRPacketGenericHeaderRef commonHeader;
+//    YRPacketHeaderSYNRef synHeader;
+//    YRPacketHeaderRSTRef rstHeader;
+//    YRPacketHeaderEACKRef eackHeader;
+//} YRPacketHeader __attribute__((transparent_union));
 
 enum YRPacketDescription {
     // Synchronization segment. Mutually exclusive with RST && NUL.
@@ -55,6 +63,7 @@ enum YRPacketDescription {
 typedef struct YRPacketHeader *YRPacketHeaderRef;
 typedef struct YRPacketHeaderSYN *YRPacketHeaderSYNRef;
 typedef struct YRPacketHeaderRST *YRPacketHeaderRSTRef;
+typedef struct YRPacketPayloadHeader *YRPacketPayloadHeaderRef;
 typedef struct YRPacketHeaderEACK *YRPacketHeaderEACKRef;
 
 /**
@@ -80,7 +89,6 @@ void YRPacketHeaderSetHeaderLength(YRPacketHeaderRef header, YRHeaderLengthType 
 void YRPacketHeaderSetSequenceNumber(YRPacketHeaderRef header, YRSequenceNumberType seqNumber);
 void YRPacketHeaderSetAckNumber(YRPacketHeaderRef header, YRSequenceNumberType ackNumber);
 void YRPacketHeaderSetCHK(YRPacketHeaderRef header);
-void YRPacketHeaderSetPayloadLength(YRPacketHeaderRef header, YRPayloadLengthType length);
 void YRPacketHeaderSetChecksum(YRPacketHeaderRef header, YRChecksumType checksum);
 
 YRPacketDescriptionType YRPacketHeaderGetPacketDescription(YRPacketHeaderRef header);
@@ -95,7 +103,6 @@ YRProtocolVersionType YRPacketHeaderGetProtocolVersion(YRPacketHeaderRef header)
 YRHeaderLengthType YRPacketHeaderGetHeaderLength(YRPacketHeaderRef header);
 YRSequenceNumberType YRPacketHeaderGetSequenceNumber(YRPacketHeaderRef header);
 YRSequenceNumberType YRPacketHeaderGetAckNumber(YRPacketHeaderRef header);
-YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketHeaderRef header);
 YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header);
 
 #pragma mark - SYN Header
@@ -107,6 +114,12 @@ YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef
 
 void YRPacketRSTHeaderSetErrorCode(YRPacketHeaderRSTRef rstHeader, uint8_t errCode);
 uint8_t YRPacketRSTHeaderGetErrorCode(YRPacketHeaderRSTRef rstHeader);
+
+#pragma mark - Payload Header
+
+bool YRPacketHeaderHasPayloadLength(YRPacketHeaderRef header);
+void YRPacketHeaderSetPayloadLength(YRPacketPayloadHeaderRef header, YRPayloadLengthType length);
+YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketPayloadHeaderRef header);
 
 #pragma mark - EACK Header
 

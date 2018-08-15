@@ -27,6 +27,20 @@
     [super tearDown];
 }
 
+- (void)testPacketSizes {
+    XCTAssertTrue(kYRPacketHeaderGenericLength == 10);
+    XCTAssertTrue(kYRPacketHeaderSYNLength == 20);
+    XCTAssertTrue(kYRPacketHeaderRSTLength == 11);
+    XCTAssertTrue(kYRPacketPayloadHeaderLength == 12);
+    
+    for (YRSequenceNumberType i = 0; i < (YRSequenceNumberType)(~0); i++) {
+        YRSequenceNumberType eacks = i;
+        YRHeaderLengthType length = YRPacketHeaderEACKLength(&eacks);
+        
+        XCTAssertTrue(eacks * sizeof(YRSequenceNumberType) + kYRPacketPayloadHeaderLength == length);
+    }
+}
+
 - (void)testGenericPacketHeader {
     BOOL traverseAllSeqAndAcks = NO;
     BOOL traverseAllHeaderValues = NO;
@@ -100,9 +114,12 @@
                                                     YRPacketHeaderSetCHK(header);
                                                 }
                                                 
-                                                YRPacketHeaderSetPayloadLength(header, payloadLength);
                                                 YRPacketHeaderSetChecksum(header, checksum);
                                                 
+                                                if (YRPacketHeaderHasPayloadLength(header)) {
+                                                    YRPacketHeaderSetPayloadLength((YRPacketPayloadHeaderRef)header, payloadLength);
+                                                }
+
                                                 // 3. Then
                                                 // Check header variables.
                                                 XCTAssertTrue(isSYN == YRPacketHeaderIsSYN(header));
@@ -121,7 +138,11 @@
                                                 }
                                                 
                                                 XCTAssertTrue(hasCHK == YRPacketHeaderHasCHK(header));
-                                                XCTAssertTrue(payloadLength == YRPacketHeaderGetPayloadLength(header));
+                                                
+                                                if (YRPacketHeaderHasPayloadLength(header)) {
+                                                    XCTAssertTrue(payloadLength == YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header));
+                                                }
+                                                
                                                 XCTAssertTrue(checksum == YRPacketHeaderGetChecksum(header));
                                                 
                                                 XCTAssertTrue(!YRPacketHeaderHasEACK(header));
@@ -212,7 +233,7 @@
 
 - (void)testEACKPacketHeader {
     YRHeaderLengthType emptyLength = YRPacketHeaderEACKLength(NULL);
-    XCTAssert(emptyLength == kYRPacketHeaderGenericLength);
+    XCTAssert(emptyLength == kYRPacketPayloadHeaderLength);
     
     YRSequenceNumberType sequencesArray[(YRSequenceNumberType)(~0)];
     memset(sequencesArray, 0, (YRSequenceNumberType)(~0));
