@@ -51,7 +51,7 @@ typedef struct YRPacketPayloadHeader {
 typedef struct YRPacketHeaderEACK {
     YRPacketPayloadHeader payloadHeader;
     // EACK-related data
-    YRSequenceNumberType eacks[1];
+    YRSequenceNumberType eacks[];
 } YRPacketHeaderEACK;
 
 typedef struct YRPacketHeaderACK {

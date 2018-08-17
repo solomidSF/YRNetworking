@@ -8,6 +8,7 @@
 
 #include "YRLightweightInputStream.h"
 #include <stdlib.h>
+#include <string.h> // for memcpy
 
 #define YRMakeMultipleTo(what, to) (((uintptr_t)(what) + ((to) - 1)) & (~((to) - 1)))
 
@@ -72,7 +73,9 @@ uint16_t YRLightweightInputStreamReadInt16(YRLightweightInputStreamRef streamRef
     if (streamRef->index + sizeof(uint16_t) <= streamRef->size) {
         uint16_t value = 0;
         
-        value = ntohs(*((uint16_t *)(streamRef->data + streamRef->index)));
+        memcpy(&value, streamRef->data + streamRef->index, sizeof(uint16_t));
+
+        value = ntohs(value);
         
         streamRef->index += sizeof(uint16_t);
         
@@ -86,7 +89,9 @@ uint32_t YRLightweightInputStreamReadInt32(YRLightweightInputStreamRef streamRef
     if (streamRef->index + sizeof(uint32_t) <= streamRef->size) {
         uint32_t value = 0;
         
-        value = ntohl(*((uint32_t *)(streamRef->data + streamRef->index)));
+        memcpy(&value, streamRef->data + streamRef->index, sizeof(uint32_t));
+        
+        value = ntohl(value);
         
         streamRef->index += sizeof(uint32_t);
         

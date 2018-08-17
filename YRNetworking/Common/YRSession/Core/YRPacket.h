@@ -16,7 +16,7 @@
 
 typedef struct YRPacket *YRPacketRef;
 
-#pragma mark - Data Structure Minimum Sizes
+#pragma mark - Data Structure Sizes
 
 YRPayloadLengthType YRPacketSYNLength(void);
 YRPayloadLengthType YRPacketRSTLength(void);
@@ -28,16 +28,47 @@ YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength);
 
 #pragma mark - Factory Methods
 
-YRPacketRef YRPacketCreateSYN(YRConnectionConfiguration configuration, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK);
-YRPacketRef YRPacketCreateRST(uint8_t errorCode, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK);
-YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);
-YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber);
-YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences, YRSequenceNumberType *ioSequencesCount);
-YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences,
-    YRSequenceNumberType *ioSequencesCount, const void *payload, YRPayloadLengthType payloadLength);
-YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, const void *payload, YRPayloadLengthType payloadLength);
-// TODO: Add option to create with payload byref or by copy.
-// Byref can be used to send packets unreliably.
+YRPacketRef YRPacketCreateSYN(YRConnectionConfiguration configuration,
+                              YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              bool hasACK,
+                              void *packetBuffer);
+
+YRPacketRef YRPacketCreateRST(uint8_t errorCode,
+                              YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              bool hasACK,
+                              void *packetBuffer);
+
+YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              void *packetBuffer);
+
+YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              void *packetBuffer);
+
+YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber,
+                               YRSequenceNumberType ackNumber,
+                               YRSequenceNumberType *sequences,
+                               YRSequenceNumberType *ioSequencesCount,
+                               void *packetBuffer);
+
+YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber,
+                                          YRSequenceNumberType ackNumber,
+                                          YRSequenceNumberType *sequences,
+                                          YRSequenceNumberType *ioSequencesCount,
+                                          const void *payload,
+                                          YRPayloadLengthType payloadLength,
+                                          bool copyPayload,
+                                          void *packetBuffer);
+
+YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber,
+                                      YRSequenceNumberType ackNumber,
+                                      const void *payload,
+                                      YRPayloadLengthType payloadLength,
+                                      bool copyPayload,
+                                      void *packetBuffer);
 
 void YRPacketDestroy(YRPacketRef packet);
 
@@ -72,12 +103,5 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
  *  But this one copies all data into YRPacketRef data structure for further processing.
  */
 void YRPacketCopyPayloadInline(YRPacketRef packet);
-
-// === Lazy deserialization ===
-YRPacketRef YRPacketDeserializeHeader(YRLightweightInputStreamRef stream);
-YRPacketRef YRPacketDeserializePayload(YRLightweightInputStreamRef stream);
-
-YRPacketRef YRPacketDeserializeHeaderAt(YRLightweightInputStreamRef stream, void *packetBuffer);
-YRPacketRef YRPacketDeserializePayloadAt(YRPacketRef packet, YRLightweightInputStreamRef stream);
 
 #endif /* YRPacket_h */

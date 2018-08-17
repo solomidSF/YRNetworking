@@ -122,7 +122,7 @@
 
 enum YRPacketFlags {
     // If set - payload start in packet actually is a pointer to real payload.
-    YRPacketFlagIsByRef = 1 << 0,
+    YRPacketFlagPayloadIsByRef = 1 << 0,
     YRPacketFlagIsCustomlyAllocated = 1 << 1,
 };
 
@@ -139,12 +139,21 @@ typedef struct YRPacket {
 
 static inline YRPayloadLengthType YRPacketGenericLength(void);
 static inline YRPayloadLengthType YRPacketGenericAlignedLength(void);
+
+static inline YRPacketRef YRPacketConstruct(void *whereAt,
+                                            size_t packetSize,
+                                            YRSequenceNumberType seqNumber,
+                                            YRSequenceNumberType ackNumber,
+                                            bool hasACK,
+                                            YRHeaderLengthType headerLength,
+                                            void (^packetSpecificConstructor) (YRPacketRef packet, YRPacketHeaderRef header));
+
 void YRPacketFinalize(YRPacketRef packet);
 static inline YRChecksumType YRPacketCalculateChecksum(YRPacketRef packet);
 void *YRPacketGetPayloadPointer(YRPacketRef packet);
 void *YRPacketGetPayloadStart(YRPacketRef packet);
 
-#pragma mark - Convenience Methods
+#pragma mark - Data Structure Sizes
 
 #define kYRPacketStructureLength (sizeof(YRPacket) - sizeof(void *))
 
@@ -152,8 +161,16 @@ YRPayloadLengthType YRPacketGenericLength() {
     return kYRPacketHeaderGenericLength + kYRPacketStructureLength;
 }
 
+YRPayloadLengthType YRPacketWithPayloadLength() {
+    return kYRPacketPayloadHeaderLength + kYRPacketStructureLength;
+}
+
 YRPayloadLengthType YRPacketGenericAlignedLength() {
     return YRMakeMultipleTo(YRPacketGenericLength(), 4);
+}
+
+YRPayloadLengthType YRPacketWithPayloadAlignedLength() {
+    return YRMakeMultipleTo(YRPacketWithPayloadLength(), 4);
 }
 
 YRPayloadLengthType YRPacketSYNLength() {
@@ -169,7 +186,7 @@ YRPayloadLengthType YRPacketNULLength() {
 }
 
 YRPayloadLengthType YRPacketACKLength() {
-    return YRPacketGenericAlignedLength();
+    return YRPacketWithPayloadAlignedLength();
 }
 
 YRPayloadLengthType YRPacketEACKLength(YRSequenceNumberType *ioSequencesCount) {
@@ -188,141 +205,138 @@ YRPayloadLengthType YRPacketEACKLengthWithPayload(YRSequenceNumberType *ioSequen
 
 YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength) {
     if (payloadLength > 0) {
-        return YRMakeMultipleTo(YRPacketGenericLength(), 8) + payloadLength;
+        return YRMakeMultipleTo(YRPacketWithPayloadLength(), 8) + payloadLength;
     } else {
-        return YRPacketGenericAlignedLength();
+        return YRPacketWithPayloadAlignedLength();
     }
 }
 
 #pragma mark - Factory Methods
 
-YRPacketRef YRPacketCreateSYN(YRConnectionConfiguration configuration, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
-    YRPacketRef packet = calloc(1, YRPacketSYNLength());
-    YRPacketHeaderRef header = YRPacketGetHeader(packet);
-    YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
-    
-    YRPacketHeaderSetSYN(header);
-    YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
-    YRPacketHeaderSetSequenceNumber(header, seqNumber);
- 
-    if (hasACK) {
-        YRPacketHeaderSetAckNumber(header, ackNumber);
-    }
-    
-    YRPacketHeaderSetHeaderLength(header, kYRPacketHeaderSYNLength);
-    YRPacketFinalize(packet);
-    
-    return packet;
+YRPacketRef YRPacketCreateSYN(YRConnectionConfiguration configuration,
+                              YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              bool hasACK,
+                              void *packetBuffer) {
+    return YRPacketConstruct(packetBuffer, YRPacketSYNLength(), seqNumber, ackNumber, hasACK,
+        kYRPacketHeaderSYNLength, ^(YRPacketRef packet, YRPacketHeaderRef header) {
+            YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)header;
+            
+            YRPacketHeaderSetSYN(header);
+            YRPacketSYNHeaderSetConfiguration(synHeader, configuration);
+        });
 }
 
-YRPacketRef YRPacketCreateRST(uint8_t errorCode, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, bool hasACK) {
-    YRPacketRef packet = calloc(1, YRPacketRSTLength());
-    YRPacketHeaderRef header = YRPacketGetHeader(packet);
-    
-    YRPacketHeaderSetRST(header);
-    YRPacketHeaderSetSequenceNumber(header, seqNumber);
-    
-    YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
-    YRPacketRSTHeaderSetErrorCode(rstHeader, errorCode);
-    
-    if (hasACK) {
-        YRPacketHeaderSetAckNumber(header, ackNumber);
-    }
-    
-    YRPacketHeaderSetHeaderLength(header, kYRPacketHeaderGenericLength);
-    YRPacketFinalize(packet);
-    
-    return packet;
+YRPacketRef YRPacketCreateRST(uint8_t errorCode,
+                              YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              bool hasACK,
+                              void *packetBuffer) {
+    return YRPacketConstruct(packetBuffer, YRPacketRSTLength(), seqNumber, ackNumber, hasACK,
+        kYRPacketHeaderRSTLength, ^(YRPacketRef packet, YRPacketHeaderRef header) {
+            YRPacketHeaderRSTRef rstHeader = (YRPacketHeaderRSTRef)header;
+
+            YRPacketHeaderSetRST(header);
+            YRPacketRSTHeaderSetErrorCode(rstHeader, errorCode);
+        });
 }
 
-YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
-    YRPacketRef packet = calloc(1, YRPacketNULLength());
-    YRPacketHeaderRef header = YRPacketGetHeader(packet);
-
-    YRPacketHeaderSetNUL(header);
-    YRPacketHeaderSetSequenceNumber(header, seqNumber);
-    YRPacketHeaderSetAckNumber(header, ackNumber);
-    YRPacketHeaderSetHeaderLength(header, kYRPacketHeaderGenericLength);
-    YRPacketFinalize(packet);
-    
-    return packet;
+YRPacketRef YRPacketCreateNUL(YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              void *packetBuffer) {
+    return YRPacketConstruct(packetBuffer, YRPacketNULLength(), seqNumber, ackNumber, true,
+        kYRPacketHeaderGenericLength, ^(YRPacketRef packet, YRPacketHeaderRef header) {
+            YRPacketHeaderSetNUL(header);
+        });
 }
 
-YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
-    YRPacketRef packet = calloc(1, YRPacketACKLength());
-    YRPacketHeaderRef header = YRPacketGetHeader(packet);
-    
-    YRPacketHeaderSetSequenceNumber(header, seqNumber);
-    YRPacketHeaderSetAckNumber(header, ackNumber);
-    YRPacketHeaderSetHeaderLength(header, kYRPacketHeaderGenericLength);
-    YRPacketFinalize(packet);
-    
-    return packet;
+YRPacketRef YRPacketCreateACK(YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              void *packetBuffer) {
+    return YRPacketConstruct(packetBuffer, YRPacketACKLength(), seqNumber, ackNumber, true,
+        kYRPacketPayloadHeaderLength, NULL);
 }
 
-YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences, YRSequenceNumberType *ioSequencesCount) {
-    return YRPacketCreateEACKWithPayload(seqNumber, ackNumber, sequences, ioSequencesCount, NULL, 0);
+YRPacketRef YRPacketCreateEACK(YRSequenceNumberType seqNumber,
+                               YRSequenceNumberType ackNumber,
+                               YRSequenceNumberType *sequences,
+                               YRSequenceNumberType *ioSequencesCount,
+                               void *packetBuffer) {
+    return YRPacketCreateEACKWithPayload(seqNumber, ackNumber, sequences, ioSequencesCount, NULL, 0, false, packetBuffer);
 }
 
-YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, YRSequenceNumberType *sequences,
-    YRSequenceNumberType *ioSequencesCount, const void *payload, YRPayloadLengthType payloadLength) {
-    YRPacketRef packet = calloc(1, YRPacketEACKLengthWithPayload(ioSequencesCount, payloadLength));
-    YRPacketHeaderRef commonHeader = YRPacketGetHeader(packet);
-    YRPacketPayloadHeaderRef payloadHeader = (YRPacketPayloadHeaderRef)commonHeader;
-    YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)commonHeader;
+YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber,
+                                          YRSequenceNumberType ackNumber,
+                                          YRSequenceNumberType *sequences,
+                                          YRSequenceNumberType *ioSequencesCount,
+                                          const void *payload,
+                                          YRPayloadLengthType payloadLength,
+                                          bool copyPayload,
+                                          void *packetBuffer) {
+    size_t packetSize = YRPacketEACKLengthWithPayload(ioSequencesCount, payloadLength);
+    YRHeaderLengthType headerSize = YRPacketHeaderEACKLength(ioSequencesCount);
     
-    YRPacketHeaderSetSequenceNumber(commonHeader, seqNumber);
-    YRPacketHeaderSetAckNumber(commonHeader, ackNumber);
-    YRPacketHeaderSetHeaderLength(commonHeader, YRPacketHeaderEACKLength(ioSequencesCount));
-    
-    if (ioSequencesCount && *ioSequencesCount > 0) {
-        YRPacketHeaderSetEACKs(eackHeader, sequences, *ioSequencesCount);
-    }
-    
-    YRPacketHeaderSetPayloadLength(payloadHeader, payloadLength);
-    
-    if (payloadLength > 0) {
-        memcpy(YRPacketGetPayloadStart(packet), payload, payloadLength);
-        YRPacketHeaderSetCHK(commonHeader);
-        
-        // Add ability to specify to copy bytes or to set as byref
-        //        YRPacketSetFlags(packet, YRPacketFlagIsByRef);
-    }
-    
-    YRPacketFinalize(packet);
-    
-    return packet;
+    return YRPacketConstruct(packetBuffer, packetSize, seqNumber,
+        ackNumber, true, headerSize, ^(YRPacketRef packet, YRPacketHeaderRef header) {
+            YRPacketPayloadHeaderRef payloadHeader = (YRPacketPayloadHeaderRef)header;
+            YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
+
+            if (ioSequencesCount && *ioSequencesCount > 0) {
+                YRPacketHeaderSetEACKs(eackHeader, sequences, *ioSequencesCount);
+            }
+
+            YRPacketHeaderSetPayloadLength(payloadHeader, payloadLength);
+
+            if (payloadLength > 0) {
+                YRPacketHeaderSetCHK(header);
+
+                if (copyPayload) {
+                    memcpy(YRPacketGetPayloadPointer(packet), payload, payloadLength);
+                } else {
+                    *((uintptr_t *)(YRPacketGetPayloadPointer(packet))) = (uintptr_t)payload;
+
+                    packet->flags |= YRPacketFlagPayloadIsByRef;
+                }
+            }
+        });
 }
 
-YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber, const void *payload, YRPayloadLengthType payloadLength) {
-    YRPacketRef packet = calloc(1, YRPacketLengthForPayload(payloadLength));
-    YRPacketHeaderRef header = YRPacketGetHeader(packet);
-    YRPacketPayloadHeaderRef payloadHeader = (YRPacketPayloadHeaderRef)header;
+YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber,
+                                      YRSequenceNumberType ackNumber,
+                                      const void *payload,
+                                      YRPayloadLengthType payloadLength,
+                                      bool copyPayload,
+                                      void *packetBuffer) {
+    size_t packetSize = YRPacketLengthForPayload(payloadLength);
 
-    YRPacketHeaderSetSequenceNumber(header, seqNumber);
-    YRPacketHeaderSetAckNumber(header, ackNumber);
-    YRPacketHeaderSetHeaderLength(header, kYRPacketHeaderGenericLength);
-    YRPacketHeaderSetPayloadLength(payloadHeader, payloadLength);
-    
-    if (payloadLength > 0) {
-        memcpy(YRPacketGetPayloadStart(packet), payload, payloadLength);
-        YRPacketHeaderSetCHK(header);
-        
-        // Add ability to specify to copy bytes or to set as byref
-//        YRPacketSetFlags(packet, YRPacketFlagIsByRef);
-    }
-    
-    YRPacketFinalize(packet);
-    
-    return packet;
+    return YRPacketConstruct(packetBuffer, packetSize, seqNumber, ackNumber, true,
+        kYRPacketPayloadHeaderLength, ^(YRPacketRef packet, YRPacketHeaderRef header) {
+            YRPacketPayloadHeaderRef payloadHeader = (YRPacketPayloadHeaderRef)header;
+            
+            YRPacketHeaderSetPayloadLength(payloadHeader, payloadLength);
+
+            if (payloadLength > 0) {
+                YRPacketHeaderSetCHK(header);
+                
+                if (copyPayload) {
+                    memcpy(YRPacketGetPayloadPointer(packet), payload, payloadLength);
+                } else {
+                    *((uintptr_t *)(YRPacketGetPayloadPointer(packet))) = (uintptr_t)payload;
+
+                    packet->flags |= YRPacketFlagPayloadIsByRef;
+                }
+            }
+        });
 }
 
 void YRPacketDestroy(YRPacketRef packet) {
     // TODO: Improve
     if (packet) {
-        memset(packet, 0, YRPacketGetLength(packet));
+//        memset(packet, 0, YRPacketGetLength(packet));
         
-        free(packet);
+        if (!(packet->flags & YRPacketFlagIsCustomlyAllocated)) {
+            free(packet);
+        }
     }
 }
 
@@ -580,9 +594,9 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
         
         if (realPayloadLengthLeft == payloadLength) {
             // Lazily set payload pointer 
-            *((uintptr_t *)(YRPacketGetPayloadStart(packet))) = (uintptr_t)rawPayloadAddress;
+            *((uintptr_t *)(YRPacketGetPayloadPointer(packet))) = (uintptr_t)rawPayloadAddress;
             
-            packet->flags |= YRPacketFlagIsByRef;
+            packet->flags |= YRPacketFlagPayloadIsByRef;
         } else {
             return NULL;
         }
@@ -592,7 +606,7 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
 }
 
 void YRPacketCopyPayloadInline(YRPacketRef packet) {
-    if (packet->flags & YRPacketFlagIsByRef) {
+    if (packet->flags & YRPacketFlagPayloadIsByRef) {
         void *payloadStart = YRPacketGetPayloadStart(packet);
         
         YRPayloadLengthType payloadLength = 0;
@@ -605,11 +619,45 @@ void YRPacketCopyPayloadInline(YRPacketRef packet) {
         
         memcpy(YRPacketGetPayloadPointer(packet), payloadStart, payloadLength);
         
-        packet->flags &= ~YRPacketFlagIsByRef;
+        packet->flags &= ~YRPacketFlagPayloadIsByRef;
     }
 }
 
 #pragma mark - Private
+
+YRPacketRef YRPacketConstruct(void *whereAt,
+                              size_t packetSize,
+                              YRSequenceNumberType seqNumber,
+                              YRSequenceNumberType ackNumber,
+                              bool hasACK,
+                              YRHeaderLengthType headerLength,
+                              void (^packetSpecificConstructor) (YRPacketRef packet, YRPacketHeaderRef header)) {
+    YRPacketRef packet = whereAt ? (YRPacketRef)whereAt : calloc(1, packetSize);
+    
+    if (whereAt) {
+        memset(packet, 0, packetSize);
+    }
+    
+    YRPacketHeaderRef header = YRPacketGetHeader(packet);
+
+    YRPacketHeaderSetSequenceNumber(header, seqNumber);
+    
+    if (hasACK) {
+        YRPacketHeaderSetAckNumber(header, ackNumber);
+    }
+    
+    YRPacketHeaderSetHeaderLength(header, headerLength);
+
+    !packetSpecificConstructor ?: packetSpecificConstructor(packet, header);
+    
+    YRPacketFinalize(packet);
+
+    if (whereAt) {
+        packet->flags |= YRPacketFlagIsCustomlyAllocated;
+    }
+    
+    return packet;
+}
 
 void YRPacketFinalize(YRPacketRef packet) {
     YRPacketHeaderSetProtocolVersion(YRPacketGetHeader(packet), kYRProtocolVersion);
@@ -666,7 +714,7 @@ void *YRPacketGetPayloadPointer(YRPacketRef packet) {
 void *YRPacketGetPayloadStart(YRPacketRef packet) {
     uintptr_t *payloadPointer = YRPacketGetPayloadPointer(packet);
     
-    if (packet->flags & YRPacketFlagIsByRef) {
+    if (packet->flags & YRPacketFlagPayloadIsByRef) {
         return (void *)(*payloadPointer);
     } else {
         return payloadPointer;

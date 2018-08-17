@@ -48,7 +48,8 @@ void YRLightweightOutputStreamWriteInt8(YRLightweightOutputStreamRef streamRef, 
 
 void YRLightweightOutputStreamWriteInt16(YRLightweightOutputStreamRef streamRef, uint16_t value) {
     if (streamRef->index + sizeof(uint16_t) <= streamRef->size) {
-        *((uint16_t *)(streamRef->data + streamRef->index)) = htons(value);
+        uint16_t beValue = htons(value);
+        memcpy(streamRef->data + streamRef->index, &beValue, sizeof(uint16_t));
         
         streamRef->index += sizeof(uint16_t);
     }
@@ -56,7 +57,8 @@ void YRLightweightOutputStreamWriteInt16(YRLightweightOutputStreamRef streamRef,
 
 void YRLightweightOutputStreamWriteInt32(YRLightweightOutputStreamRef streamRef, uint32_t value) {
     if (streamRef->index + sizeof(uint32_t) <= streamRef->size) {
-        *((uint32_t *)(streamRef->data + streamRef->index)) = htonl(value);
+        uint32_t beValue = htonl(value);
+        memcpy(streamRef->data + streamRef->index, &beValue, sizeof(uint32_t));
         
         streamRef->index += sizeof(uint32_t);
     }

@@ -209,7 +209,7 @@
             dummyPayload++;
             YRSequenceNumberType outOfSeqSegmentOffset = maxOutOfSeqIterator + 1;
             
-            YRPacketRef outOfSeqPacket = YRPacketCreateWithPayload(nextSeq + outOfSeqSegmentOffset, lastAckedSeq, &dummyPayload, sizeof(int));
+            YRPacketRef outOfSeqPacket = YRPacketCreateWithPayload(nextSeq + outOfSeqSegmentOffset, lastAckedSeq, &dummyPayload, sizeof(int), true, NULL);
             uint8_t buffer[YRPacketGetLength(outOfSeqPacket)];
             
             uint8 bufferForStream[kYRLightweightOutputStreamSize];
@@ -254,7 +254,12 @@
             [_sessionTwo receive:bytes];
         }
         
-        YRPacketRef correctSeqPacket = YRPacketCreateWithPayload(nextSeq, lastAckedSeq, &expectedPayload, sizeof(int));
+        YRPacketRef correctSeqPacket = YRPacketCreateWithPayload(nextSeq,
+                                                                 lastAckedSeq,
+                                                                 &expectedPayload,
+                                                                 sizeof(int),
+                                                                 true,
+                                                                 NULL);
         uint8_t buffer[YRPacketGetLength(correctSeqPacket)];
         
         uint8 bufferForStream[kYRLightweightOutputStreamSize];

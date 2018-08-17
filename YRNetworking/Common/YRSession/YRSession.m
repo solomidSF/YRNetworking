@@ -102,7 +102,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
         _isInitiator = YES;
         [self transiteToState:kYRSessionStateInitiating];
 
-        YRPacketRef packet = YRPacketCreateSYN(_localConfiguration, _sendNextSequenceNumber, 0, NO);
+        YRPacketRef packet = YRPacketCreateSYN(_localConfiguration, _sendNextSequenceNumber, 0, NO, NULL);
         _sendNextSequenceNumber++;
         
         [self sendPacketReliably:packet];
@@ -127,7 +127,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
     if (self.state == kYRSessionStateConnected) {
         [self transiteToState:kYRSessionStateDisconnecting];
 
-        YRPacketRef packet = YRPacketCreateRST(0, _sendNextSequenceNumber, _rcvLatestAckedSegment, true);
+        YRPacketRef packet = YRPacketCreateRST(0, _sendNextSequenceNumber, _rcvLatestAckedSegment, true, NULL);
         _sendNextSequenceNumber++;
         
         [self sendPacketReliably:packet];
@@ -147,7 +147,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
     if (self.state == kYRSessionStateConnecting || self.state == kYRSessionStateInitiating) {
         [self transiteToState:kYRSessionStateClosed];
 
-        YRPacketRef packet = YRPacketCreateRST(0, _sendNextSequenceNumber, 0, false);
+        YRPacketRef packet = YRPacketCreateRST(0, _sendNextSequenceNumber, 0, false, NULL);
 
         [self sendPacketUnreliably:packet];
         return;
@@ -221,11 +221,11 @@ static uint32_t const kYRMaxPacketSize = 65536;
             }
             
             if (hasACK || isNUL) {
-                YRPacketRef rstPacket = YRPacketCreateRST(0, ackNumber + 1, 0, false);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, ackNumber + 1, 0, false, NULL);
                 
                 [self sendPacketUnreliably:rstPacket];
             } else {
-                YRPacketRef rstPacket = YRPacketCreateRST(0, 0, sequenceNumber, true);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, 0, sequenceNumber, true, NULL);
 
                 [self sendPacketUnreliably:rstPacket];
             }
@@ -244,7 +244,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 [self transiteToState:kYRSessionStateConnecting];
 
                 YRPacketRef synAckPacket = YRPacketCreateSYN(_localConfiguration, _sendNextSequenceNumber,
-                    _rcvLatestAckedSegment, true);
+                    _rcvLatestAckedSegment, true, NULL);
                 _sendNextSequenceNumber++;
 
                 [self sendPacketReliably:synAckPacket];
@@ -257,7 +257,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
             }
             
             if (hasACK || isNUL) {
-                YRPacketRef rstPacket = YRPacketCreateRST(0, ackNumber + 1, 0, false);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, ackNumber + 1, 0, false, NULL);
 
                 [self sendPacketUnreliably:rstPacket];
                 break;
@@ -301,7 +301,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                     // if SYN & SYN rcved on both sides, SYN/ACK will be ignored on both sides which will result in ACK sent by both peer = connected.
                     // if - & SYN/ACK rcvd = SYN/ACK side will resend SYN/ACK.
                     YRPacketRef synAckPacket = YRPacketCreateSYN(_localConfiguration, _sendInitialSequenceNumber,
-                        _rcvLatestAckedSegment, true);
+                        _rcvLatestAckedSegment, true, NULL);
                     [self sendPacketReliably:synAckPacket];
                 }
                 
@@ -344,7 +344,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 [self transiteToState:kYRSessionStateClosed];
 
                 YRSequenceNumberType seqNumberToRespond = hasACK ? ackNumber + 1 : 0;
-                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumberToRespond, 0, false);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumberToRespond, 0, false, NULL);
                 [self sendPacketUnreliably:rstPacket];
                 
                 break;
@@ -354,7 +354,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 [self transiteToState:kYRSessionStateClosed];
                 
                 YRSequenceNumberType seqNumberToRespond = hasACK ? ackNumber + 1 : 0;
-                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumberToRespond, 0, false);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumberToRespond, 0, false, NULL);
                 [self sendPacketUnreliably:rstPacket];
 
                 break;
@@ -374,7 +374,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                     [self transiteToState:kYRSessionStateConnected];
                 } else {
                     YRSequenceNumberType seqNumber = ackNumber + 1;
-                    YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumber, 0, false);
+                    YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumber, 0, false, NULL);
                     
                     [self sendPacketUnreliably:rstPacket];
                     
@@ -450,7 +450,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
                 [self transiteToState:kYRSessionStateClosed];
                 
                 YRSequenceNumberType seqNumber = hasACK ? ackNumber + 1 : 0;
-                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumber, 0, false);
+                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumber, 0, false, NULL);
                 [self sendPacketUnreliably:rstPacket];
                 
                 break;
@@ -571,7 +571,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
 
     [_sessionLogger logInfo:@"[SEND_REQ] (%@)", [self humanReadableState:self.state]];
 
-    YRPacketRef packet = YRPacketCreateWithPayload(_sendNextSequenceNumber, _rcvLatestAckedSegment, data.bytes, data.length);
+    YRPacketRef packet = YRPacketCreateWithPayload(_sendNextSequenceNumber, _rcvLatestAckedSegment, data.bytes, data.length, true, NULL);
 
     _sendNextSequenceNumber++;
     
@@ -619,9 +619,9 @@ static uint32_t const kYRMaxPacketSize = 65536;
             sequences[i] = [_outOfSequenceSegmentsReceived[i] intValue];
         }
         
-        packet = YRPacketCreateEACK(seqNumber, ackNumber, sequences, &sequencesCount);
+        packet = YRPacketCreateEACK(seqNumber, ackNumber, sequences, &sequencesCount, NULL);
     } else {
-        packet = YRPacketCreateACK(seqNumber, ackNumber);
+        packet = YRPacketCreateACK(seqNumber, ackNumber, NULL);
     }
     
     [self sendPacketUnreliably:packet];
