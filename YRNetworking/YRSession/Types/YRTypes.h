@@ -15,6 +15,11 @@
 //
 //typedef uint8_t YRProtocolVersionType;
 //YRProtocolVersionType const kYRProtocolVersion = 0x01;
-
+typedef uint8_t YRPacketDescriptionType;
+typedef uint8_t YRProtocolVersionType;
+typedef uint8_t YRHeaderLengthType;
+typedef uint16_t YRSequenceNumberType;
+typedef uint16_t YRPayloadLengthType;
+typedef uint32_t YRChecksumType;
 
 #endif /* YRTypes_h */

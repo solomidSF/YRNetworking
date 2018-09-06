@@ -9,6 +9,8 @@
 #ifndef __YRConnectionConfiguration__
 #define __YRConnectionConfiguration__
 
+#include <stdio.h>
+
 typedef struct {
     uint16_t options; // zero for now
     uint16_t retransmissionTimeoutValue; // ms

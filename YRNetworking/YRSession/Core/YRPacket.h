@@ -6,8 +6,8 @@
 //  Copyright © 2018 Yuriy Romanchenko. All rights reserved.
 //
 
-#ifndef YRPacket_h
-#define YRPacket_h
+#ifndef __YRPacket__
+#define __YRPacket__
 
 #include <stdio.h>
 #include "YRPacketHeader.h"
@@ -25,6 +25,12 @@ YRPayloadLengthType YRPacketACKLength(void);
 YRPayloadLengthType YRPacketEACKLength(YRSequenceNumberType *ioSequencesCount);
 YRPayloadLengthType YRPacketEACKLengthWithPayload(YRSequenceNumberType *ioSequencesCount, YRPayloadLengthType payloadLength);
 YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength);
+
+/**
+ *  Returns size needed to maintain YRPacket data structure for given packet size.
+ *  Typically used to allocate buffers for session.
+ */
+size_t YRPacketDataStructureLengthForPacketSize(YRPayloadLengthType packetSize);
 
 #pragma mark - Factory Methods
 
@@ -104,4 +110,4 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
  */
 void YRPacketCopyPayloadInline(YRPacketRef packet);
 
-#endif /* YRPacket_h */
+#endif

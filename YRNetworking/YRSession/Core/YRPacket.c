@@ -135,6 +135,9 @@ typedef struct YRPacket {
     // payload;
 } YRPacket;
 
+static const uint8_t kYRAlignmentWithPayloadInBytes = 8;
+static const uint8_t kYRAlignmentWithoutPayloadInBytes = 4;
+
 #pragma mark - Prototypes
 
 static inline YRPayloadLengthType YRPacketGenericLength(void);
@@ -166,19 +169,19 @@ YRPayloadLengthType YRPacketWithPayloadLength() {
 }
 
 YRPayloadLengthType YRPacketGenericAlignedLength() {
-    return YRMakeMultipleTo(YRPacketGenericLength(), 4);
+    return YRMakeMultipleTo(YRPacketGenericLength(), kYRAlignmentWithoutPayloadInBytes);
 }
 
 YRPayloadLengthType YRPacketWithPayloadAlignedLength() {
-    return YRMakeMultipleTo(YRPacketWithPayloadLength(), 4);
+    return YRMakeMultipleTo(YRPacketWithPayloadLength(), kYRAlignmentWithoutPayloadInBytes);
 }
 
 YRPayloadLengthType YRPacketSYNLength() {
-    return YRMakeMultipleTo((kYRPacketHeaderSYNLength + kYRPacketStructureLength), 4);
+    return YRMakeMultipleTo((kYRPacketHeaderSYNLength + kYRPacketStructureLength), kYRAlignmentWithoutPayloadInBytes);
 }
 
 YRPayloadLengthType YRPacketRSTLength() {
-    return YRMakeMultipleTo((kYRPacketHeaderRSTLength + kYRPacketStructureLength), 4);
+    return YRMakeMultipleTo((kYRPacketHeaderRSTLength + kYRPacketStructureLength), kYRAlignmentWithoutPayloadInBytes);
 }
 
 YRPayloadLengthType YRPacketNULLength() {
@@ -197,18 +200,24 @@ YRPayloadLengthType YRPacketEACKLengthWithPayload(YRSequenceNumberType *ioSequen
     YRHeaderLengthType headerLength = YRPacketHeaderEACKLength(ioSequencesCount);
 
     if (payloadLength > 0) {
-        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, 8) + payloadLength;
+        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, kYRAlignmentWithPayloadInBytes) + payloadLength;
     } else {
-        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, 4);
+        return YRMakeMultipleTo(kYRPacketStructureLength + headerLength, kYRAlignmentWithoutPayloadInBytes);
     }
 }
 
 YRPayloadLengthType YRPacketLengthForPayload(YRPayloadLengthType payloadLength) {
     if (payloadLength > 0) {
-        return YRMakeMultipleTo(YRPacketWithPayloadLength(), 8) + payloadLength;
+        return YRMakeMultipleTo(YRPacketWithPayloadLength(), kYRAlignmentWithPayloadInBytes) + payloadLength;
     } else {
         return YRPacketWithPayloadAlignedLength();
     }
+}
+
+size_t YRPacketDataStructureLengthForPacketSize(YRPayloadLengthType packetSize) {
+    size_t maximumBytesThatPacketCanTake = packetSize + kYRPacketStructureLength + (kYRAlignmentWithoutPayloadInBytes - 1);
+    
+    return YRMakeMultipleTo(maximumBytesThatPacketCanTake, kYRAlignmentWithPayloadInBytes);
 }
 
 #pragma mark - Factory Methods
@@ -519,7 +528,9 @@ void YRPacketSerialize(YRPacketRef packet, YRLightweightOutputStreamRef stream) 
 }
 
 YRPacketRef YRPacketDeserialize(YRLightweightInputStreamRef stream) {
+//    size_t requiredSize = YRPacketDataStructureLengthForPacketSize(YRLightweightInputStreamSize(stream));
     return YRPacketDeserializeAt(stream, calloc(1, 1024));
+//    return YRPacketDeserializeAt(stream, calloc(1, YRLightweightInputStreamSize(stream)));
 }
 
 YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *packetBuffer) {

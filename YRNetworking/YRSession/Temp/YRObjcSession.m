@@ -1,12 +1,12 @@
 //
-//  YRSession.m
+//  YRObjcSession.m
 //  YRNetworkingDemo
 //
 //  Created by Yuriy Romanchenko on 7/5/18.
 //  Copyright © 2018 Yuriy Romanchenko. All rights reserved.
 //
 
-#import "YRSession.h"
+#import "YRObjcSession.h"
 #import "YRPacket.h"
 #import "YRLightweightInputStream.h"
 #import "YRLightweightOutputStream.h"
@@ -22,13 +22,13 @@
 
 static uint32_t const kYRMaxPacketSize = 65536;
 
-@implementation YRSession {
+@implementation YRObjcSession {
     YRLogger *_sessionLogger;
     
     YRConnectionConfiguration _localConfiguration;
     YRConnectionConfiguration _remoteConfiguration;
     
-    YRSessionContext *_sessionContext;
+    YRObjcSessionContext *_sessionContext;
     
     NSMutableArray *_sendQueue;
     NSMutableArray *_receiveQueue;
@@ -51,7 +51,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
 
 #pragma mark - Initialization
 
-- (instancetype)initWithContext:(YRSessionContext *)context {
+- (instancetype)initWithContext:(YRObjcSessionContext *)context {
     if (self = [super init]) {
         _localConfiguration = (YRConnectionConfiguration) {
             .options = 0,
@@ -66,7 +66,7 @@ static uint32_t const kYRMaxPacketSize = 65536;
         
         NSString *address = [NSString stringWithFormat:@"%@:%d", [GCDAsyncUdpSocket hostFromAddress:context.peerAddress], [GCDAsyncUdpSocket portFromAddress:context.peerAddress]];
         
-        _sessionLogger = [[YRSharedLogger shared] loggerWithReporter:[NSString stringWithFormat:@"YRSession (%p)", self]];
+        _sessionLogger = [[YRSharedLogger shared] loggerWithReporter:[NSString stringWithFormat:@"YRObjcSession (%p)", self]];
         [_sessionLogger logInfo:@"[INIT]: Protocol version: %d. Peer address: %@. State callout: %d. Receive callout: %d. Send callout: %d", kYRProtocolVersion,
             address, context.connectionStateCallout != NULL, context.receiveCallout != NULL, context.sendCallout != NULL];
         

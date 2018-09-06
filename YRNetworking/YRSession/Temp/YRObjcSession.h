@@ -1,5 +1,5 @@
 //
-//  YRSession.h
+//  YRObjcSession.h
 //  YRNetworkingDemo
 //
 //  Created by Yuriy Romanchenko on 7/5/18.
@@ -8,7 +8,7 @@
 
 @import Foundation;
 
-#import "YRSessionContext.h"
+#import "YRObjcSessionContext.h"
 
 // Types
 #import "YRTypes.h"
@@ -17,14 +17,14 @@
 /**
  *  Represents session between two peers: local and remote.
  */
-@interface YRSession : NSObject
+@interface YRObjcSession : NSObject
 
 @property (nonatomic, readonly) NSData *peerAddress;
 @property (nonatomic, readonly) YRSessionState state;
 
 #pragma mark - Init
 
-- (instancetype)initWithContext:(YRSessionContext *)context;
+- (instancetype)initWithContext:(YRObjcSessionContext *)context;
 
 #pragma mark - Configuration
 
@@ -54,7 +54,7 @@
 /**
  *  Send/receive are abstracted away and are not managed by session.
  *  These convenience functions should be called when by one when raw data received from peer or should be sent to peer.
- *  YRSession will call handlers passed on initialization providing real data to be sent/received.
+ *  YRObjcSession will call handlers passed on initialization providing real data to be sent/received.
  */
 - (void)receive:(NSData *)data;
 - (void)send:(NSData *)data;

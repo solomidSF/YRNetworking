@@ -6,8 +6,8 @@
 //  Copyright © 2018 Yuriy Romanchenko. All rights reserved.
 //
 
-#ifndef YRSessionState_h
-#define YRSessionState_h
+#ifndef __YRSessionState__
+#define __YRSessionState__
 
 typedef enum {
     // Session is closed.
@@ -24,4 +24,4 @@ typedef enum {
     kYRSessionStateDisconnecting
 } YRSessionState;
 
-#endif /* YRSessionState_h */
+#endif

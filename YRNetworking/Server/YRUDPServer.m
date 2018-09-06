@@ -10,7 +10,7 @@
 
 // Common
 #import "YRTypes.h"
-#import "YRSession.h"
+#import "YRObjcSession.h"
 
 #import "GCDAsyncUdpSocket.h"
 
@@ -23,7 +23,7 @@
     
     dispatch_queue_t _serverQueue;
     
-    NSMutableArray <YRSession *> *_activeSessions;
+    NSMutableArray <YRObjcSession *> *_activeSessions;
     long _currentTag;
 }
 
@@ -43,8 +43,10 @@
         _socket = [[GCDAsyncUdpSocket alloc] initWithDelegate:self delegateQueue:_serverQueue];
         
         _activeSessions = [NSMutableArray new];
+        
+        
     }
-    
+
     return self;
 }
 
@@ -98,28 +100,28 @@
     _state = YRUDPServerNotReady;
 }
 
-- (YRSession *)sessionWithAddress:(NSData*)address {
-    for (YRSession *session in _activeSessions) {
+- (YRObjcSession *)sessionWithAddress:(NSData*)address {
+    for (YRObjcSession *session in _activeSessions) {
         if ([session.peerAddress isEqual:address]) {
             return session;
         }
     }
     
-    YRSession *newSession = [self createSessionWithAddress:address];
+    YRObjcSession *newSession = [self createSessionWithAddress:address];
     
     [_activeSessions addObject:newSession];
     
     return newSession;
 }
 
-- (YRSession *)createSessionWithAddress:(NSData *)address {
+- (YRObjcSession *)createSessionWithAddress:(NSData *)address {
     __typeof(self) __weak weakSelf = self;
     
-    YRSessionContext *context = [YRSessionContext new];
+    YRObjcSessionContext *context = [YRObjcSessionContext new];
     
     context.peerAddress = address;
     
-    context.connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    context.connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -136,7 +138,7 @@
         NSLog(@"New state: %@", humanReadableState);
     };
     
-    context.receiveCallout = ^(YRSession *session, NSData *receivedData) {
+    context.receiveCallout = ^(YRObjcSession *session, NSData *receivedData) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -146,7 +148,7 @@
         NSLog(@"Received: %@", [[NSString alloc] initWithData:receivedData encoding:NSUTF8StringEncoding]);
     };
     
-    context.sendCallout = ^(YRSession *session, NSData *dataToSend) {
+    context.sendCallout = ^(YRObjcSession *session, NSData *dataToSend) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -158,7 +160,7 @@
         strongSelf->_currentTag++;
     };
 
-    YRSession *newSession = [[YRSession alloc] initWithContext:context];
+    YRObjcSession *newSession = [[YRObjcSession alloc] initWithContext:context];
     
     [newSession wait];
     
@@ -194,7 +196,7 @@
     }
     
     dispatch_async(dispatch_get_main_queue(), ^{
-        YRSession *session = [self sessionWithAddress:address];
+        YRObjcSession *session = [self sessionWithAddress:address];
         
         [session receive:data];
     });

@@ -8,37 +8,37 @@
 
 #import <XCTest/XCTest.h>
 
-#import "YRSession.h"
+#import "YRObjcSession.h"
 #import "YRPacket.h"
 
 @interface YRSessionTests : XCTestCase
 @end
 
 @implementation YRSessionTests {
-    YRSession *_sessionOne;
-    YRSession *_sessionTwo;
+    YRObjcSession *_sessionOne;
+    YRObjcSession *_sessionTwo;
     
     BOOL _simulateLatency;
     uint32_t _currentPacketNumber;
     uint32_t _sessionOnePacketLossPercents;
     uint32_t _sessionTwoPacketLossPercents;
     
-    void (^_connectionStateCallout) (YRSession *session, YRSessionState newState);
-    void (^_sendCallout) (YRSession *session, NSData *data);
-    void (^_receiveCallout) (YRSession *session, NSData *data);
+    void (^_connectionStateCallout) (YRObjcSession *session, YRSessionState newState);
+    void (^_sendCallout) (YRObjcSession *session, NSData *data);
+    void (^_receiveCallout) (YRObjcSession *session, NSData *data);
     
-    void (^_sessionTwoSendCallout) (YRSession *session, NSData *data);
-    void (^_sessionTwoReceiveCallout) (YRSession *session, NSData *rcvedData);
+    void (^_sessionTwoSendCallout) (YRObjcSession *session, NSData *data);
+    void (^_sessionTwoReceiveCallout) (YRObjcSession *session, NSData *rcvedData);
 }
 
 - (void)setUp {
     [super setUp];
     
-    YRSessionContext *contextOne = [self createSessionContext];
-    YRSessionContext *contextTwo = [self createSessionContext];
+    YRObjcSessionContext *contextOne = [self createSessionContext];
+    YRObjcSessionContext *contextTwo = [self createSessionContext];
     
-    _sessionOne = [[YRSession alloc] initWithContext:contextOne];
-    _sessionTwo = [[YRSession alloc] initWithContext:contextTwo];
+    _sessionOne = [[YRObjcSession alloc] initWithContext:contextOne];
+    _sessionTwo = [[YRObjcSession alloc] initWithContext:contextTwo];
 }
 
 - (void)tearDown {
@@ -62,31 +62,31 @@
 
 #pragma mark - Private
 
-- (YRSessionContext *)createSessionContext {
+- (YRObjcSessionContext *)createSessionContext {
     __typeof(self) __weak weakSelf = self;
 
-    YRSessionContext *context = [YRSessionContext new];
+    YRObjcSessionContext *context = [YRObjcSessionContext new];
     context.peerAddress = nil;
-    context.connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    context.connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         [weakSelf newConnectionState:newState forSession:session];
     };
     
-    context.receiveCallout = ^(YRSession *session, NSData *receivedData) {
+    context.receiveCallout = ^(YRObjcSession *session, NSData *receivedData) {
         [weakSelf receivedData:receivedData fromSession:session];
     };
     
-    context.sendCallout = ^(YRSession *session, NSData *dataToSend) {
+    context.sendCallout = ^(YRObjcSession *session, NSData *dataToSend) {
         [weakSelf sendData:dataToSend fromSession:session];
     };
     
     return context;
 }
 
-- (void)newConnectionState:(YRSessionState)state forSession:(YRSession *)session {
+- (void)newConnectionState:(YRSessionState)state forSession:(YRObjcSession *)session {
     !_connectionStateCallout ?: _connectionStateCallout(session, state);
 }
 
-- (void)receivedData:(NSData *)data fromSession:(YRSession *)session {
+- (void)receivedData:(NSData *)data fromSession:(YRObjcSession *)session {
     NSLog(@"Received: '%@' from: %@", data, session);
     
     if (session == _sessionTwo) {
@@ -94,7 +94,7 @@
     }
 }
 
-- (void)sendData:(NSData *)data fromSession:(YRSession *)session {
+- (void)sendData:(NSData *)data fromSession:(YRObjcSession *)session {
     if (session == _sessionTwo) {
         !_sessionTwoSendCallout ?: _sessionTwoSendCallout(session, data);
     }
@@ -102,7 +102,7 @@
     __block NSData *retainedData = data;
     
     dispatch_block_t receiveBlock = ^{
-        YRSession *sessionToReceive = (session == self->_sessionOne) ? self->_sessionTwo : self->_sessionOne;
+        YRObjcSession *sessionToReceive = (session == self->_sessionOne) ? self->_sessionTwo : self->_sessionOne;
         
         [sessionToReceive receive:retainedData];
     };
@@ -131,7 +131,7 @@
 - (void)testWaitConnectConnectionEstablishmentOrder {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Wait/Connect connection established."];
 
-    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    _connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
             [expectation fulfill];
         }
@@ -146,7 +146,7 @@
 - (void)testConnectWaitConnectionEstablishmentOrder {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Connect/Wait connection established."];
     
-    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    _connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
             [expectation fulfill];
         }
@@ -163,7 +163,7 @@
 - (void)testSimultaneousConnectionEstablishment {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Simultaneous connection established."];
     
-    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    _connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
             [expectation fulfill];
         }
@@ -180,7 +180,7 @@
 - (void)testEACKPacket {
     XCTestExpectation *expectation = [self expectationWithDescription:@"Simultaneous connection established."];
     
-    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    _connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
             [expectation fulfill];
         }
@@ -219,7 +219,7 @@
             
             NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(outOfSeqPacket) freeWhenDone:NO];
             
-            void (^sendCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *dataToSend) {
+            void (^sendCallout) (YRObjcSession *session, NSData *data) = ^(YRObjcSession *session, NSData *dataToSend) {
                 uint8_t bufferForStream[kYRLightweightInputStreamSize];
                 
                 YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(dataToSend.bytes, dataToSend.length, bufferForStream);
@@ -269,7 +269,7 @@
         
         NSData *bytes = [NSData dataWithBytesNoCopy:YRLightweightOutputStreamGetBytes(stream) length:YRPacketGetLength(correctSeqPacket) freeWhenDone:NO];
         
-        void (^sendCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *dataToSend) {
+        void (^sendCallout) (YRObjcSession *session, NSData *data) = ^(YRObjcSession *session, NSData *dataToSend) {
             uint8_t bufferForStream[kYRLightweightInputStreamSize];
             
             YRLightweightInputStreamRef stream = YRLightweightInputStreamCreateAt(dataToSend.bytes, dataToSend.length, bufferForStream);
@@ -295,7 +295,7 @@
         
         __block int expectedToReceive = expectedPayload;
         
-        void (^rcvCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *rcvedData) {
+        void (^rcvCallout) (YRObjcSession *session, NSData *data) = ^(YRObjcSession *session, NSData *rcvedData) {
             XCTAssertTrue(rcvedData.length == sizeof(expectedToReceive), @"Payload size mismatch!");
             
             int received = 0;
@@ -326,7 +326,7 @@
     
     XCTestExpectation *expectation = [self expectationWithDescription:@"Simultaneous connection established."];
     
-    _connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    _connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         if (self->_sessionOne.state == kYRSessionStateConnected && self->_sessionTwo.state == kYRSessionStateConnected) {
             [expectation fulfill];
         }
@@ -343,7 +343,7 @@
     
     uint32_t packetsToSend = 1024;
 
-    void (^rcvCallout) (YRSession *session, NSData *data) = ^(YRSession *session, NSData *rcvedData) {
+    void (^rcvCallout) (YRObjcSession *session, NSData *data) = ^(YRObjcSession *session, NSData *rcvedData) {
         XCTAssertTrue(rcvedData.length == sizeof(expectedToReceive), @"Payload size mismatch!");
         
         int received = 0;
@@ -370,5 +370,4 @@
     
     [self waitForExpectations:@[wrapAroundSuccessExpectation] timeout:5];
 }
-
 @end

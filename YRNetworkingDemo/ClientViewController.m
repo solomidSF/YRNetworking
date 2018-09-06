@@ -7,7 +7,7 @@
 //
 
 #import "ClientViewController.h"
-#import "YRSession.h"
+#import "YRObjcSession.h"
 #import "GCDAsyncUdpSocket.h"
 
 #import <arpa/inet.h>
@@ -25,7 +25,7 @@
 @end
 
 @implementation ClientViewController {
-    YRSession *_client;
+    YRObjcSession *_client;
     YRLogger *_uiLogger;
     
     __unsafe_unretained IBOutlet NSTextView *_logTextView;
@@ -61,7 +61,7 @@
         return;
     }
     
-    YRSessionContext *ctx = [YRSessionContext new];
+    YRObjcSessionContext *ctx = [YRObjcSessionContext new];
     
     struct sockaddr_in nativeAddr4;
     nativeAddr4.sin_len         = sizeof(struct sockaddr_in);
@@ -76,7 +76,7 @@
     
     ctx.peerAddress = address;
     
-    ctx.connectionStateCallout = ^(YRSession *session, YRSessionState newState) {
+    ctx.connectionStateCallout = ^(YRObjcSession *session, YRSessionState newState) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -95,7 +95,7 @@
         strongSelf->_logTextView.string = [strongSelf->_logTextView.string stringByAppendingFormat:@"\nNew state: %@", humanReadableState];
     };
     
-    ctx.receiveCallout = ^(YRSession *session, NSData *data) {
+    ctx.receiveCallout = ^(YRObjcSession *session, NSData *data) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -109,7 +109,7 @@
     
     static long tag = 0;
     
-    ctx.sendCallout = ^(YRSession *session, NSData *data) {
+    ctx.sendCallout = ^(YRObjcSession *session, NSData *data) {
         __typeof(weakSelf) __strong strongSelf = weakSelf;
         
         if (!strongSelf) {
@@ -124,7 +124,7 @@
         [strongSelf->_sock sendData:[NSData dataWithBytes:data.bytes length:data.length] toAddress:address withTimeout:-1 tag:tag++];
     };
     
-    _client = [[YRSession alloc] initWithContext:ctx];
+    _client = [[YRObjcSession alloc] initWithContext:ctx];
     
     [_client connect];
 }

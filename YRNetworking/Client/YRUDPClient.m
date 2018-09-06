@@ -7,7 +7,7 @@
 //
 
 #import "YRUDPClient.h"
-#import "YRSession.h"
+#import "YRObjcSession.h"
 
 #import "GCDAsyncUdpSocket.h"
 
@@ -16,7 +16,7 @@
 @end
 
 @implementation YRUDPClient {
-    YRSession *_client;
+    YRObjcSession *_client;
 }
 
 #pragma mark - <GCDAsyncUdpSocketDelegate>
