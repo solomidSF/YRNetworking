@@ -11,8 +11,6 @@
 // Common
 #import "YRTypes.h"
 
-
-
 /**
  *  Class to represent remote peer.
  */

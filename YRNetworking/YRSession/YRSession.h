@@ -9,11 +9,11 @@
 #ifndef __YRSession__
 #define __YRSession__
 
-#include <Block.h>
-
 #include "YRConnectionConfiguration.h"
 #include "YRTypes.h"
 #include "YRSessionState.h"
+
+#include <Block.h>
 
 #pragma mark - Declarations
 
@@ -27,6 +27,7 @@ typedef struct {
     YRSessionConnectionStateCallout connectionStateCallout;
     YRSessionSendCallout sendCallout;
     YRSessionReceiveCallout receiveCallout;
+    // void *hasSpaceAvailableCallout
 } YRSessionCallbacks;
 
 typedef struct {
@@ -51,6 +52,9 @@ size_t YRSessionGetMinimumSize(YRConnectionConfiguration configuration);
 
 YRSessionRef YRSessionCreateWithConfiguration(YRConnectionConfiguration configuration, YRSessionCallbacks callbacks);
 void YRSessionDestroy(YRSessionRef session);
+
+// Temporary solution
+void YRSessionSetTimerProvider(YRSessionRef session, void *(^createTimer) (uint32_t seconds), void (^cancel) (void *));
 
 //YRSessionRef YRSessionRetain(YRSessionRef session);
 //YRSessionRef YRSessionRelease(YRSessionRef session);
@@ -81,8 +85,13 @@ void YRSessionInvalidate(YRSessionRef session);
 #pragma mark - Communication
 
 /**
- *  Send/receive are abstracted away and are not managed by session.
- *  These convenience functions should be called when by one when raw data received from peer or should be sent to peer.
+ *  Returns true if session has space available for outgoing data to be sent.
+ */
+bool YRSessionCanSend(YRSessionRef session);
+
+/**
+ *  Send/receive are abstracted away and not managed by session.
+ *  These convenience functions should be called by one when raw data received from peer or should be sent to peer.
  *  YRSession will call handlers passed on initialization providing real data to be sent/received.
  */
 void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType length);

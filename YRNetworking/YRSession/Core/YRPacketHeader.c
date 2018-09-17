@@ -26,7 +26,7 @@ typedef struct YRPacketHeader {
 //    union {
 //        uint8_t errorCode; // For RST
 //        YRConnectionConfiguration connectionConfiguration; // For SYN
-//        YRSequenceNumberType eacks[1];
+//        YRSequenceNumberType eacks[];
 //        YRPayloadLengthType payloadLength;
 //    } packetSpecificData;
 } YRPacketHeader;

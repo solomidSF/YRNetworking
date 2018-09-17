@@ -344,6 +344,7 @@ void YRPacketDestroy(YRPacketRef packet) {
 //        memset(packet, 0, YRPacketGetLength(packet));
         
         if (!(packet->flags & YRPacketFlagIsCustomlyAllocated)) {
+            // Not freeing memory if packet was allocated customly.
             free(packet);
         }
     }
