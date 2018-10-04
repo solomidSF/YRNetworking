@@ -12,14 +12,17 @@
 
 #pragma mark - Data Structures
 
+// TODO: Think about removing 'pack', but currently everything is ok-aligned
 #pragma pack(push, 1)
 
 typedef struct YRPacketHeader {
-    YRChecksumType checksum;
-    YRSequenceNumberType sequenceNumber;
-    YRSequenceNumberType ackNumber;
-    YRPacketDescriptionType packetDescription;
-    YRHeaderLengthType headerLength;
+    YRChecksumType checksum; // 4 bytes
+    YRSequenceNumberType sequenceNumber; // 2 bytes
+    YRSequenceNumberType ackNumber; // 2 bytes
+    YRPacketDescriptionType packetDescription; // 1 byte
+    YRHeaderLengthType headerLength; // 1 byte
+    // pad 2 bytes to 12 (if we remove 'pack')
+    
     // void *variableData;
     
 //     What if we create a union here?
@@ -74,7 +77,7 @@ YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount) {
     
     YRSequenceNumberType eacksCount = ioCount ? *ioCount : 0;
     
-    YRHeaderLengthType bytesTaken = kYRPacketPayloadHeaderLength;
+    YRHeaderLengthType bytesTaken = sizeof(YRPacketHeaderEACK);
     YRHeaderLengthType bytesLeft = YRMaximumPacketHeaderSize - bytesTaken;
     
     if (eacksCount == 0) {

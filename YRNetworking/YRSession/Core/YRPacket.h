@@ -76,6 +76,8 @@ YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber,
                                       bool copyPayload,
                                       void *packetBuffer);
 
+void YRPacketCopy(YRPacketRef packet, void *whereTo);
+
 void YRPacketDestroy(YRPacketRef packet);
 
 #pragma mark - Introspection

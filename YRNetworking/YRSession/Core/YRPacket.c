@@ -338,15 +338,19 @@ YRPacketRef YRPacketCreateWithPayload(YRSequenceNumberType seqNumber,
         });
 }
 
+void YRPacketCopy(YRPacketRef packet, void *whereTo) {
+    // TODO:
+}
+
 void YRPacketDestroy(YRPacketRef packet) {
     // TODO: Improve
     if (packet) {
 //        memset(packet, 0, YRPacketGetLength(packet));
         
         if (!(packet->flags & YRPacketFlagIsCustomlyAllocated)) {
-            // Not freeing memory if packet was allocated customly.
             free(packet);
         }
+        // Not freeing memory if packet was allocated customly.
     }
 }
 

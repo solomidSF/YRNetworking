@@ -29,8 +29,6 @@
 		7D46DA862103738200575665 /* YRPacket.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D46DA852103738200575665 /* YRPacket.c */; };
 		7D5BAAE9213307720010F6DD /* YRPacketsQueueTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D5BAAE7213306370010F6DD /* YRPacketsQueueTests.m */; };
 		7D8EE8CD2127339F0054D337 /* YRSession.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8CC2127339F0054D337 /* YRSession.c */; };
-		7D8EE8D621298F8E0054D337 /* YRPacketsSendQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8D521298F8E0054D337 /* YRPacketsSendQueue.c */; };
-		7D8EE8D9212AF27C0054D337 /* YRPacketsReceiveQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8D8212AF27C0054D337 /* YRPacketsReceiveQueue.c */; };
 		7D91068220EE897700974F48 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068120EE897700974F48 /* AppDelegate.m */; };
 		7D91068520EE897700974F48 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D91068420EE897700974F48 /* InitialViewController.m */; };
 		7D91068720EE897800974F48 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 7D91068620EE897800974F48 /* Assets.xcassets */; };
@@ -87,10 +85,6 @@
 		7D5BAAE7213306370010F6DD /* YRPacketsQueueTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRPacketsQueueTests.m; sourceTree = "<group>"; };
 		7D8EE8CB2127339F0054D337 /* YRSession.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSession.h; sourceTree = "<group>"; };
 		7D8EE8CC2127339F0054D337 /* YRSession.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRSession.c; sourceTree = "<group>"; };
-		7D8EE8D421298F8E0054D337 /* YRPacketsSendQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketsSendQueue.h; sourceTree = "<group>"; };
-		7D8EE8D521298F8E0054D337 /* YRPacketsSendQueue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketsSendQueue.c; sourceTree = "<group>"; };
-		7D8EE8D7212AF27C0054D337 /* YRPacketsReceiveQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketsReceiveQueue.h; sourceTree = "<group>"; };
-		7D8EE8D8212AF27C0054D337 /* YRPacketsReceiveQueue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketsReceiveQueue.c; sourceTree = "<group>"; };
 		7D91067D20EE897700974F48 /* YRNetworkingDemo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YRNetworkingDemo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		7D91068020EE897700974F48 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		7D91068120EE897700974F48 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -255,10 +249,6 @@
 			children = (
 				7DC224572142E1A800879F8F /* YRPacketsQueue.h */,
 				7DC224582142E1A800879F8F /* YRPacketsQueue.c */,
-				7D8EE8D421298F8E0054D337 /* YRPacketsSendQueue.h */,
-				7D8EE8D521298F8E0054D337 /* YRPacketsSendQueue.c */,
-				7D8EE8D7212AF27C0054D337 /* YRPacketsReceiveQueue.h */,
-				7D8EE8D8212AF27C0054D337 /* YRPacketsReceiveQueue.c */,
 			);
 			path = Private;
 			sourceTree = "<group>";
@@ -662,7 +652,6 @@
 			files = (
 				7DA6E85620F51A1900FC7997 /* YRObjcSession.m in Sources */,
 				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
-				7D8EE8D621298F8E0054D337 /* YRPacketsSendQueue.c in Sources */,
 				7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */,
 				7D46DA7420FFA88F00575665 /* YRLightweightOutputStream.c in Sources */,
 				7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */,
@@ -673,7 +662,6 @@
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
 				7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */,
 				7DA6E85720F51A1900FC7997 /* YRObjcSessionContext.m in Sources */,
-				7D8EE8D9212AF27C0054D337 /* YRPacketsReceiveQueue.c in Sources */,
 				7DA6E85020F51A1900FC7997 /* YRUDPServer.m in Sources */,
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,
 				7DA6E85320F51A1900FC7997 /* YRPeer.m in Sources */,

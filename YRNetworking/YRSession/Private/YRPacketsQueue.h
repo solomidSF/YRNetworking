@@ -21,6 +21,8 @@ typedef struct YRPacketsQueue *YRPacketsQueueRef;
 #pragma mark - Lifecycle
 
 YRPacketsQueueRef YRPacketsQueueCreate(YRPayloadLengthType bufferSize, uint8_t buffersCount);
+// TODO: Investigate this idea.
+//YRPacketsQueueRef YRPacketsQueueCreate(YRPayloadLengthType bufferSize, uint8_t buffersCount, uint8_t buffersAlignment);
 void YRPacketsQueueDestroy(YRPacketsQueueRef queue);
 
 #pragma mark - Base Segment

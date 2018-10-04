@@ -66,9 +66,14 @@ void YRSessionTransiteToState(YRSessionRef session, YRSessionState state);
 size_t YRSessionGetFinalMinimumSize(YRConnectionConfiguration localConfiguration, YRConnectionConfiguration remoteConfiguration);
 
 void YRSessionSchedulePacketSendReliably(YRSessionRef session, YRPacketRef packet);
-void YRSessionSchedulePacketSendUnreliably(YRSessionRef session, YRPacketRef packet);
 
+void YRSessionProcessOutOfSequencePacketsIfAny(YRSessionRef session);
+
+// Packet Queues
 YRPacketsQueueRef YRSessionGetSendQueue(YRSessionRef session);
+YRPacketsQueueRef YRSessionGetReceiveQueue(YRSessionRef session);
+
+void YRSessionDoACKOrEACK(YRSessionRef session);
 
 void YRSessionDoReliableSend(YRSessionRef session, YRPacketBuilder packetBuilder, YRPayloadLengthType packetLength);
 void YRSessionDoUnreliableSend(YRSessionRef session, YRPacketBuilder packetBuilder, YRPayloadLengthType packetLength);
@@ -338,16 +343,14 @@ void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType l
                     YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
                         YRPacketCreateACK(seqNumber, ackNumber, packetBuffer);
                     }, YRPacketACKLength());
-                    
-                    // TODO: Do ack callout
-//                    [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
                 } else {
+                    YRSessionTransiteToState(session, kYRSessionStateConnecting);
+                    
+                    // TODO: This flow is strange as rfc describes.
+                    // if SYN & SYN rcved on both sides, SYN/ACK will be ignored on both sides which will result in ACK sent by both peer = connected.
+                    // if - & SYN/ACK rcvd = SYN/ACK side will resend SYN/ACK.
+                    
                     // TODO:
-//                    [self transiteToState:kYRSessionStateConnecting];
-//
-//                    // TODO: This flow is strange as rfc describes.
-//                    // if SYN & SYN rcved on both sides, SYN/ACK will be ignored on both sides which will result in ACK sent by both peer = connected.
-//                    // if - & SYN/ACK rcvd = SYN/ACK side will resend SYN/ACK.
 //                    YRPacketRef synAckPacket = YRPacketCreateSYN(_localConfiguration, _sendInitialSequenceNumber,
 //                                                                 _rcvLatestAckedSegment, true, NULL);
 //                    [self sendPacketReliably:synAckPacket];
@@ -371,9 +374,7 @@ void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType l
             if (canProcessPacket) {
                 // Can process further.
             } else {
-                // TODO:
-//                [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
-
+                YRSessionDoACKOrEACK(session);
                 break;
             }
 
@@ -448,35 +449,52 @@ void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType l
                         void *rawPayload = YRPacketGetPayload(receivedPacket, &payloadLength);
 
 //                        assert(rawPayload);
-                        if (rawPayload) {
-//                            NSData *rawPacketData = [NSData dataWithBytesNoCopy:rawPayload length:payloadLength freeWhenDone:NO];
-//
-//                            _sessionContext.receiveCallout(self, rawPacketData);
-                        }
+                        
+                        !session->callbacks.receiveCallout ?: session->callbacks.receiveCallout(session, rawPayload, payloadLength);
                     }
 
-//                    [self processOutOfSequencePacketsWithCallouts];
+                    YRSessionProcessOutOfSequencePacketsIfAny(session);
                 } else {
                     // Received out-of-seq packet
-//                    if (![_receiveQueue[sequenceNumber] isKindOfClass:[YRReceiveOperation class]]) {
-//                        // Buffer data
-//                        // snd: EAK
-//                        YRPacketCopyPayloadInline(receivedPacket);
-//
-//                        _receiveQueue[sequenceNumber] = [[YRReceiveOperation alloc] initWithPacket:receivedPacket];
-//                        [_outOfSequenceSegmentsReceived addObject:@(sequenceNumber)];
-//
-//                        receivedPacket = NULL;
-//                    } else {
-//                        // Received duplicated out of sequence segment, ignore.
-//                    }
+                    YRPacketsQueueRef receiveQueue = YRSessionGetReceiveQueue(session);
+                    
+                    if (!YRPacketsQueueIsBufferInUseForSegment(receiveQueue, rcvSeqNumber)) {
+                        // Buffer data
+                        // snd: EAK
+                        YRPacketCopyPayloadInline(receivedPacket);
+
+                        void *buffer = YRPacketsQueueBufferForSegment(receiveQueue, rcvSeqNumber);
+                        
+//                        assert(buffer);
+                        
+                        if (buffer) {
+                            // This MUST be true always
+                            // Move packet to heap
+                            YRPacketCopy(receivedPacket, buffer);
+                            
+                            YRPacketsQueueMarkBufferInUseForSegment(receiveQueue, rcvSeqNumber);
+                        }
+                    } else {
+                        // Received duplicated out of sequence segment, ignore.
+                    }
                 }
 
-//                [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
+                YRSessionDoACKOrEACK(session);
             }
         }
             break;
-//        case kYRSessionStateConnected: {
+        case kYRSessionStateConnected: {
+            // This will forcefully create receive queue, should we postpone this?
+            YRPacketsQueueRef receiveQueue = YRSessionGetReceiveQueue(session);
+            
+            if (!YRPacketsQueueHasBufferForSegment(receiveQueue, rcvSeqNumber)) {
+                // Can't process packet, because it's out of range.
+                YRSessionDoACKOrEACK(session);
+                break;
+            }
+            
+            YRSequenceNumberType expectedToReceive = session->sessionInfo.rcvLatestAckedSegment + 1;
+            
 //            YRSequenceNumberType expectedToReceive = _rcvLatestAckedSegment + 1;
 //
 //            YRSequenceNumberType maxSegmentThatCanBeReceived = expectedToReceive + _localConfiguration.maxNumberOfOutstandingSegments;
@@ -488,123 +506,118 @@ void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType l
 //                canProcessPacket = expectedToReceive <= sequenceNumber || sequenceNumber <= maxSegmentThatCanBeReceived;
 //            }
 //
-//            if (canProcessPacket) {
-//                // Can process further.
-//            } else {
-//                [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
-//
-//                break;
-//            }
-//
-//            if (isSYN) {
-//                // call: connection reset
-//                [self transiteToState:kYRSessionStateClosed];
-//
-//                YRSequenceNumberType seqNumber = hasACK ? ackNumber + 1 : 0;
-//                YRPacketRef rstPacket = YRPacketCreateRST(0, seqNumber, 0, false, NULL);
-//                [self sendPacketUnreliably:rstPacket];
-//
-//                break;
-//            }
-//
-//            if (isRST) {
-//                // signal: connection reset
+            if (isSYN) {
+                // call: connection reset
+                YRSessionTransiteToState(session, kYRSessionStateClosed);
+                
+                YRSessionDoUnreliableSend(session, ^(void *packetBuffer,
+                                                     YRSequenceNumberType seqNumber,
+                                                     YRSequenceNumberType ackNumber) {
+                    YRSequenceNumberType seqNumberToRespond = hasACK ? rcvAckNumber + 1 : 0;
+                    YRPacketCreateRST(0, seqNumberToRespond, 0, false, packetBuffer);
+                }, YRPacketRSTLength());
+
+                break;
+            }
+
+            if (isRST) {
+                // signal: connection reset
 //                [_disconnectingTimer invalidate];
 //                _disconnectingTimer = [NSTimer scheduledTimerWithTimeInterval:5 target:self
 //                                                                     selector:@selector(handleDisconnectTimeout:) userInfo:nil repeats:NO];
-//
-//                [self transiteToState:kYRSessionStateDisconnecting];
-//                break;
-//            }
-//
-//            if (hasACK) {
-//                //                if (_sendLatestUnackSegment <= ackNumber &&
-//                //                    ackNumber < _sendNextSequenceNumber) {
-//
-//                // queue: flush.
-//                YRSequenceNumberType newLatestUnackSegment = ackNumber + 1;
-//                for (YRSequenceNumberType i = _sendLatestUnackSegment; i != newLatestUnackSegment; i++) {
-//                    if ([_sendQueue[i] isKindOfClass:[YRSendOperation class]]) {
-//                        [_sendQueue[i] end];
-//                        _sendQueue[i] = [NSNull null];
-//                    }
-//                }
-//
-//                _sendLatestUnackSegment = newLatestUnackSegment;
-//                //                }
-//            }
-//
-//            if (hasEACK) {
-//                // queue: flush
-//                YRPacketHeaderEACKRef receivedEACKHeader = (YRPacketHeaderEACKRef)receivedHeader;
-//
-//                YRSequenceNumberType eacksCount = 0;
-//                YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(receivedEACKHeader, &eacksCount);
-//
-//                for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
-//                    YRSequenceNumberType sequence = eacks[i];
-//
-//                    if ([_sendQueue[sequence] isKindOfClass:[YRSendOperation class]]) {
-//                        [_sendQueue[sequence] end];
-//                        _sendQueue[sequence] = [NSNull null];
-//                    }
-//                }
-//            }
-//
-//            if (isNUL) {
-//                // TODO: Next iteration: NUL segment.
-//                // We must ack it if it falls into acceptance window.
-//                // However we shouldn't set _rcvLatestAckedSegment to this seq number.
-//                _rcvLatestAckedSegment = sequenceNumber;
-//                [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
-//
-//                break;
-//            }
-//
-//            if (YRPacketHeaderHasPayloadLength(receivedHeader) &&
-//                YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)receivedHeader) > 0) {
-//                if (sequenceNumber == expectedToReceive) {
-//                    _rcvLatestAckedSegment = sequenceNumber;
-//
-//                    // Do callout with data.
-//                    YRPayloadLengthType payloadLength = 0;
-//                    void *rawPayload = YRPacketGetPayload(receivedPacket, &payloadLength);
-//
-//                    if (rawPayload) {
-//                        NSData *rawPacketData = [NSData dataWithBytesNoCopy:rawPayload length:payloadLength freeWhenDone:NO];
-//
-//                        _sessionContext.receiveCallout(self, rawPacketData);
-//                    } else {
-//                        // TODO: Packet is not valid? It must be valid if we get here!
-//                    }
-//
-//                    [self processOutOfSequencePacketsWithCallouts];
-//                } else {
-//                    if (![_receiveQueue[sequenceNumber] isKindOfClass:[YRReceiveOperation class]]) {
-//                        // Buffer data
-//                        // snd: EAK
-//                        YRPacketCopyPayloadInline(receivedPacket);
-//
-//                        _receiveQueue[sequenceNumber] = [[YRReceiveOperation alloc] initWithPacket:receivedPacket];
-//                        [_outOfSequenceSegmentsReceived addObject:@(sequenceNumber)];
-//
-//                        receivedPacket = NULL;
-//                    } else {
-//                        // Received duplicated out of sequence segment, ignore.
-//                    }
-//                }
-//
-//                [self doACKOrEACKWithSequenceNumber:_sendNextSequenceNumber ackNumber:_rcvLatestAckedSegment];
-//            }
-//        }
-//            break;
-//        case kYRSessionStateDisconnecting:
-//            if (isRST) {
+
+                YRSessionTransiteToState(session, kYRSessionStateDisconnecting);
+                break;
+            }
+
+            if (hasACK) {
+                // queue: flush.
+                YRPacketsQueueRef sendQueue = YRSessionGetSendQueue(session);
+                
+                session->sessionInfo.sendLatestUnackSegment = rcvAckNumber + 1;
+                
+                YRSequenceNumberType currentSegment = YRPacketsQueueGetBaseSegment(sendQueue);
+                YRPacketsQueueAdvanceBaseSegment(sendQueue, rcvAckNumber - currentSegment);
+                
+                if (YRPacketsQueueBuffersInUse(sendQueue) == 0) {
+                    // TODO: Cancel retransmission timer.
+                }
+            }
+
+            if (hasEACK) {
+                // queue: flush
+                YRPacketHeaderEACKRef receivedEACKHeader = (YRPacketHeaderEACKRef)receivedHeader;
+                YRPacketsQueueRef sendQueue = YRSessionGetSendQueue(session);
+
+                YRSequenceNumberType eacksCount = 0;
+                YRSequenceNumberType *eacks = YRPacketHeaderGetEACKs(receivedEACKHeader, &eacksCount);
+
+                for (YRSequenceNumberType i = 0; i < eacksCount; i++) {
+                    YRSequenceNumberType sequence = eacks[i];
+                    
+                    // TODO: What if we receive here eack that is really ack?
+                    YRPacketsQueueUnmarkBufferInUseForSegment(sendQueue, sequence);
+                }
+                
+                if (YRPacketsQueueBuffersInUse(sendQueue) == 0) {
+                    // TODO: Cancel retransmission timer.
+                }
+            }
+
+            if (isNUL) {
+                // TODO: Next iteration: NUL segment.
+                // We must ack it if it falls into acceptance window.
+                // However we shouldn't set _rcvLatestAckedSegment to this seq number.
+                session->sessionInfo.rcvLatestAckedSegment = rcvSeqNumber;
+                YRSessionDoACKOrEACK(session);
+                break;
+            }
+
+            if (YRPacketHeaderHasPayloadLength(receivedHeader) &&
+                YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)receivedHeader) > 0) {
+                if (rcvSeqNumber == expectedToReceive) {
+                    session->sessionInfo.rcvLatestAckedSegment = rcvSeqNumber;
+
+                    // Do callout with data.
+                    YRPayloadLengthType payloadLength = 0;
+                    void *rawPayload = YRPacketGetPayload(receivedPacket, &payloadLength);
+
+                    !session->callbacks.receiveCallout ?: session->callbacks.receiveCallout(session, rawPayload, payloadLength);
+
+                    YRSessionProcessOutOfSequencePacketsIfAny(session);
+                } else {
+                    if (!YRPacketsQueueIsBufferInUseForSegment(receiveQueue, rcvSeqNumber)) {
+                        // Buffer data
+                        // snd: EAK
+                        YRPacketCopyPayloadInline(receivedPacket);
+                        
+                        void *buffer = YRPacketsQueueBufferForSegment(receiveQueue, rcvSeqNumber);
+                        
+//                        assert(buffer);
+                        
+                        if (buffer) {
+                            // This MUST be true always
+                            // Move packet to heap
+                            YRPacketCopy(receivedPacket, buffer);
+                            
+                            YRPacketsQueueMarkBufferInUseForSegment(receiveQueue, rcvSeqNumber);
+                        }
+                    } else {
+                        // Received duplicated out of sequence segment, ignore.
+                    }
+                }
+
+                YRSessionDoACKOrEACK(session);
+            }
+        }
+            break;
+        case kYRSessionStateDisconnecting:
+            if (isRST) {
 //                [_disconnectingTimer invalidate];
-//
-//                [self transiteToState:kYRSessionStateClosed];
-//            }
-//            break;
+
+                YRSessionTransiteToState(session, kYRSessionStateClosed);
+            }
+            break;
         default:
 //            [_sessionLogger logError:@"[RCV_REQ] <FATAL> Can't handle incoming packet because state is not defined: %d", self.state];
 //            NSAssert(NO, @"Can't handle incoming packet because state is not defined: %d", self.state);
@@ -618,7 +631,7 @@ void YRSessionSend(YRSessionRef session, void *payload, YRPayloadLengthType leng
 //    [_sessionLogger logInfo:@"[SEND_REQ] (%@)", [self humanReadableState:self.state]];
 
     if (length == 0) {
-        // TODO: error
+        // TODO: error: payload is empty
         return;
     }
 
@@ -688,18 +701,38 @@ void YRSessionSetCallbacks(YRSessionRef session, YRSessionCallbacks callbacks) {
 }
 
 YRPacketsQueueRef YRSessionGetSendQueue(YRSessionRef session) {
-    YRPacketsQueueRef queue = session->sendQueue;
-    
-    if (!queue && session->remoteConnectionConfiguration.maximumSegmentSize > 0) {
-        queue = YRPacketsQueueCreate(session->remoteConnectionConfiguration.maximumSegmentSize, session->remoteConnectionConfiguration.maxNumberOfOutstandingSegments);
+    if (!session->sendQueue && session->remoteConnectionConfiguration.maximumSegmentSize > 0) {
+        session->sendQueue = YRPacketsQueueCreate(session->remoteConnectionConfiguration.maximumSegmentSize,
+                                                  session->remoteConnectionConfiguration.maxNumberOfOutstandingSegments);
+        
+        // assert send queue, or do graceful fallback EVERYWHERE
+        
+        YRPacketsQueueSetBaseSegment(session->sendQueue, session->sessionInfo.sendNextSequenceNumber);
     }
     
-    return queue;
+    return session->sendQueue;
+}
+
+YRPacketsQueueRef YRSessionGetReceiveQueue(YRSessionRef session) {
+    if (!session->receiveQueue && session->remoteConnectionConfiguration.maximumSegmentSize > 0) {
+        session->receiveQueue = YRPacketsQueueCreate(session->localConnectionConfiguration.maximumSegmentSize,
+                                                     session->localConnectionConfiguration.maxNumberOfOutstandingSegments);
+        
+        // assert receive queue, or do graceful fallback EVERYWHERE
+        
+        // rcvLatestAckedSegment means that we expect next segment to have seg# + 1
+        // This queue stores ONLY out of seq, so next out of seq is seq# + 2
+        YRPacketsQueueSetBaseSegment(session->receiveQueue, session->sessionInfo.rcvLatestAckedSegment + 2);
+    }
+    
+    return session->receiveQueue;
 }
 
 void YRSessionTransiteToState(YRSessionRef session, YRSessionState state) {
     if (session->state != state) {
         session->state = state;
+        
+        !session->callbacks.connectionStateCallout ?: session->callbacks.connectionStateCallout(session, state);
     }
 }
 
@@ -732,30 +765,58 @@ void YRSessionSchedulePacketSendReliably(YRSessionRef session, YRPacketRef packe
 //    [self sendDataFromPacket:packet];
 }
 
-void YRSessionSchedulePacketSendUnreliably(YRSessionRef session, YRPacketRef packet) {
-    
+void YRSessionProcessOutOfSequencePacketsIfAny(YRSessionRef session) {
+//    YRSequenceNumberType nextSegment = _rcvLatestAckedSegment + 1;
+//    id operation = _receiveQueue[nextSegment];
+//
+//    while ([operation isKindOfClass:[YRReceiveOperation class]]) {
+//        _rcvLatestAckedSegment = nextSegment;
+//
+//        YRReceiveOperation *outOfSeqOperation = operation;
+//        YRPacketRef packet = outOfSeqOperation.packet;
+//
+//        // Do callout with data.
+//        YRPayloadLengthType payloadLength = 0;
+//        void *rawPayload = YRPacketGetPayload(packet, &payloadLength);
+//
+//        if (rawPayload) {
+//            NSData *rawPacketData = [NSData dataWithBytesNoCopy:rawPayload length:payloadLength freeWhenDone:NO];
+//
+//            !_sessionContext.receiveCallout ?: _sessionContext.receiveCallout(self, rawPacketData);
+//        }
+//
+//        _receiveQueue[nextSegment] = [NSNull null];
+//        [_outOfSequenceSegmentsReceived removeObject:@(nextSegment)];
+//
+//        nextSegment++;
+//
+//        operation = _receiveQueue[nextSegment];
+//    }
 }
 
 #pragma mark - ACK'ing
 
-//- (void)doACKOrEACKWithSequenceNumber:(YRSequenceNumberType)seqNumber ackNumber:(YRSequenceNumberType)ackNumber {
-//    YRPacketRef packet = NULL;
-//
-//    if (_outOfSequenceSegmentsReceived.count > 0) {
-//        YRSequenceNumberType sequencesCount = _outOfSequenceSegmentsReceived.count > 255 ? 255 : _outOfSequenceSegmentsReceived.count;
-//        YRSequenceNumberType sequences[sequencesCount];
-//
-//        for (YRSequenceNumberType i = 0; i < sequencesCount; i++) {
-//            sequences[i] = [_outOfSequenceSegmentsReceived[i] intValue];
-//        }
-//
-//        packet = YRPacketCreateEACK(seqNumber, ackNumber, sequences, &sequencesCount, NULL);
-//    } else {
-//        packet = YRPacketCreateACK(seqNumber, ackNumber, NULL);
-//    }
-//
-//    [self sendPacketUnreliably:packet];
-//}
+void YRSessionDoACKOrEACK(YRSessionRef session) {
+    if (session->receiveQueue && YRPacketsQueueBuffersInUse(session->receiveQueue) > 0) {
+        YRSequenceNumberType outOfSequenceReceived = YRPacketsQueueBuffersInUse(session->receiveQueue);
+        YRPayloadLengthType packetLength = YRPacketEACKLength(&outOfSequenceReceived);
+        
+        YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+            uint8_t outOfSeqReceivedSmallInt = YRPacketsQueueBuffersInUse(session->receiveQueue);
+            YRSequenceNumberType outOfSeq[outOfSeqReceivedSmallInt];
+            
+            YRPacketsQueueGetSegmentNumbersForBuffersInUse(session->receiveQueue, outOfSeq, &outOfSeqReceivedSmallInt);
+            YRSequenceNumberType outOfSeqReceived = outOfSeqReceivedSmallInt;
+            
+            YRPacketCreateEACK(seqNumber, ackNumber, outOfSeq, &outOfSeqReceived, packetBuffer);
+        }, packetLength);
+    } else {
+        // We don't have receive queue yet, so do simple ack
+        YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+            YRPacketCreateACK(seqNumber, ackNumber, packetBuffer);
+        }, YRPacketACKLength());
+    }
+}
 
 #pragma mark - Sending
 
@@ -786,7 +847,7 @@ void YRSessionDoReliableSend(YRSessionRef session, YRPacketBuilder packetBuilder
         
         YRSessionSendPacket(session, (YRPacketRef)buffer);
     } else {
-        // This branch exclusively works when we're not connected and that means only SYN segment will hit this.
+        // This branch is exclusively taken when we're not connected and that means only SYN segment will hit this.
         uint8_t buffer[packetLength] __attribute__ ((__aligned__(8)));
         
         packetBuilder(buffer, session->sessionInfo.sendNextSequenceNumber, session->sessionInfo.rcvLatestAckedSegment);
