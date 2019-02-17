@@ -9,57 +9,54 @@
 #ifndef __YRSession__
 #define __YRSession__
 
-#include "YRConnectionConfiguration.h"
-#include "YRTypes.h"
-#include "YRSessionState.h"
-
-#include <Block.h>
+#ifndef __YRNETWORKING_INDIRECT__
+#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
+#include "YRBase.h"
+#endif
 
 #pragma mark - Declarations
 
 typedef struct YRSession *YRSessionRef;
 
-typedef void (^YRSessionConnectionStateCallout) (YRSessionRef session, YRSessionState newState);
-typedef void (^YRSessionSendCallout) (YRSessionRef session, const void *payload, YRPayloadLengthType size);
-typedef void (^YRSessionReceiveCallout) (YRSessionRef session, const void *payload, YRPayloadLengthType size);
+#if __has_extension(blocks)
+
+typedef void (^YRSessionConnectCallback) (YRSessionRef session);
+typedef void (^YRSessionWaitCallback) (YRSessionRef session);
+typedef void (^YRSessionCloseCallback) (YRSessionRef session);
+typedef void (^YRSessionInvalidateCallback) (YRSessionRef session);
+
+typedef void (^YRSessionSendCallback) (YRSessionRef session);
+typedef void (^YRSessionReceiveCallback) (YRSessionRef session, const void *payload, YRPayloadLengthType length);
+
+#else
+
+typedef void (*YRSessionConnectCallback) (YRSessionRef session);
+typedef void (*YRSessionWaitCallback) (YRSessionRef session);
+typedef void (*YRSessionCloseCallback) (YRSessionRef session);
+typedef void (*YRSessionInvalidateCallback) (YRSessionRef session);
+
+typedef void (*YRSessionSendCallback) (YRSessionRef session);
+typedef void (*YRSessionReceiveCallback) (YRSessionRef session, const void *payload, YRPayloadLengthType length);
+
+#endif // __has_extension(blocks)
 
 typedef struct {
-    YRSessionConnectionStateCallout connectionStateCallout;
-    YRSessionSendCallout sendCallout;
-    YRSessionReceiveCallout receiveCallout;
-    // void *hasSpaceAvailableCallout
-} YRSessionCallbacks;
-
-typedef struct {
-    // Send-related
-    YRSequenceNumberType sendInitialSequenceNumber;
-    YRSequenceNumberType sendNextSequenceNumber;
-    YRSequenceNumberType sendLatestUnackSegment;
-    
-    // Receive-related
-    YRSequenceNumberType rcvLatestAckedSegment;
-    YRSequenceNumberType rcvInitialSequenceNumber;
-} YRSessionInfo;
-
-#pragma mark - Sizes
-
-/**
- *  Returns minimum required size for session with given configuration.
- */
-size_t YRSessionGetMinimumSize(YRConnectionConfiguration configuration);
+    YRSessionConnectCallback connectCallback;
+    YRSessionWaitCallback waitCallback;
+    YRSessionCloseCallback closeCallback;
+    YRSessionInvalidateCallback invalidateCallback;
+    YRSessionSendCallback sendCallback;
+    YRSessionReceiveCallback receiveCallback;
+} YRSessionProtocolCallbacks;
 
 #pragma mark - Lifecycle
 
-YRSessionRef YRSessionCreateWithConfiguration(YRConnectionConfiguration configuration, YRSessionCallbacks callbacks);
-void YRSessionDestroy(YRSessionRef session);
+YRSessionRef YRSessionCreate(void *protocol);
 
-// Temporary solution
-void YRSessionSetTimerProvider(YRSessionRef session, void *(^createTimer) (uint32_t seconds), void (^cancel) (void *));
+void YRSessionRetain(YRSessionRef session);
+void YRSessionRelease(YRSessionRef session);
 
-//YRSessionRef YRSessionRetain(YRSessionRef session);
-//YRSessionRef YRSessionRelease(YRSessionRef session);
-
-#pragma mark - Configuration
+#pragma mark - Connection
 
 /**
  *  Acts as active session (aka client) that sends request to connect to its peer.
@@ -85,23 +82,10 @@ void YRSessionInvalidate(YRSessionRef session);
 #pragma mark - Communication
 
 /**
- *  Returns true if session has space available for outgoing data to be sent.
- */
-bool YRSessionCanSend(YRSessionRef session);
-
-/**
  *  Send/receive are abstracted away and not managed by session.
  *  These convenience functions should be called by one when raw data received from peer or should be sent to peer.
- *  YRSession will call handlers passed on initialization providing real data to be sent/received.
  */
 void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType length);
 void YRSessionSend(YRSessionRef session, void *payload, YRPayloadLengthType length);
-
-#pragma mark - State
-
-YRSessionState YRSessionGetState(YRSessionRef session);
-YRSessionInfo YRSessionGetSessionInfo(YRSessionRef session);
-YRConnectionConfiguration YRSessionGetLocalConnectionInfo(YRSessionRef session);
-YRConnectionConfiguration YRSessionGetRemoteConnectionInfo(YRSessionRef session);
 
 #endif
