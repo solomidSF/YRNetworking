@@ -14,16 +14,7 @@
 
 @implementation AppDelegate
 
-- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {
-    // Insert code here to initialize your application
-//    dispatch_async(<#dispatch_queue_t  _Nonnull queue#>, <#^(void)block#>)
-}
-
-
-
-- (void)applicationWillTerminate:(NSNotification *)aNotification {
-    // Insert code here to tear down your application
-}
-
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification {}
+- (void)applicationWillTerminate:(NSNotification *)aNotification {}
 
 @end

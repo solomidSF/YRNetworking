@@ -22,4 +22,33 @@
 
 typedef uint16_t YRPayloadLengthType;
 
+#if __has_extension(blocks)
+
+#include <Block.h>
+
+#define YR_DECLARE_FP(name, ...) typedef void (^(name)) (__VA_ARGS__)
+
+#define YR_COPY_FP(fp) \
+    do { \
+        if ((fp)) { \
+            _Block_copy((fp)); \
+        } \
+    } while (0)
+
+#define YR_RELEASE_FP(fp) \
+    do { \
+        if ((fp)) { \
+            _Block_release((fp)); \
+        } \
+    } while (0)
+
+#else
+
+#define YR_DECLARE_FP(name, ...) typedef void (*(name)) (__VA_ARGS__)
+
+#define YR_COPY_FP(fp)
+#define YR_RELEASE_FP(fp)
+
+#endif // __has_extension(blocks)
+
 #endif // __YRBase__

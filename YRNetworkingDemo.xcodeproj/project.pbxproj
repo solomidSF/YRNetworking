@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		7D30A09A2225C83200C03B6D /* YRSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D933BE6221A16220055F52A /* YRSessionProtocol.c */; };
+		7D30A09B2225C83300C03B6D /* YRSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D933BE6221A16220055F52A /* YRSessionProtocol.c */; };
+		7D30A09E2227602600C03B6D /* YRSessionTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D30A09D2227602600C03B6D /* YRSessionTests.m */; };
+		7D30A09F222760C900C03B6D /* YRSession.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8CC2127339F0054D337 /* YRSession.c */; };
+		7D30A0A0222760D700C03B6D /* YRSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D933BE6221A16220055F52A /* YRSessionProtocol.c */; };
+		7D30A0A1222760DB00C03B6D /* YRSession.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8CC2127339F0054D337 /* YRSession.c */; };
+		7D30A0A22227610900C03B6D /* YRPacketsQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC224582142E1A800879F8F /* YRPacketsQueue.c */; };
 		7D32E861211CE48C00269410 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
 		7D32E862211CE49300269410 /* YRObjcSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83C20F51A1900FC7997 /* YRObjcSession.m */; };
 		7D32E863211CE49800269410 /* YRObjcSessionContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83D20F51A1900FC7997 /* YRObjcSessionContext.m */; };
@@ -38,7 +45,6 @@
 		7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9106C920EE902C00974F48 /* GCDAsyncUdpSocket.m */; };
 		7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = 7D9106CA20EE902C00974F48 /* GCDAsyncSocket.m */; };
 		7D9106EB20EE902C00974F48 /* README.txt in Resources */ = {isa = PBXBuildFile; fileRef = 7D9106DC20EE902C00974F48 /* README.txt */; };
-		7D933BE7221A16220055F52A /* YRSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D933BE6221A16220055F52A /* YRSessionProtocol.c */; };
 		7DA6E81020F3F4E200FC7997 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E80F20F3F4E200FC7997 /* AppDelegate.m */; };
 		7DA6E81320F3F4E200FC7997 /* InitialViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E81220F3F4E200FC7997 /* InitialViewController.m */; };
 		7DA6E81620F3F4E200FC7997 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7DA6E81420F3F4E200FC7997 /* Main.storyboard */; };
@@ -72,6 +78,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7D30A09D2227602600C03B6D /* YRSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSessionTests.m; sourceTree = "<group>"; };
 		7D46DA6920FE7BF300575665 /* YRPacketHeader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketHeader.c; sourceTree = "<group>"; };
 		7D46DA6B20FE923A00575665 /* YRDebugUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRDebugUtils.h; sourceTree = "<group>"; };
 		7D46DA6C20FE923A00575665 /* YRDebugUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRDebugUtils.m; sourceTree = "<group>"; };
@@ -205,6 +212,13 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7D30A0992225B4AA00C03B6D /* Concepts */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Concepts;
+			sourceTree = "<group>";
+		};
 		7D46DA7120FFA87E00575665 /* Streams */ = {
 			isa = PBXGroup;
 			children = (
@@ -251,6 +265,7 @@
 			isa = PBXGroup;
 			children = (
 				7D5BAAE7213306370010F6DD /* YRPacketsQueueTests.m */,
+				7D30A09D2227602600C03B6D /* YRSessionTests.m */,
 				7D5BAAE3213305FF0010F6DD /* Info.plist */,
 			);
 			path = YRNetworkingCoreTests;
@@ -259,9 +274,9 @@
 		7D7E2051220498E30074136D /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				7D7E2052220498E90074136D /* RUDP */,
 				7D933BE5221A16220055F52A /* YRSessionProtocol.h */,
 				7D933BE6221A16220055F52A /* YRSessionProtocol.c */,
+				7D7E2052220498E90074136D /* RUDP */,
 			);
 			path = Protocols;
 			sourceTree = "<group>";
@@ -441,6 +456,7 @@
 				7D933BE8221A16B80055F52A /* Core */,
 				7DA6E83A20F51A1900FC7997 /* YRSession */,
 				7D4E5AA1220CAC1100D3D112 /* Utils */,
+				7D30A0992225B4AA00C03B6D /* Concepts */,
 				7D4E5AA0220CABEA00D3D112 /* In-Progress */,
 			);
 			path = YRNetworking;
@@ -692,6 +708,9 @@
 			files = (
 				7DC2245A2142E36200879F8F /* YRPacketsQueue.c in Sources */,
 				7D5BAAE9213307720010F6DD /* YRPacketsQueueTests.m in Sources */,
+				7D30A09E2227602600C03B6D /* YRSessionTests.m in Sources */,
+				7D30A09F222760C900C03B6D /* YRSession.c in Sources */,
+				7D30A0A0222760D700C03B6D /* YRSessionProtocol.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -717,10 +736,10 @@
 				7D91068220EE897700974F48 /* AppDelegate.m in Sources */,
 				7D46DA7020FFA87700575665 /* YRLightweightInputStream.c in Sources */,
 				7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */,
-				7D933BE7221A16220055F52A /* YRSessionProtocol.c in Sources */,
 				7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */,
 				7D46DA862103738200575665 /* YRPacket.c in Sources */,
 				7D8EE8CD2127339F0054D337 /* YRSession.c in Sources */,
+				7D30A09A2225C83200C03B6D /* YRSessionProtocol.c in Sources */,
 				7D46DA6A20FE7BF300575665 /* YRPacketHeader.c in Sources */,
 				7DC224592142E1A800879F8F /* YRPacketsQueue.c in Sources */,
 			);
@@ -731,8 +750,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				7DA6E81320F3F4E200FC7997 /* InitialViewController.m in Sources */,
+				7D30A09B2225C83300C03B6D /* YRSessionProtocol.c in Sources */,
 				7DA6E81E20F3F4E500FC7997 /* main.m in Sources */,
 				7DA6E81020F3F4E200FC7997 /* AppDelegate.m in Sources */,
+				7D30A0A22227610900C03B6D /* YRPacketsQueue.c in Sources */,
+				7D30A0A1222760DB00C03B6D /* YRSession.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

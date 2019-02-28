@@ -17,8 +17,8 @@
 #endif
 
 #include "YRBase.h"
-#include "YRSession.h"
 #include "YRSessionProtocol.h"
+#include "YRSession.h"
 
 #undef __YRNETWORKING_INDIRECT__
 
