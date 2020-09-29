@@ -74,6 +74,7 @@
 		DA51B70E25205E4200573CB1 /* YRRUDPInitiatingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70925205E4200573CB1 /* YRRUDPInitiatingState.c */; };
 		DA51B71025205E6300573CB1 /* YRRUDPWaitingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */; };
 		DA51B713252325FE00573CB1 /* YRInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B712252325FE00573CB1 /* YRInputStream.c */; };
+		DA51B71925232B3B00573CB1 /* YROutputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B71825232B3B00573CB1 /* YROutputStream.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -201,6 +202,9 @@
 		DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPWaitingState.c; sourceTree = "<group>"; };
 		DA51B711252325FE00573CB1 /* YRInputStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRInputStream.h; sourceTree = "<group>"; };
 		DA51B712252325FE00573CB1 /* YRInputStream.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRInputStream.c; sourceTree = "<group>"; };
+		DA51B71725232B3B00573CB1 /* YROutputStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YROutputStream.h; sourceTree = "<group>"; };
+		DA51B71825232B3B00573CB1 /* YROutputStream.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YROutputStream.c; sourceTree = "<group>"; };
+		DA51B71A25232C3A00573CB1 /* YRUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRUtils.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -247,6 +251,8 @@
 			children = (
 				DA51B711252325FE00573CB1 /* YRInputStream.h */,
 				DA51B712252325FE00573CB1 /* YRInputStream.c */,
+				DA51B71725232B3B00573CB1 /* YROutputStream.h */,
+				DA51B71825232B3B00573CB1 /* YROutputStream.c */,
 				7D46DA6E20FFA87700575665 /* YRLightweightInputStream.h */,
 				7D46DA6F20FFA87700575665 /* YRLightweightInputStream.c */,
 				7D46DA7220FFA88F00575665 /* YRLightweightOutputStream.h */,
@@ -280,9 +286,10 @@
 		7D4E5AA1220CAC1100D3D112 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
-				7D46DA7120FFA87E00575665 /* Streams */,
+				DA51B71A25232C3A00573CB1 /* YRUtils.h */,
 				7DC224572142E1A800879F8F /* YRPacketsQueue.h */,
 				7DC224582142E1A800879F8F /* YRPacketsQueue.c */,
+				7D46DA7120FFA87E00575665 /* Streams */,
 			);
 			path = Utils;
 			sourceTree = "<group>";
@@ -788,6 +795,7 @@
 				7D46DA7020FFA87700575665 /* YRLightweightInputStream.c in Sources */,
 				7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */,
 				7DC4EB1B20FA982700486ED9 /* ClientViewController.m in Sources */,
+				DA51B71925232B3B00573CB1 /* YROutputStream.c in Sources */,
 				7D46DA862103738200575665 /* YRPacket.c in Sources */,
 				7D8EE8CD2127339F0054D337 /* YRSession.c in Sources */,
 				7D30A09A2225C83200C03B6D /* YRSessionProtocol.c in Sources */,

@@ -23,6 +23,9 @@
 // Protocols
 #include "YRRUDPProtocol.h"
 
+// Utils
+#include "YRUtils.h"
+
 #undef __YRNETWORKING_INDIRECT__
 
 #endif
