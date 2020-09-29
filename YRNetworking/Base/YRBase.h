@@ -13,6 +13,10 @@
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <stdbool.h>
+
 #ifndef __has_feature        
 #define __has_feature(x) 0  // Compatibility with non-clang compilers.
 #endif
@@ -20,13 +24,15 @@
 #define __has_extension __has_feature // Compatibility with pre-3.0 compilers.
 #endif
 
-typedef uint16_t YRPayloadLengthType;
-
 #if __has_extension(blocks)
 
 #include <Block.h>
 
-#define YR_DECLARE_FP(name, ...) typedef void (^(name)) (__VA_ARGS__)
+#define YR_TYPEDEF_FP(name, ...) typedef void (^(name)) (__VA_ARGS__)
+
+#define YR_FP_IMPL(name, ...) void (^name) (__VA_ARGS__) = ^(__VA_ARGS__)
+
+#define YR_FP(name) name
 
 #define YR_COPY_FP(fp) \
     do { \
@@ -44,7 +50,9 @@ typedef uint16_t YRPayloadLengthType;
 
 #else
 
-#define YR_DECLARE_FP(name, ...) typedef void (*(name)) (__VA_ARGS__)
+#define YR_TYPEDEF_FP(name, ...) typedef void (*(name)) (__VA_ARGS__)
+
+#define YR_FP_IMPL(fp, name, ...) void (name) (__VA_ARGS__)
 
 #define YR_COPY_FP(fp)
 #define YR_RELEASE_FP(fp)

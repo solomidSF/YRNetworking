@@ -13,6 +13,8 @@
 
 #include <stdio.h>
 
+// Rename to packets allocator/memory pool or smthng like that
+
 /**
  *  Simple data structure for storing packets data.
  */

@@ -9,16 +9,19 @@
 #ifndef __YRNetworking__
 #define __YRNetworking__
 
-#include <stdint.h>
-#include <stdlib.h>
-
 #ifndef __YRNETWORKING_INDIRECT__
 #define __YRNETWORKING_INDIRECT__
 #endif
 
+// Base
 #include "YRBase.h"
+
+// Session
 #include "YRSessionProtocol.h"
 #include "YRSession.h"
+
+// Protocols
+#include "YRRUDPProtocol.h"
 
 #undef __YRNETWORKING_INDIRECT__
 

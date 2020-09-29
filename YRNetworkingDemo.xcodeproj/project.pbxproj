@@ -14,6 +14,7 @@
 		7D30A0A0222760D700C03B6D /* YRSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D933BE6221A16220055F52A /* YRSessionProtocol.c */; };
 		7D30A0A1222760DB00C03B6D /* YRSession.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D8EE8CC2127339F0054D337 /* YRSession.c */; };
 		7D30A0A22227610900C03B6D /* YRPacketsQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DC224582142E1A800879F8F /* YRPacketsQueue.c */; };
+		7D30A0A5222AF3A100C03B6D /* YRRUDPSessionProtocol.c in Sources */ = {isa = PBXBuildFile; fileRef = 7D30A0A4222AF3A100C03B6D /* YRRUDPSessionProtocol.c */; };
 		7D32E861211CE48C00269410 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
 		7D32E862211CE49300269410 /* YRObjcSession.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83C20F51A1900FC7997 /* YRObjcSession.m */; };
 		7D32E863211CE49800269410 /* YRObjcSessionContext.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DA6E83D20F51A1900FC7997 /* YRObjcSessionContext.m */; };
@@ -63,8 +64,16 @@
 		7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB1D20FA983500486ED9 /* ServerViewController.m */; };
 		7DC4EB2220FAAFFB00486ED9 /* YRLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2120FAAFFB00486ED9 /* YRLogger.m */; };
 		7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
+		7DD194822234646A00C2E236 /* YRRUDPStates.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DD194812234646A00C2E236 /* YRRUDPStates.c */; };
 		7DE17C122124CEBF001C3C72 /* YRPacketTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DE17C112124CEBF001C3C72 /* YRPacketTests.m */; };
 		7DEB3B7F2113516200486DA4 /* YRReceiveOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */; };
+		DA51B704250B013200573CB1 /* YRRUDPClosedState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B703250B013200573CB1 /* YRRUDPClosedState.c */; };
+		DA51B70A25205E4200573CB1 /* YRRUDPConnectedState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70525205E4200573CB1 /* YRRUDPConnectedState.c */; };
+		DA51B70C25205E4200573CB1 /* YRRUDPDisconnectingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70725205E4200573CB1 /* YRRUDPDisconnectingState.c */; };
+		DA51B70D25205E4200573CB1 /* YRRUDPConnectingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70825205E4200573CB1 /* YRRUDPConnectingState.c */; };
+		DA51B70E25205E4200573CB1 /* YRRUDPInitiatingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70925205E4200573CB1 /* YRRUDPInitiatingState.c */; };
+		DA51B71025205E6300573CB1 /* YRRUDPWaitingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */; };
+		DA51B713252325FE00573CB1 /* YRInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B712252325FE00573CB1 /* YRInputStream.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -79,6 +88,10 @@
 
 /* Begin PBXFileReference section */
 		7D30A09D2227602600C03B6D /* YRSessionTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSessionTests.m; sourceTree = "<group>"; };
+		7D30A0A3222AF3A100C03B6D /* YRRUDPSessionProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRRUDPSessionProtocol.h; sourceTree = "<group>"; };
+		7D30A0A4222AF3A100C03B6D /* YRRUDPSessionProtocol.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRRUDPSessionProtocol.c; sourceTree = "<group>"; };
+		7D30A0AB222DD4FE00C03B6D /* YRRUDPProtocol.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRRUDPProtocol.h; sourceTree = "<group>"; };
+		7D30A0AC222DD5B500C03B6D /* YRRUDPBase.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRRUDPBase.h; sourceTree = "<group>"; };
 		7D46DA6920FE7BF300575665 /* YRPacketHeader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketHeader.c; sourceTree = "<group>"; };
 		7D46DA6B20FE923A00575665 /* YRDebugUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRDebugUtils.h; sourceTree = "<group>"; };
 		7D46DA6C20FE923A00575665 /* YRDebugUtils.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRDebugUtils.m; sourceTree = "<group>"; };
@@ -170,6 +183,8 @@
 		7DC4EB2320FB537500486ED9 /* YRSharedLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRSharedLogger.h; sourceTree = "<group>"; };
 		7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRSharedLogger.m; sourceTree = "<group>"; };
 		7DC4EB2620FB8B7400486ED9 /* YRPacketHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketHeader.h; sourceTree = "<group>"; };
+		7DD194802234646A00C2E236 /* YRRUDPStates.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRRUDPStates.h; sourceTree = "<group>"; };
+		7DD194812234646A00C2E236 /* YRRUDPStates.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRRUDPStates.c; sourceTree = "<group>"; };
 		7DE17C102121E49C001C3C72 /* YRConnectionConfiguration.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRConnectionConfiguration.h; sourceTree = "<group>"; };
 		7DE17C112124CEBF001C3C72 /* YRPacketTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRPacketTests.m; sourceTree = "<group>"; };
 		7DEB3B7021123B1500486DA4 /* YRNetworkingDemoTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = YRNetworkingDemoTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -178,6 +193,14 @@
 		7DEB3B7D2113516200486DA4 /* YRReceiveOperation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRReceiveOperation.h; sourceTree = "<group>"; };
 		7DEB3B7E2113516200486DA4 /* YRReceiveOperation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRReceiveOperation.m; sourceTree = "<group>"; };
 		7DEB3B8B2118928700486DA4 /* YRPacketHeaderTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRPacketHeaderTests.m; sourceTree = "<group>"; };
+		DA51B703250B013200573CB1 /* YRRUDPClosedState.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRRUDPClosedState.c; sourceTree = "<group>"; };
+		DA51B70525205E4200573CB1 /* YRRUDPConnectedState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPConnectedState.c; sourceTree = "<group>"; };
+		DA51B70725205E4200573CB1 /* YRRUDPDisconnectingState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPDisconnectingState.c; sourceTree = "<group>"; };
+		DA51B70825205E4200573CB1 /* YRRUDPConnectingState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPConnectingState.c; sourceTree = "<group>"; };
+		DA51B70925205E4200573CB1 /* YRRUDPInitiatingState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPInitiatingState.c; sourceTree = "<group>"; };
+		DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = YRRUDPWaitingState.c; sourceTree = "<group>"; };
+		DA51B711252325FE00573CB1 /* YRInputStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRInputStream.h; sourceTree = "<group>"; };
+		DA51B712252325FE00573CB1 /* YRInputStream.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRInputStream.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -222,6 +245,8 @@
 		7D46DA7120FFA87E00575665 /* Streams */ = {
 			isa = PBXGroup;
 			children = (
+				DA51B711252325FE00573CB1 /* YRInputStream.h */,
+				DA51B712252325FE00573CB1 /* YRInputStream.c */,
 				7D46DA6E20FFA87700575665 /* YRLightweightInputStream.h */,
 				7D46DA6F20FFA87700575665 /* YRLightweightInputStream.c */,
 				7D46DA7220FFA88F00575665 /* YRLightweightOutputStream.h */,
@@ -255,6 +280,7 @@
 		7D4E5AA1220CAC1100D3D112 /* Utils */ = {
 			isa = PBXGroup;
 			children = (
+				7D46DA7120FFA87E00575665 /* Streams */,
 				7DC224572142E1A800879F8F /* YRPacketsQueue.h */,
 				7DC224582142E1A800879F8F /* YRPacketsQueue.c */,
 			);
@@ -284,8 +310,13 @@
 		7D7E2052220498E90074136D /* RUDP */ = {
 			isa = PBXGroup;
 			children = (
-				7D7E205C2205F6FD0074136D /* Temp */,
+				7D30A0AB222DD4FE00C03B6D /* YRRUDPProtocol.h */,
+				7D30A0AC222DD5B500C03B6D /* YRRUDPBase.h */,
+				7D30A0A3222AF3A100C03B6D /* YRRUDPSessionProtocol.h */,
+				7D30A0A4222AF3A100C03B6D /* YRRUDPSessionProtocol.c */,
 				7D46DA872107ABEB00575665 /* Core */,
+				7DD19483223464BB00C2E236 /* RUDP States */,
+				7D7E205C2205F6FD0074136D /* Temp */,
 			);
 			path = RUDP;
 			sourceTree = "<group>";
@@ -486,7 +517,6 @@
 				7D8EE8CB2127339F0054D337 /* YRSession.h */,
 				7D8EE8CC2127339F0054D337 /* YRSession.c */,
 				7D7E2051220498E30074136D /* Protocols */,
-				7D46DA7120FFA87E00575665 /* Streams */,
 				7DA6E84020F51A1900FC7997 /* Temp */,
 			);
 			path = YRSession;
@@ -529,6 +559,21 @@
 				7D46DA6C20FE923A00575665 /* YRDebugUtils.m */,
 			);
 			path = Temp;
+			sourceTree = "<group>";
+		};
+		7DD19483223464BB00C2E236 /* RUDP States */ = {
+			isa = PBXGroup;
+			children = (
+				7DD194802234646A00C2E236 /* YRRUDPStates.h */,
+				7DD194812234646A00C2E236 /* YRRUDPStates.c */,
+				DA51B703250B013200573CB1 /* YRRUDPClosedState.c */,
+				DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */,
+				DA51B70925205E4200573CB1 /* YRRUDPInitiatingState.c */,
+				DA51B70825205E4200573CB1 /* YRRUDPConnectingState.c */,
+				DA51B70525205E4200573CB1 /* YRRUDPConnectedState.c */,
+				DA51B70725205E4200573CB1 /* YRRUDPDisconnectingState.c */,
+			);
+			path = "RUDP States";
 			sourceTree = "<group>";
 		};
 		7DEB3B7121123B1500486DA4 /* YRNetworkingDemoTests */ = {
@@ -620,7 +665,7 @@
 		7D91067520EE897700974F48 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0940;
+				LastUpgradeCheck = 1170;
 				ORGANIZATIONNAME = "Yuriy Romanchenko";
 				TargetAttributes = {
 					7D5BAADE213305FF0010F6DD = {
@@ -718,7 +763,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA51B70D25205E4200573CB1 /* YRRUDPConnectingState.c in Sources */,
 				7DA6E85620F51A1900FC7997 /* YRObjcSession.m in Sources */,
+				DA51B704250B013200573CB1 /* YRRUDPClosedState.c in Sources */,
 				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
 				7DC4EB1E20FA983500486ED9 /* ServerViewController.m in Sources */,
 				7D46DA7420FFA88F00575665 /* YRLightweightOutputStream.c in Sources */,
@@ -729,8 +776,12 @@
 				7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */,
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
 				7DA6E85820F51A1900FC7997 /* YRSendOperation.m in Sources */,
+				7D30A0A5222AF3A100C03B6D /* YRRUDPSessionProtocol.c in Sources */,
 				7DA6E85720F51A1900FC7997 /* YRObjcSessionContext.m in Sources */,
 				7DA6E85020F51A1900FC7997 /* YRUDPServer.m in Sources */,
+				DA51B70C25205E4200573CB1 /* YRRUDPDisconnectingState.c in Sources */,
+				DA51B713252325FE00573CB1 /* YRInputStream.c in Sources */,
+				7DD194822234646A00C2E236 /* YRRUDPStates.c in Sources */,
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,
 				7DA6E85320F51A1900FC7997 /* YRPeer.m in Sources */,
 				7D91068220EE897700974F48 /* AppDelegate.m in Sources */,
@@ -740,8 +791,11 @@
 				7D46DA862103738200575665 /* YRPacket.c in Sources */,
 				7D8EE8CD2127339F0054D337 /* YRSession.c in Sources */,
 				7D30A09A2225C83200C03B6D /* YRSessionProtocol.c in Sources */,
+				DA51B70A25205E4200573CB1 /* YRRUDPConnectedState.c in Sources */,
 				7D46DA6A20FE7BF300575665 /* YRPacketHeader.c in Sources */,
 				7DC224592142E1A800879F8F /* YRPacketsQueue.c in Sources */,
+				DA51B70E25205E4200573CB1 /* YRRUDPInitiatingState.c in Sources */,
+				DA51B71025205E6300573CB1 /* YRRUDPWaitingState.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -970,6 +1024,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VTM47V39G2;
@@ -987,6 +1042,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = VTM47V39G2;

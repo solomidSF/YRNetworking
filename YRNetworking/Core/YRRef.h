@@ -32,8 +32,9 @@ YRRefInc(struct YRRef *ref) {
 
 static inline void
 YRRefDec(struct YRRef *ref) {
-    if (__sync_sub_and_fetch((int32_t *)&ref->count, 1) == 0)
+    if (__sync_sub_and_fetch((int32_t *)&ref->count, 1) == 0) {
         ref->destructor(ref);
+    }
 }
 
 #endif // __YRRef__

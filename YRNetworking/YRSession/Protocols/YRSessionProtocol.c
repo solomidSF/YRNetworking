@@ -48,32 +48,47 @@ void YRSessionProtocolSetCallbacks(YRSessionProtocolRef protocol,
                                    YRSessionProtocolLifecycleCallbacks lifecycleCallbacks,
                                    YRSessionProtocolCallbacks protocolCallbacks,
                                    YRSessionProtocolClientCallbacks clientCallbacks) {
+    YRSessionProtocolSetLifecycleCallbacks(protocol, lifecycleCallbacks);
+    YRSessionProtocolSetProtocolCallbacks(protocol, protocolCallbacks);
+    YRSessionProtocolSetClientCallbacks(protocol, clientCallbacks);
+}
+
+void YRSessionProtocolSetLifecycleCallbacks(YRSessionProtocolRef protocol,
+                                            YRSessionProtocolLifecycleCallbacks lifecycleCallbacks) {
     YR_COPY_FP(lifecycleCallbacks.invalidateCallback);
     YR_COPY_FP(lifecycleCallbacks.destroyCallback);
-    
+
+    YR_RELEASE_FP(protocol->lifecycleCallbacks.invalidateCallback);
+    YR_RELEASE_FP(protocol->lifecycleCallbacks.destroyCallback);
+
+    protocol->lifecycleCallbacks = lifecycleCallbacks;
+}
+
+void YRSessionProtocolSetProtocolCallbacks(YRSessionProtocolRef protocol,
+                                           YRSessionProtocolCallbacks protocolCallbacks) {
     YR_COPY_FP(protocolCallbacks.connectCallback);
     YR_COPY_FP(protocolCallbacks.waitCallback);
     YR_COPY_FP(protocolCallbacks.closeCallback);
     YR_COPY_FP(protocolCallbacks.sendCallback);
     YR_COPY_FP(protocolCallbacks.receiveCallback);
-    
-    YR_COPY_FP(clientCallbacks.sendCallback);
-    YR_COPY_FP(clientCallbacks.receiveCallback);
-    
-    YR_RELEASE_FP(protocol->lifecycleCallbacks.invalidateCallback);
-    YR_RELEASE_FP(protocol->lifecycleCallbacks.destroyCallback);
-    
+
     YR_RELEASE_FP(protocol->protocolCallbacks.connectCallback);
     YR_RELEASE_FP(protocol->protocolCallbacks.waitCallback);
     YR_RELEASE_FP(protocol->protocolCallbacks.closeCallback);
     YR_RELEASE_FP(protocol->protocolCallbacks.sendCallback);
     YR_RELEASE_FP(protocol->protocolCallbacks.receiveCallback);
+
+    protocol->protocolCallbacks = protocolCallbacks;
+}
+
+void YRSessionProtocolSetClientCallbacks(YRSessionProtocolRef protocol,
+                                         YRSessionProtocolClientCallbacks clientCallbacks) {
+    YR_COPY_FP(clientCallbacks.sendCallback);
+    YR_COPY_FP(clientCallbacks.receiveCallback);
     
     YR_RELEASE_FP(protocol->clientCallbacks.sendCallback);
     YR_RELEASE_FP(protocol->clientCallbacks.receiveCallback);
     
-    protocol->lifecycleCallbacks = lifecycleCallbacks;
-    protocol->protocolCallbacks = protocolCallbacks;
     protocol->clientCallbacks = clientCallbacks;
 }
 
@@ -105,16 +120,16 @@ void YRSessionProtocolClose(YRSessionProtocolRef protocol) {
 
 #pragma mark - Communication
 
-void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, YRPayloadLengthType length) {
+void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, uint16_t length) {
     YR_DO_PROTOCOL_CALLOUT(receiveCallback, protocol, payload, length);
 }
 
-void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, YRPayloadLengthType length) {
+void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, uint16_t length) {
     YR_DO_PROTOCOL_CALLOUT(sendCallback, protocol, payload, length);
 }
 
 #pragma mark - Concepts
 
 void YRSessionProtocolInstallModules(YRSessionProtocolRef protocol, void *modules) {
-    
+    // no-op
 }

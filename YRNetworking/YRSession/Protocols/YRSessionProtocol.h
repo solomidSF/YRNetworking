@@ -33,16 +33,15 @@
 
 #pragma mark - Declarations
 
-// Concept of 'base' protocol, every implementation should include this.
 typedef struct YRSessionProtocol *YRSessionProtocolRef;
 
-YR_DECLARE_FP(YRSessionProtocolInvalidateCallback, YRSessionProtocolRef protocol);
-YR_DECLARE_FP(YRSessionProtocolDestroyCallback, YRSessionProtocolRef protocol);
-YR_DECLARE_FP(YRSessionProtocolConnectCallback, YRSessionProtocolRef protocol);
-YR_DECLARE_FP(YRSessionProtocolWaitCallback, YRSessionProtocolRef protocol);
-YR_DECLARE_FP(YRSessionProtocolCloseCallback, YRSessionProtocolRef protocol);
-YR_DECLARE_FP(YRSessionProtocolSendCallback, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType length);
-YR_DECLARE_FP(YRSessionProtocolReceiveCallback, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType length);
+YR_TYPEDEF_FP(YRSessionProtocolInvalidateCallback, YRSessionProtocolRef protocol);
+YR_TYPEDEF_FP(YRSessionProtocolDestroyCallback, YRSessionProtocolRef protocol);
+YR_TYPEDEF_FP(YRSessionProtocolConnectCallback, YRSessionProtocolRef protocol);
+YR_TYPEDEF_FP(YRSessionProtocolWaitCallback, YRSessionProtocolRef protocol);
+YR_TYPEDEF_FP(YRSessionProtocolCloseCallback, YRSessionProtocolRef protocol);
+YR_TYPEDEF_FP(YRSessionProtocolSendCallback, YRSessionProtocolRef protocol, const void *payload, uint16_t length);
+YR_TYPEDEF_FP(YRSessionProtocolReceiveCallback, YRSessionProtocolRef protocol, const void *payload, uint16_t length);
 
 typedef struct {
     YRSessionProtocolInvalidateCallback invalidateCallback;
@@ -80,6 +79,15 @@ void YRSessionProtocolSetCallbacks(YRSessionProtocolRef protocol,
                                    YRSessionProtocolCallbacks protocolCallbacks,
                                    YRSessionProtocolClientCallbacks clientCallbacks);
 
+void YRSessionProtocolSetLifecycleCallbacks(YRSessionProtocolRef protocol,
+                                            YRSessionProtocolLifecycleCallbacks lifecycleCallbacks);
+
+void YRSessionProtocolSetProtocolCallbacks(YRSessionProtocolRef protocol,
+                                           YRSessionProtocolCallbacks protocolCallbacks);
+
+void YRSessionProtocolSetClientCallbacks(YRSessionProtocolRef protocol,
+                                         YRSessionProtocolClientCallbacks clientCallbacks);
+
 YRSessionProtocolLifecycleCallbacks YRSessionProtocolGetLifecycleCallbacks(YRSessionProtocolRef protocol);
 YRSessionProtocolCallbacks YRSessionProtocolGetCallbacks(YRSessionProtocolRef protocol);
 YRSessionProtocolClientCallbacks YRSessionProtocolGetClientCallbacks(YRSessionProtocolRef protocol);
@@ -92,8 +100,8 @@ void YRSessionProtocolClose(YRSessionProtocolRef protocol);
 
 #pragma mark - Communication
 
-void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, YRPayloadLengthType length);
-void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, YRPayloadLengthType length);
+void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, uint16_t length);
+void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, uint16_t length);
 
 #pragma mark - Concepts
 

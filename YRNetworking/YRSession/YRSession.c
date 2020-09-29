@@ -92,10 +92,10 @@ void YRSessionInvalidate(YRSessionRef session) {
 
 #pragma mark - Communication
 
-void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType length) {
+void YRSessionReceive(YRSessionRef session, void *payload, uint16_t length) {
     YRSessionProtocolReceive(session->protocol, payload, length);
 }
                                                                                         
-void YRSessionSend(YRSessionRef session, void *payload, YRPayloadLengthType length) {
+void YRSessionSend(YRSessionRef session, void *payload, uint16_t length) {
     YRSessionProtocolSend(session->protocol, payload, length);
 }

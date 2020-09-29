@@ -39,6 +39,7 @@ typedef struct YRSession *YRSessionRef;
 
 YRSessionRef YRSessionCreate(YRSessionProtocolRef protocol);
 
+// TODO: Remove
 void YRSessionRetain(YRSessionRef session);
 void YRSessionRelease(YRSessionRef session);
 
@@ -71,7 +72,7 @@ void YRSessionInvalidate(YRSessionRef session);
  *  Send/receive are abstracted away and not managed by session.
  *  These convenience functions should be called by one when raw data received from peer or should be sent to peer.
  */
-void YRSessionReceive(YRSessionRef session, void *payload, YRPayloadLengthType length);
-void YRSessionSend(YRSessionRef session, void *payload, YRPayloadLengthType length);
+void YRSessionReceive(YRSessionRef session, void *payload, uint16_t length);
+void YRSessionSend(YRSessionRef session, void *payload, uint16_t length);
 
 #endif
