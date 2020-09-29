@@ -1,5 +1,5 @@
 //
-// YRInputStream.h
+// YROutputStream.h
 //
 // The MIT License (MIT)
 //
@@ -23,35 +23,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRInputStream__
-#define __YRInputStream__
+#ifndef __YROutputStream__
+#define __YROutputStream__
 
-typedef struct YRInputStream *YRInputStreamRef;
+typedef struct YROutputStream *YROutputStreamRef;
 
 #pragma mark - Lifecycle
 
-YRInputStreamRef YRInputStreamGetGlobal(void);
-YRInputStreamRef YRInputStreamGet(const void *buffer, uint16_t bufferSize);
-YRInputStreamRef YRInputStreamCreateEmpty(void);
-YRInputStreamRef YRInputStreamCreate(const void *buffer, uint16_t bufferSize);
-void YRInputSteamDestroy(YRInputStreamRef stream);
-void YRInputSteamReset(YRInputStreamRef stream);
+YROutputStreamRef YROutputStreamGetGlobal(void);
+YROutputStreamRef YROutputStreamGet(void *buffer, uint16_t bufferSize);
+YROutputStreamRef YROutputStreamEmpty(void);
+YROutputStreamRef YROutputStreamCreate(void *buffer, uint16_t bufferSize);
+void YROutputStreamDestroy(YROutputStreamRef stream);
 
 #pragma mark - Introspection
 
-void *YRInputStreamCurrentPointer(YRInputStreamRef stream, uint16_t *outSizeLeft);
-uint16_t YRInputStreamSize(YRInputStreamRef stream);
-uint16_t YRInputStreamCurrentIndex(YRInputStreamRef stream);
-uint16_t YRInputStreamBytesLeft(YRInputStreamRef stream);
+void *YROutputStreamGetBytes(YROutputStreamRef stream);
 
 #pragma mark - Interface
 
-void YRInputStreamSetTo(YRInputStreamRef stream, const void *buffer, uint16_t bufferSize);
-bool YRInputStreamSetIndexTo(YRInputStreamRef stream, uint16_t index);
-bool YRInputStreamAdvanceBy(YRInputStreamRef stream, uint16_t by);
+void YROutputStreamSetTo(YROutputStreamRef stream, void *buffer, uint16_t bufferSize);
+void YROutputStreamWriteUInt8(YROutputStreamRef stream, uint8_t value);
+void YROutputStreamWriteUInt16(YROutputStreamRef stream, uint16_t value);
+void YROutputStreamWriteUInt32(YROutputStreamRef stream, uint32_t value);
 
-uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream);
-uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream);
-uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream);
-
-#endif /* YRInputStream */
+#endif /* __YROutputStream__ */
