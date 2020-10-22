@@ -31,22 +31,36 @@
 #endif
 
 //#define YRMakeMultipleTo(what, to) (((what) + ((to) - 1)) & (~((to) - 1)))
-//
-//typedef uint8_t YRProtocolVersionType;
-//YRProtocolVersionType const kYRProtocolVersion = 0x01;
+
 typedef uint8_t YRPacketDescriptionType;
 typedef uint8_t YRProtocolVersionType;
 typedef uint8_t YRHeaderLengthType;
+typedef uint16_t YRPayloadLengthType;
 typedef uint16_t YRSequenceNumberType;
 typedef uint32_t YRChecksumType;
+
+enum YRPacketDescription {
+    // Synchronization segment. Mutually exclusive with RST && NUL.
+    YRPacketDescriptionSYN = 1 << 0,
+    // Indicates the packet is a reset segment. Mutually exclusive with SYN && NUL.
+    YRPacketDescriptionRST = 1 << 1,
+    // Indicates the packet is a null segment. Mutually exclusive with SYN && RST.
+    YRPacketDescriptionNUL = 1 << 2,
+    // Indicates acknowledgment number in the header is valid.
+    YRPacketDescriptionACK = 1 << 3,
+    // Indicates extended acknowledge segment is present.
+    YRPacketDescriptionEACK = 1 << 4,
+    // Indicates whether the Checksum field contains the checksum of just the header or the header and the body (data).
+    YRPacketDescriptionCHK = 1 << 5
+};
 
 typedef struct {
     uint16_t options; // zero for now
     uint16_t retransmissionTimeoutValue; // ms
     uint16_t nullSegmentTimeoutValue; // ms
     uint16_t maximumSegmentSize;
+	uint8_t maxRetransmissions;
     uint8_t maxNumberOfOutstandingSegments;
-    uint8_t maxRetransmissions;
     //    uint8_t maxCumulativeAck;
     //    uint16_t cumulativeAckTimeoutValue; // ms
 } YRRUDPConnectionConfiguration;
@@ -66,4 +80,9 @@ typedef enum {
     kYRRUDPSessionStateDisconnecting
 } YRRUDPSessionState;
 
-#endif /* YRRUDPBase_h */
+
+typedef enum {
+	YRRUDPErrorNone
+} YRRUDPError;
+
+#endif /* __YRRUDPBase__ */

@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-#import "YRPacketHeader.h"
+#import "YRNetworking.h"
 
 @interface YRDebugUtils : NSObject
 

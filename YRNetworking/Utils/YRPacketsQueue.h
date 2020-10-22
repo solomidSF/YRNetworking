@@ -9,7 +9,7 @@
 #ifndef __YRPacketsQueue__
 #define __YRPacketsQueue__
 
-#include "YRTypes.h"
+#include "YRInternal.h"
 
 #include <stdio.h>
 

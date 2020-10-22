@@ -1,64 +1,34 @@
 //
-//  YRPacketHeader.h
-//  YRNetworkingDemo
+// YRPacketHeader.h
 //
-//  Created by Yuriy Romanchenko on 7/15/18.
-//  Copyright © 2018 Yuriy Romanchenko. All rights reserved.
+// The MIT License (MIT)
 //
+// Copyright (c) 2020 Yurii Romanchenko
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
-#ifndef YRPacketHeader_h
-#define YRPacketHeader_h
+#ifndef __YRPacketHeader__
+#define __YRPacketHeader__
 
-#include <stdint.h>
-#include <stdbool.h>
-#include "YRConnectionConfiguration.h"
-
-#pragma mark - Declarations
-
-#define YRMakeMultipleTo(what, to) (((uintptr_t)(what) + ((to) - 1)) & (~((to) - 1)))
-
-static uint8_t const kYRProtocolVersionOffset = 6;
-
-typedef uint8_t YRPacketDescriptionType;
-typedef uint8_t YRProtocolVersionType;
-typedef uint8_t YRHeaderLengthType;
-typedef uint16_t YRSequenceNumberType;
-typedef uint16_t YRPayloadLengthType;
-typedef uint32_t YRChecksumType;
-
-// TODO: Move to another place?
-extern YRProtocolVersionType const kYRProtocolVersion;
-
-#define YRMaximumPacketHeaderSize ((YRHeaderLengthType)(~0))
-
-extern YRHeaderLengthType const kYRPacketHeaderGenericLength;
-extern YRHeaderLengthType const kYRPacketHeaderSYNLength;
-extern YRHeaderLengthType const kYRPacketHeaderRSTLength;
-extern YRHeaderLengthType const kYRPacketPayloadHeaderLength;
-
-//typedef union {
-//    YRPacketGenericHeaderRef commonHeader;
-//    YRPacketHeaderSYNRef synHeader;
-//    YRPacketHeaderRSTRef rstHeader;
-//    YRPacketHeaderEACKRef eackHeader;
-//} YRPacketHeader __attribute__((transparent_union));
-
-enum YRPacketDescription {
-    // Synchronization segment. Mutually exclusive with RST && NUL.
-    YRPacketDescriptionSYN = 1 << 0,
-    // Indicates the packet is a reset segment. Mutually exclusive with SYN && NUL.
-    YRPacketDescriptionRST = 1 << 1,
-    // Indicates the packet is a null segment. Mutually exclusive with SYN && RST.
-    YRPacketDescriptionNUL = 1 << 2,
-    // Indicates acknowledgment number in the header is valid.
-    YRPacketDescriptionACK = 1 << 3,
-    // Indicates extended acknowledge segment is present.
-    YRPacketDescriptionEACK = 1 << 4,
-    // Indicates whether the Checksum field contains the checksum of just the header or the header and the body (data).
-    YRPacketDescriptionCHK = 1 << 5,
-    // Version of protocol used to generate this packet.
-    YRPacketDescriptionProtocolVersionMask = 0x3 << kYRProtocolVersionOffset
-};
+#ifndef __YRNETWORKING_INDIRECT__
+#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
+#endif
 
 typedef struct YRPacketHeader *YRPacketHeaderRef;
 typedef struct YRPacketHeaderSYN *YRPacketHeaderSYNRef;
@@ -66,29 +36,25 @@ typedef struct YRPacketHeaderRST *YRPacketHeaderRSTRef;
 typedef struct YRPacketPayloadHeader *YRPacketPayloadHeaderRef;
 typedef struct YRPacketHeaderEACK *YRPacketHeaderEACKRef;
 
-/**
- *  Determines how much bytes needed to fit given eacks. (Note: Maximum header size is 255, so on return ioCount will contain how much eacks can be set to header)
- */
-YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount);
+extern YRProtocolVersionType const kYRProtocolVersion;
 
-/**
- *  Determines how much eack's can fit into given length.
- */
-YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength);
+#define YRMaxPacketHeaderSize ((YRHeaderLengthType)(~0) + 1)
 
-#pragma mark - Configuration
+// Max possible length for packet header internal data structure.
+extern size_t const kYRPacketHeaderMaxDataStructureLength;
 
-// Generic Header
+#pragma mark - Base Header
 
 void YRPacketHeaderSetPacketDescription(YRPacketHeaderRef header, YRPacketDescriptionType packetDescription);
 void YRPacketHeaderSetSYN(YRPacketHeaderRef header);
 void YRPacketHeaderSetRST(YRPacketHeaderRef header);
 void YRPacketHeaderSetNUL(YRPacketHeaderRef header);
+void YRPacketHeaderSetCHK(YRPacketHeaderRef header);
 void YRPacketHeaderSetProtocolVersion(YRPacketHeaderRef header, YRProtocolVersionType version);
+void YRPacketHeaderSetReserved(YRPacketHeaderRef header, uint8_t reserved);
 void YRPacketHeaderSetHeaderLength(YRPacketHeaderRef header, YRHeaderLengthType length);
 void YRPacketHeaderSetSequenceNumber(YRPacketHeaderRef header, YRSequenceNumberType seqNumber);
 void YRPacketHeaderSetAckNumber(YRPacketHeaderRef header, YRSequenceNumberType ackNumber);
-void YRPacketHeaderSetCHK(YRPacketHeaderRef header);
 void YRPacketHeaderSetChecksum(YRPacketHeaderRef header, YRChecksumType checksum);
 
 YRPacketDescriptionType YRPacketHeaderGetPacketDescription(YRPacketHeaderRef header);
@@ -100,6 +66,7 @@ bool YRPacketHeaderHasEACK(YRPacketHeaderRef header);
 bool YRPacketHeaderHasACKOrEACK(YRPacketHeaderRef header);
 bool YRPacketHeaderHasCHK(YRPacketHeaderRef header);
 YRProtocolVersionType YRPacketHeaderGetProtocolVersion(YRPacketHeaderRef header);
+uint8_t YRPacketHeaderGetReserved(YRPacketHeaderRef header);
 YRHeaderLengthType YRPacketHeaderGetHeaderLength(YRPacketHeaderRef header);
 YRSequenceNumberType YRPacketHeaderGetSequenceNumber(YRPacketHeaderRef header);
 YRSequenceNumberType YRPacketHeaderGetAckNumber(YRPacketHeaderRef header);
@@ -107,25 +74,57 @@ YRChecksumType YRPacketHeaderGetChecksum(YRPacketHeaderRef header);
 
 #pragma mark - SYN Header
 
-void YRPacketSYNHeaderSetConfiguration(YRPacketHeaderSYNRef synHeader, YRConnectionConfiguration configuration);
-YRConnectionConfiguration YRPacketSYNHeaderGetConfiguration(YRPacketHeaderSYNRef synHeader);
+YRPacketHeaderRef YRPacketHeaderSYNGetBaseHeader(YRPacketHeaderSYNRef synHeader);
+
+void YRPacketHeaderSYNSetConfiguration(YRPacketHeaderSYNRef synHeader, YRRUDPConnectionConfiguration configuration);
+YRRUDPConnectionConfiguration YRPacketHeaderSYNGetConfiguration(YRPacketHeaderSYNRef synHeader);
 
 #pragma mark - RST Header
 
-void YRPacketRSTHeaderSetErrorCode(YRPacketHeaderRSTRef rstHeader, uint8_t errCode);
-uint8_t YRPacketRSTHeaderGetErrorCode(YRPacketHeaderRSTRef rstHeader);
+YRPacketHeaderRef YRPacketHeaderRSTGetBaseHeader(YRPacketHeaderRSTRef rstHeader);
+
+void YRPacketHeaderRSTSetErrorCode(YRPacketHeaderRSTRef rstHeader, YRRUDPError errCode);
+YRRUDPError YRPacketHeaderRSTGetErrorCode(YRPacketHeaderRSTRef rstHeader);
 
 #pragma mark - Payload Header
 
+YRPacketHeaderRef YRPacketPayloadHeaderGetBaseHeader(YRPacketPayloadHeaderRef header);
+
 bool YRPacketHeaderHasPayloadLength(YRPacketHeaderRef header);
-void YRPacketHeaderSetPayloadLength(YRPacketPayloadHeaderRef header, YRPayloadLengthType length);
-YRPayloadLengthType YRPacketHeaderGetPayloadLength(YRPacketPayloadHeaderRef header);
+void YRPacketPayloadHeaderSetPayloadLength(YRPacketPayloadHeaderRef header, YRPayloadLengthType length);
+YRPayloadLengthType YRPacketPayloadHeaderGetPayloadLength(YRPacketPayloadHeaderRef header);
 
 #pragma mark - EACK Header
 
-void YRPacketHeaderSetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacks, YRSequenceNumberType eacksCount);
+YRPacketPayloadHeaderRef YRPacketHeaderEACKGetPayloadHeader(YRPacketHeaderEACKRef eackHeader);
+YRPacketHeaderRef YRPacketHeaderEACKGetBaseHeader(YRPacketHeaderEACKRef eackHeader);
 
-YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader);
-YRSequenceNumberType *YRPacketHeaderGetEACKs(YRPacketHeaderEACKRef eackHeader, YRSequenceNumberType *eacksCount);
+void YRPacketHeaderSetEACKs(
+	YRPacketHeaderEACKRef eackHeader,
+	YRSequenceNumberType *eacks,
+	YRHeaderLengthType eacksCount
+);
 
-#endif /* YRPacketHeader_h */
+YRSequenceNumberType *YRPacketHeaderGetEACKs(
+	YRPacketHeaderEACKRef eackHeader,
+	YRHeaderLengthType *eacksCount
+);
+
+#pragma mark - Utility
+
+void YRPacketHeaderDebugInfo(char *buffer);
+
+// TODO: Remove
+//
+///**
+// *  Determines how much bytes needed to fit given eacks. (Note: Maximum header size is 256, so on return ioCount will contain how much eacks can be set to header)
+// */
+//YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount);
+//
+///**
+// *  Determines how much eack's can fit into given length.
+// */
+//YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength);
+//YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader);
+
+#endif // __YRPacketHeader__

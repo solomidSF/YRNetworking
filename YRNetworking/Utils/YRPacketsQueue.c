@@ -240,7 +240,8 @@ void YRPacketsQueueGetSegmentNumbersForBuffersInUse(YRPacketsQueueRef queue, YRS
 #pragma mark - Private
 
 size_t YRPacketsQueueElementSizeForBufferSize(YRPayloadLengthType bufferSize) {
-    return YRMakeMultipleTo((sizeof(YRQueueElement) + bufferSize), sizeof(YRQueueElementRef));
+	return sizeof(YRQueueElement) + bufferSize;
+//    return YRMakeMultipleTo((sizeof(YRQueueElement) + bufferSize), sizeof(YRQueueElementRef));
 }
 
 bool YRPacketsQueueHasBufferForSegmentInlined(YRPacketsQueueRef queue, YRSequenceNumberType segment) {

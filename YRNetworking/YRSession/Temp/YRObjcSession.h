@@ -11,7 +11,7 @@
 #import "YRObjcSessionContext.h"
 
 // Types
-#import "YRTypes.h"
+#import "YRRUDPBase.h"
 #import "YRSessionState.h"
 
 /**

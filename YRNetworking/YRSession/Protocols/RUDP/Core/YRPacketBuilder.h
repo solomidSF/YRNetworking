@@ -1,5 +1,5 @@
 //
-// YRPacket.h
+// YRPacketBuilder.h
 //
 // The MIT License (MIT)
 //
@@ -23,41 +23,67 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRPacket__
-#define __YRPacket__
+#ifndef __YRPacketBuilder__
+#define __YRPacketBuilder__
 
 #ifndef __YRNETWORKING_INDIRECT__
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
-typedef struct YRPacket *YRPacketRef;
+#pragma mark - Factory Methods
 
-#pragma mark - Serialization
+YRPacketRef YRPacketCreateSYN(
+	YRRUDPConnectionConfiguration configuration,
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	bool hasACK,
+	YROutputStreamRef stream
+);
 
-YRPacketRef YRPacketSerializeSYN(YRPacketHeaderSYNRef synHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeRST(YRPacketHeaderRSTRef rstHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeNUL(YRPacketHeaderRef nulHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeEACK(YRPacketHeaderEACKRef eackHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeEACKWithPayload(
-	YRPacketHeaderEACKRef eackHeader,
+YRPacketRef YRPacketCreateRST(
+	uint8_t errorCode,
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	bool hasACK,
+	YROutputStreamRef stream
+);
+
+YRPacketRef YRPacketCreateNUL(
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	YROutputStreamRef stream
+);
+
+YRPacketRef YRPacketCreateACK(
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	YROutputStreamRef stream
+);
+
+YRPacketRef YRPacketCreateEACK(
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	YRSequenceNumberType *sequences,
+	YRSequenceNumberType *ioSequencesCount,
+	YROutputStreamRef stream
+);
+
+YRPacketRef YRPacketCreateEACKWithPayload(
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
+	YRSequenceNumberType *sequences,
+	YRSequenceNumberType *ioSequencesCount,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
 	YROutputStreamRef stream
 );
-YRPacketRef YRPacketSerializeWithPayload(
-	YRPacketPayloadHeaderRef header,
+
+YRPacketRef YRPacketCreateWithPayload(
+	YRSequenceNumberType seqNumber,
+	YRSequenceNumberType ackNumber,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
 	YROutputStreamRef stream
 );
-
-//YRPacketRef YRPacketDeserialize(YRInputStreamRef stream);
-
-#pragma mark - Introspection
-
-//YRPacketHeaderRef YRPacketGetHeader(YRPacketRef packet);
-//void *YRPacketGetPayload(YRPacketRef packet, YRPayloadLengthType *outPayloadSize);
-//YRPayloadLengthType YRPacketGetLength(YRPacketRef packet);
-//YRRUDPError YRPacketCanDeserialize(YRInputStreamRef stream);
 
 #endif

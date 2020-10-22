@@ -51,7 +51,7 @@
     
     [shortDescriptionComponents addObject:[self packetHeaderTypeDescription:header]];
 
-    if (YRPacketHeaderHasPayloadLength(header) && YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header) > 0) {
+    if (YRPacketHeaderHasPayloadLength(header) && YRPacketPayloadHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header) > 0) {
         [shortDescriptionComponents addObject:[NSString stringWithFormat:@"Payload Length: %d bytes", YRPacketHeaderGetPayloadLength((YRPacketPayloadHeaderRef)header)]];
     }
     

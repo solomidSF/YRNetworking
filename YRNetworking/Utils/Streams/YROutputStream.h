@@ -38,13 +38,16 @@ void YROutputStreamDestroy(YROutputStreamRef stream);
 
 #pragma mark - Introspection
 
-void *YROutputStreamGetBytes(YROutputStreamRef stream);
+const void *YROutputStreamGetBytes(YROutputStreamRef stream);
+uint16_t YROutputStreamGetWrittenSize(YROutputStreamRef stream);
 
 #pragma mark - Interface
 
+void YROutputStreamReset(YROutputStreamRef stream);
 void YROutputStreamSetTo(YROutputStreamRef stream, void *buffer, uint16_t bufferSize);
 void YROutputStreamWriteUInt8(YROutputStreamRef stream, uint8_t value);
 void YROutputStreamWriteUInt16(YROutputStreamRef stream, uint16_t value);
 void YROutputStreamWriteUInt32(YROutputStreamRef stream, uint32_t value);
+void YROutputStreamAppend(YROutputStreamRef stream, const void *payload, uint16_t size);
 
 #endif /* __YROutputStream__ */

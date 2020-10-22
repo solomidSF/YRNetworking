@@ -33,5 +33,8 @@
 #include "YRRUDPBase.h"
 #include "YRRUDPSessionProtocol.h"
 #include "YRRUDPStates.h"
+#include "YRPacketHeader.h"
+#include "YRPacket.h"
+#include "YRPacketBuilder.h"
 
 #endif 

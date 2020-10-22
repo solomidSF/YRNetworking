@@ -7,7 +7,7 @@
 //
 
 #import <XCTest/XCTest.h>
-#import "YRPacketHeader.h"
+#import "YRNetworking.h"
 #import "YRDebugUtils.h"
 
 @interface YRPacketHeaderTests : XCTestCase

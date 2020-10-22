@@ -11,6 +11,9 @@
 
 #include "YRNetworking.h"
 
+// RUDP
+#include "YRRUDPSessionProtocol+Internal.h"
+
 #define __YRNETWORKING_INDIRECT__
 #include "YRRef.h"
 #undef __YRNETWORKING_INDIRECT__

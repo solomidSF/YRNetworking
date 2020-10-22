@@ -65,8 +65,16 @@ void YROutputStreamDestroy(YROutputStreamRef stream) {
 
 #pragma mark - Introspection
 
-void *YROutputStreamGetBytes(YROutputStreamRef stream) {
+void YROutputStreamReset(YROutputStreamRef stream) {
+	stream->index = 0;
+}
+
+const void *YROutputStreamGetBytes(YROutputStreamRef stream) {
     return stream->data;
+}
+
+uint16_t YROutputStreamGetWrittenSize(YROutputStreamRef stream) {
+	return stream->index;
 }
 
 #pragma mark - Interface
@@ -85,7 +93,7 @@ void YROutputStreamWriteUInt8(YROutputStreamRef stream, uint8_t value) {
     }
 }
 
-void YROutputStreamWriteInt16(YROutputStreamRef stream, uint16_t value) {
+void YROutputStreamWriteUInt16(YROutputStreamRef stream, uint16_t value) {
     if (stream->index + sizeof(uint16_t) <= stream->size) {
         uint16_t beValue = htons(value);
         memcpy(stream->data + stream->index, &beValue, sizeof(uint16_t));
@@ -94,11 +102,19 @@ void YROutputStreamWriteInt16(YROutputStreamRef stream, uint16_t value) {
     }
 }
 
-void YROutputStreamWriteInt32(YROutputStreamRef stream, uint32_t value) {
+void YROutputStreamWriteUInt32(YROutputStreamRef stream, uint32_t value) {
     if (stream->index + sizeof(uint32_t) <= stream->size) {
         uint32_t beValue = htonl(value);
         memcpy(stream->data + stream->index, &beValue, sizeof(uint32_t));
         
         stream->index += sizeof(uint32_t);
     }
+}
+
+void YROutputStreamAppend(YROutputStreamRef stream, const void *payload, uint16_t size) {
+	if (stream->index + size <= stream->size) {
+		memcpy(stream->data + stream->index, payload, size);
+		
+		stream->index += size;
+	}
 }

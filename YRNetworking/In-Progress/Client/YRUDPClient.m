@@ -7,7 +7,9 @@
 //
 
 #import "YRUDPClient.h"
+#define __YRNETWORKING_INDIRECT__
 #import "YRObjcSession.h"
+#undef __YRNETWORKING_INDIRECT__
 
 #import "GCDAsyncUdpSocket.h"
 

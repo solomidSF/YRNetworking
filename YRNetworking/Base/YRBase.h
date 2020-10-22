@@ -13,9 +13,10 @@
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 
 #ifndef __has_feature        
@@ -31,7 +32,7 @@
 
 #define YR_TYPEDEF_FP(name, ...) typedef void (^(name)) (__VA_ARGS__)
 
-#define YR_FP_IMPL(name, ...) void (^name) (__VA_ARGS__) = ^(__VA_ARGS__)
+#define YR_FP_IMPL(name, ...) void (^(name)) (__VA_ARGS__) = ^(__VA_ARGS__)
 
 #define YR_FP(name) name
 

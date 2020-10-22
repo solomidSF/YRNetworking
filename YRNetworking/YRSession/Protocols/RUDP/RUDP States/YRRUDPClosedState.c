@@ -27,19 +27,14 @@
 
 #pragma mark - Lifecycle
 
-void onEnterClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
-	
-}
+void onEnterClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {}
 
-void onExitClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState next) {
-	
-}
+void onExitClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState next) {}
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
 YR_FP_IMPL(invalidateClosed, YRSessionProtocolRef protocol) {
-	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
-	
+
 };
 
 YR_FP_IMPL(destroyClosed, YRSessionProtocolRef protocol) {
@@ -49,24 +44,25 @@ YR_FP_IMPL(destroyClosed, YRSessionProtocolRef protocol) {
 #pragma mark - YRSessionProtocolCallbacks
 
 YR_FP_IMPL(connectClosed, YRSessionProtocolRef protocol) {
-	
+	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
+	YRRUDPSessionEnterState(rudp, YRRUDPStateForState(kYRRUDPSessionStateInitiating));
 };
 
-
 YR_FP_IMPL(waitClosed, YRSessionProtocolRef protocol) {
-
+	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
+	YRRUDPSessionEnterState(rudp, YRRUDPStateForState(kYRRUDPSessionStateWaiting));
 };
 
 YR_FP_IMPL(closeClosed, YRSessionProtocolRef protocol) {
-
+	// no-op
 };
 
 YR_FP_IMPL(sendClosed, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-
+	// TODO: Warning <Send not handled in this state>
 };
 
 YR_FP_IMPL(receiveClosed, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-
+	// TODO: Send RST to peer
 };
 
 YRRUDPState YRRUDPClosedState() {

@@ -54,4 +54,4 @@ uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream);
 uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream);
 uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream);
 
-#endif /* YRInputStream */
+#endif /* __YRInputStream__ */

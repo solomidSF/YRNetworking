@@ -9,7 +9,9 @@
 #import <Foundation/Foundation.h>
 
 // Common
-#import "YRTypes.h"
+#define __YRNETWORKING_INDIRECT__
+#import "YRRUDPBase.h"
+#undef __YRNETWORKING_INDIRECT__
 
 /**
  *  Class to represent remote peer.

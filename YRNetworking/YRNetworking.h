@@ -20,11 +20,11 @@
 #include "YRSessionProtocol.h"
 #include "YRSession.h"
 
-// Protocols
-#include "YRRUDPProtocol.h"
-
 // Utils
 #include "YRUtils.h"
+
+// Protocols
+#include "YRRUDPProtocol.h"
 
 #undef __YRNETWORKING_INDIRECT__
 

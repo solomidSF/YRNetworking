@@ -1,9 +1,9 @@
 //
-// YRRUDPSessionProtocol.h
+// YRRUDPSessionProtocol+Internal.h
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Yuri R.
+// Copyright (c) 2020 Yuri R.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -23,23 +23,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRRUDPSessionProtocol__
-#define __YRRUDPSessionProtocol__
+#ifndef __YRRUDPSessionProtocol_Internal__
+#define __YRRUDPSessionProtocol_Internal__
 
-#ifndef __YRNETWORKING_INDIRECT__
-#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
+void YRRUDPSessionEnterState(YRRUDPSessionProtocolRef protocol, YRRUDPState state);
+
 #endif
-
-typedef struct YRRUDPSessionProtocol *YRRUDPSessionProtocolRef;
-
-
-typedef struct {
-    YRSessionProtocolClientCallbacks clientCallbacks;
-	// TODO: Error callbacks
-} YRRUDPSessionProtocolCallbacks;
-
-#pragma mark - Interface
-
-YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRPayloadLengthType MTU);
-
-#endif 

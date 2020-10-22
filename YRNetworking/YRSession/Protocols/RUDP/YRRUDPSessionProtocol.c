@@ -34,14 +34,22 @@
 
 #pragma mark - Declarations
 
+typedef struct YRRUDPSessionInfo {
+	// Send-related
+	YRSequenceNumberType sendInitialSequenceNumber;
+	YRSequenceNumberType sendNextSequenceNumber;
+	YRSequenceNumberType sendLatestUnackSegment;
+	
+	// Receive-related
+	YRSequenceNumberType rcvLatestAckedSegment;
+	YRSequenceNumberType rcvInitialSequenceNumber;
+} YRRUDPSessionInfo;
+
 typedef struct YRRUDPSessionProtocol {
     struct YRSessionProtocol rawProtocol;
 	struct YRRUDPState currentState;
+	YRPayloadLengthType MTU;
 } YRRUDPSessionProtocol;
-
-#pragma mark - Prototypes
-
-void YRRUDPSessionEnterState(YRRUDPSessionProtocolRef protocol, struct YRRUDPState state);
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
@@ -75,12 +83,11 @@ YR_FP_IMPL(rudpReceive, YRSessionProtocolRef protocol, const void *payload, uint
 	YR_FP_FORWARD(protocolCallbacks.receiveCallback, protocol, payload, length);
 };
 
-static YRSessionProtocolLifecycleCallbacks rudpLifecycleCallbacks;
-static YRSessionProtocolCallbacks rudpProtocolCallbacks;
-
 #pragma mark - Interface
 
-YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks) {
+YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRPayloadLengthType MTU) {
+	static YRSessionProtocolLifecycleCallbacks rudpLifecycleCallbacks;
+	static YRSessionProtocolCallbacks rudpProtocolCallbacks;
 	static bool isRUDPProtocolInitialized = false;
 
 	if (!isRUDPProtocolInitialized) {
@@ -108,6 +115,8 @@ YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks) {
 	
 	YRRUDPSessionEnterState(protocol, YRRUDPStateForState(kYRRUDPSessionStateClosed));
 
+	protocol->MTU = MTU;
+	
 	YRSessionRef session = YRSessionCreate(&protocol->rawProtocol);
 
     return session;
