@@ -30,33 +30,71 @@
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
+#pragma mark - Declarations
+
 typedef struct YRPacket *YRPacketRef;
+
+typedef struct {
+	void (*syn) (void *context, YRPacketHeaderSYNRef header);
+	void (*rst) (void *context, YRPacketHeaderRSTRef header);
+	void (*nul) (void *context, YRPacketHeaderRef header);
+	void (*eack) (void *context, YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength);
+	void (*regular) (void *context, YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength);
+	void (*invalid) (void *context, YRRUDPError error);
+} YRPacketHandlers;
 
 #pragma mark - Serialization
 
-YRPacketRef YRPacketSerializeSYN(YRPacketHeaderSYNRef synHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeRST(YRPacketHeaderRSTRef rstHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeNUL(YRPacketHeaderRef nulHeader, YROutputStreamRef stream);
-YRPacketRef YRPacketSerializeEACK(YRPacketHeaderEACKRef eackHeader, YROutputStreamRef stream);
+YRPacketRef YRPacketSerializeSYN(
+	YRPacketHeaderSYNRef synHeader,
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
+);
+
+YRPacketRef YRPacketSerializeRST(
+	YRPacketHeaderRSTRef rstHeader,
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
+);
+
+YRPacketRef YRPacketSerializeNUL(
+	YRPacketHeaderRef nulHeader,
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
+);
+
+YRPacketRef YRPacketSerializeEACK(
+	YRPacketHeaderEACKRef eackHeader,
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
+);
+
 YRPacketRef YRPacketSerializeEACKWithPayload(
 	YRPacketHeaderEACKRef eackHeader,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
+
 YRPacketRef YRPacketSerializeWithPayload(
 	YRPacketPayloadHeaderRef header,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
-//YRPacketRef YRPacketDeserialize(YRInputStreamRef stream);
+void YRPacketDeserialize(
+	YRInputStreamRef stream,
+	YRPacketHandlers handlers,
+	void *context
+);
 
 #pragma mark - Introspection
 
+//void *YRPacketGetPayload(YRPacketRef packet, YRPayloadLengthType *payloadLength);
 //YRPacketHeaderRef YRPacketGetHeader(YRPacketRef packet);
-//void *YRPacketGetPayload(YRPacketRef packet, YRPayloadLengthType *outPayloadSize);
 //YRPayloadLengthType YRPacketGetLength(YRPacketRef packet);
 //YRRUDPError YRPacketCanDeserialize(YRInputStreamRef stream);
 

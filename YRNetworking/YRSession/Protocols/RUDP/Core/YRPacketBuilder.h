@@ -37,7 +37,8 @@ YRPacketRef YRPacketCreateSYN(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
 	bool hasACK,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateRST(
@@ -45,19 +46,22 @@ YRPacketRef YRPacketCreateRST(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
 	bool hasACK,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateNUL(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateACK(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateEACK(
@@ -65,7 +69,8 @@ YRPacketRef YRPacketCreateEACK(
 	YRSequenceNumberType ackNumber,
 	YRSequenceNumberType *sequences,
 	YRSequenceNumberType *ioSequencesCount,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateEACKWithPayload(
@@ -75,7 +80,8 @@ YRPacketRef YRPacketCreateEACKWithPayload(
 	YRSequenceNumberType *ioSequencesCount,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 YRPacketRef YRPacketCreateWithPayload(
@@ -83,7 +89,8 @@ YRPacketRef YRPacketCreateWithPayload(
 	YRSequenceNumberType ackNumber,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 );
 
 #endif

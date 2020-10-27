@@ -99,13 +99,13 @@ YRPayloadLengthType YRPacketPayloadHeaderGetPayloadLength(YRPacketPayloadHeaderR
 YRPacketPayloadHeaderRef YRPacketHeaderEACKGetPayloadHeader(YRPacketHeaderEACKRef eackHeader);
 YRPacketHeaderRef YRPacketHeaderEACKGetBaseHeader(YRPacketHeaderEACKRef eackHeader);
 
-void YRPacketHeaderSetEACKs(
+void YRPacketHeaderEACKSetEACKs(
 	YRPacketHeaderEACKRef eackHeader,
 	YRSequenceNumberType *eacks,
 	YRHeaderLengthType eacksCount
 );
 
-YRSequenceNumberType *YRPacketHeaderGetEACKs(
+YRSequenceNumberType *YRPacketHeaderEACKGetEACKs(
 	YRPacketHeaderEACKRef eackHeader,
 	YRHeaderLengthType *eacksCount
 );

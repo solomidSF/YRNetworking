@@ -34,14 +34,16 @@ YRInputStreamRef YRInputStreamGetGlobal(void);
 YRInputStreamRef YRInputStreamGet(const void *buffer, uint16_t bufferSize);
 YRInputStreamRef YRInputStreamCreateEmpty(void);
 YRInputStreamRef YRInputStreamCreate(const void *buffer, uint16_t bufferSize);
-void YRInputSteamDestroy(YRInputStreamRef stream);
-void YRInputSteamReset(YRInputStreamRef stream);
+void YRInputStreamDestroy(YRInputStreamRef stream);
+void YRInputStreamReset(YRInputStreamRef stream);
 
 #pragma mark - Introspection
 
+void *YRInputStreamBufferStart(YRInputStreamRef stream);
 void *YRInputStreamCurrentPointer(YRInputStreamRef stream, uint16_t *outSizeLeft);
 uint16_t YRInputStreamSize(YRInputStreamRef stream);
 uint16_t YRInputStreamCurrentIndex(YRInputStreamRef stream);
+uint16_t YRInputStreamBytesRead(YRInputStreamRef stream);
 uint16_t YRInputStreamBytesLeft(YRInputStreamRef stream);
 
 #pragma mark - Interface
@@ -50,8 +52,11 @@ void YRInputStreamSetTo(YRInputStreamRef stream, const void *buffer, uint16_t bu
 bool YRInputStreamSetIndexTo(YRInputStreamRef stream, uint16_t index);
 bool YRInputStreamAdvanceBy(YRInputStreamRef stream, uint16_t by);
 
-uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream);
-uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream);
-uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream);
+uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream, bool *successfuly);
+uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream, bool *successfuly);
+uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream, bool *successfuly);
+uint64_t YRInputStreamReadUInt64(YRInputStreamRef stream, bool *successfuly);
+float YRInputStreamReadFloat(YRInputStreamRef stream, bool *successfuly);
+double YRInputStreamReadDouble(YRInputStreamRef stream, bool *successfuly);
 
 #endif /* __YRInputStream__ */

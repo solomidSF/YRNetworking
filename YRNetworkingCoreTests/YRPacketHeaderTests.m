@@ -169,7 +169,7 @@
 
 - (void)testRSTErrorCode {
 	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)buffer;
-	YRRUDPError expected = YRRUDPErrorNone;
+	YRRUDPError expected = kYRRUDPErrorUnknown;
 	
 	YRPacketHeaderRSTSetErrorCode(header, expected);
 	XCTAssertEqual(expected, YRPacketHeaderRSTGetErrorCode(header));
@@ -184,9 +184,11 @@
 
 - (void)testPayloadPayloadLength {
 	YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)buffer;
-	
+	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	YRPayloadLengthType expected = 45645;
+
 	YRPacketPayloadHeaderSetPayloadLength(header, expected);
+	XCTAssertEqual(true, YRPacketHeaderHasPayloadLength(base));
 	XCTAssertEqual(expected, YRPacketPayloadHeaderGetPayloadLength(header));
 }
 
@@ -204,6 +206,7 @@
 
 - (void)testEACKs {
 	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)buffer;
+	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(header);
 	YRHeaderLengthType eacksCount = (YRHeaderLengthType)(~0) / sizeof(YRSequenceNumberType);
 	YRSequenceNumberType *eacks = malloc(sizeof(YRSequenceNumberType) * eacksCount);
 	
@@ -211,11 +214,14 @@
 		eacks[i] = arc4random() % (YRSequenceNumberType)(~0);
 	}
 	
-	YRPacketHeaderSetEACKs(header, eacks, eacksCount);
+	XCTAssertEqual(NULL, YRPacketHeaderEACKGetEACKs(header, NULL));
+	YRPacketHeaderEACKSetEACKs(header, eacks, eacksCount);
 	
 	YRHeaderLengthType actualEacksCount = 0;
-	YRSequenceNumberType *actualEacks = YRPacketHeaderGetEACKs(header, &actualEacksCount);
+	YRSequenceNumberType *actualEacks = YRPacketHeaderEACKGetEACKs(header, &actualEacksCount);
 	
+	XCTAssertEqual(true, YRPacketHeaderHasEACK(base));
+	XCTAssertEqual(true, YRPacketHeaderHasACKOrEACK(base));
 	XCTAssertEqual(eacksCount, actualEacksCount);
 	
 	for (YRHeaderLengthType i = 0; i < actualEacksCount; i++) {

@@ -258,7 +258,7 @@
 
         YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)headerBuffer;
 
-        YRPacketHeaderSetEACKs(eackHeader, sequences, sequencesCount);
+        YRPacketHeaderEACKSetEACKs(eackHeader, sequences, sequencesCount);
         
         if (sequencesCount > 0) {
             XCTAssertTrue(YRPacketHeaderHasEACK(header));

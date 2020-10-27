@@ -82,7 +82,14 @@ typedef enum {
 
 
 typedef enum {
-	YRRUDPErrorNone
+	// Uknown error.
+	kYRRUDPErrorUnknown,
+	// Couldn't parse packet because it's invalid.
+	kYRRUDPErrorPacketInvalid,
+	// Packet was rejected because of the protocol version mismatch.
+	kYRRUDPErrorProtocolVersionMismatch,
+	// Packet checksum mismatch
+	kYRRUDPErrorChecksumMismatch,
 } YRRUDPError;
 
 #endif /* __YRRUDPBase__ */

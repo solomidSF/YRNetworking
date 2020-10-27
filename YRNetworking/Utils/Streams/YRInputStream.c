@@ -55,8 +55,8 @@ YRInputStreamRef YRInputStreamCreate(const void *buffer, uint16_t bufferSize) {
 	return stream;
 }
 
-void YRInputSteamDestroy(YRInputStreamRef stream) {
-	YRInputSteamReset(stream);
+void YRInputStreamDestroy(YRInputStreamRef stream) {
+	YRInputStreamReset(stream);
 	
 	if (stream == &gInputStream) {
 		return;
@@ -65,11 +65,15 @@ void YRInputSteamDestroy(YRInputStreamRef stream) {
 	free(stream);
 }
 
-void YRInputSteamReset(YRInputStreamRef stream) {
+void YRInputStreamReset(YRInputStreamRef stream) {
 	stream->index = 0;
 }
 
 #pragma mark - Introspection
+
+void *YRInputStreamBufferStart(YRInputStreamRef stream) {
+	return stream->data;
+}
 
 void *YRInputStreamCurrentPointer(YRInputStreamRef stream, uint16_t *outSizeLeft) {
     if (outSizeLeft) {
@@ -87,6 +91,10 @@ uint16_t YRInputStreamCurrentIndex(YRInputStreamRef stream) {
     return stream->index;
 }
 
+uint16_t YRInputStreamBytesRead(YRInputStreamRef stream) {
+	return YRInputStreamCurrentIndex(stream);
+}
+
 uint16_t YRInputStreamBytesLeft(YRInputStreamRef stream) {
     return stream->size - stream->index;
 }
@@ -97,52 +105,6 @@ void YRInputStreamSetTo(YRInputStreamRef stream, const void *buffer, uint16_t bu
 	stream->data = (uint8_t *)buffer;
 	stream->size = bufferSize;
 	stream->index = 0;
-}
-
-uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream) {
-	if (stream->index + sizeof(uint8_t) <= stream->size) {
-        uint8_t value = 0;
-        
-        value = *(stream->data + stream->index);
-        
-        stream->index += sizeof(uint8_t);
-        
-        return value;
-    } else {
-        return 0;
-    }
-}
-
-uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream) {
-    if (stream->index + sizeof(uint16_t) <= stream->size) {
-        uint16_t value = 0;
-        
-        memcpy(&value, stream->data + stream->index, sizeof(uint16_t));
-
-        value = ntohs(value);
-        
-        stream->index += sizeof(uint16_t);
-        
-        return value;
-    } else {
-        return 0;
-    }
-}
-
-uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream) {
-    if (stream->index + sizeof(uint32_t) <= stream->size) {
-        uint32_t value = 0;
-        
-        memcpy(&value, stream->data + stream->index, sizeof(uint32_t));
-        
-        value = ntohl(value);
-        
-        stream->index += sizeof(uint32_t);
-        
-        return value;
-    } else {
-        return 0;
-    }
 }
 
 bool YRInputStreamSetIndexTo(YRInputStreamRef stream, uint16_t index) {
@@ -162,4 +124,120 @@ bool YRInputStreamAdvanceBy(YRInputStreamRef stream, uint16_t by) {
     } else {
         return false;
     }
+}
+
+uint8_t YRInputStreamReadUInt8(YRInputStreamRef stream, bool *successfuly) {
+	bool canRead = stream->index + sizeof(uint8_t) <= stream->size;
+
+	if (canRead) {
+        uint8_t value = 0;
+        
+        value = *(stream->data + stream->index);
+        
+        stream->index += sizeof(uint8_t);
+        
+        return value;
+    }
+    
+	if (successfuly) {
+		*successfuly = canRead;
+	}
+	
+	return 0;
+}
+
+uint16_t YRInputStreamReadUInt16(YRInputStreamRef stream, bool *successfuly) {
+	bool canRead = stream->index + sizeof(uint16_t) <= stream->size;
+
+    if (canRead) {
+        uint16_t value = 0;
+        
+        memcpy(&value, stream->data + stream->index, sizeof(uint16_t));
+
+        value = ntohs(value);
+        
+        stream->index += sizeof(uint16_t);
+        
+        return value;
+    }
+    
+    if (successfuly) {
+		*successfuly = canRead;
+	}
+	
+    return 0;
+}
+
+uint32_t YRInputStreamReadUInt32(YRInputStreamRef stream, bool *successfuly) {
+	bool canRead = stream->index + sizeof(uint32_t) <= stream->size;
+	
+    if (canRead) {
+		if (successfuly) {
+			*successfuly = true;
+		}
+		
+        uint32_t value = 0;
+        
+        memcpy(&value, stream->data + stream->index, sizeof(uint32_t));
+        
+        value = ntohl(value);
+        
+        stream->index += sizeof(uint32_t);
+        
+        return value;
+	}
+	
+	if (successfuly) {
+		*successfuly = canRead;
+	}
+	
+	return 0;
+}
+
+uint64_t YRInputStreamReadUInt64(YRInputStreamRef stream, bool *successfuly) {
+	bool canRead = stream->index + sizeof(uint64_t) <= stream->size;
+	
+    if (canRead) {
+		if (successfuly) {
+			*successfuly = true;
+		}
+		
+        uint64_t value = 0;
+        
+        memcpy(&value, stream->data + stream->index, sizeof(uint64_t));
+        
+        value = ntohll(value);
+        
+        stream->index += sizeof(uint64_t);
+        
+        return value;
+	}
+	
+	if (successfuly) {
+		*successfuly = canRead;
+	}
+	
+	return 0;
+}
+
+float YRInputStreamReadFloat(YRInputStreamRef stream, bool *successfuly) {
+	union {
+	  uint32_t i;
+	  float f;
+	 } u;
+	 	 
+	 u.i = YRInputStreamReadUInt32(stream, successfuly);
+	 
+	 return u.f;
+}
+
+double YRInputStreamReadDouble(YRInputStreamRef stream, bool *successfuly) {
+	union {
+	  uint64_t i;
+	  double d;
+	 } u;
+	 	 
+	 u.i = YRInputStreamReadUInt64(stream, successfuly);
+	 
+	 return u.d;
 }

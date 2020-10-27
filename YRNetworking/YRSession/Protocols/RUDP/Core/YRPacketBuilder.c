@@ -53,18 +53,18 @@ YRPacketRef YRPacketCreateSYN(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
 	bool hasACK,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	uint8_t rawHeader[kYRPacketHeaderMaxDataStructureLength];
 	YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)rawHeader;
 	YRPacketHeaderRef base = YRPacketHeaderSYNGetBaseHeader(header);
 
 	YRPacketBuild(
-		 YRPacketHeaderSetSYN(base);
 		 YRPacketHeaderSYNSetConfiguration(header, configuration);
 	);
 
-	return YRPacketSerializeSYN(header, stream);
+	return YRPacketSerializeSYN(header, stream, packetLength);
 }
 
 YRPacketRef YRPacketCreateRST(
@@ -72,24 +72,25 @@ YRPacketRef YRPacketCreateRST(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
 	bool hasACK,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	uint8_t rawHeader[kYRPacketHeaderMaxDataStructureLength];
 	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)rawHeader;
 	YRPacketHeaderRef base = YRPacketHeaderRSTGetBaseHeader(header);
 
 	YRPacketBuild(
-		YRPacketHeaderSetRST(base);
 		YRPacketHeaderRSTSetErrorCode(header, errorCode);
 	);
 	
-	return YRPacketSerializeRST(header, stream);
+	return YRPacketSerializeRST(header, stream, packetLength);
 }
 
 YRPacketRef YRPacketCreateNUL(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	bool hasACK = true;
 	uint8_t rawHeader[kYRPacketHeaderMaxDataStructureLength];
@@ -99,20 +100,22 @@ YRPacketRef YRPacketCreateNUL(
 		YRPacketHeaderSetNUL(base);
 	);
 
-	return YRPacketSerializeNUL(base, stream);
+	return YRPacketSerializeNUL(base, stream, packetLength);
 }
 
 YRPacketRef YRPacketCreateACK(
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	return YRPacketCreateWithPayload(
 		seqNumber,
 		ackNumber,
 		NULL,
 		0,
-		stream
+		stream,
+		packetLength
 	);
 }
 
@@ -121,7 +124,8 @@ YRPacketRef YRPacketCreateEACK(
 	YRSequenceNumberType ackNumber,
 	YRSequenceNumberType *sequences,
 	YRSequenceNumberType *ioSequencesCount,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	return YRPacketCreateEACKWithPayload(
 		seqNumber,
@@ -130,7 +134,8 @@ YRPacketRef YRPacketCreateEACK(
 		ioSequencesCount,
 		NULL,
 		0,
-		stream
+		stream,
+		packetLength
 	);
 }
 
@@ -141,7 +146,8 @@ YRPacketRef YRPacketCreateEACKWithPayload(
 	YRSequenceNumberType *ioSequencesCount,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	bool hasACK = true;
 	uint8_t rawHeader[kYRPacketHeaderMaxDataStructureLength];
@@ -150,10 +156,10 @@ YRPacketRef YRPacketCreateEACKWithPayload(
 	
 	YRPacketBuildWithPayload(
 		YRPacketPayloadHeaderSetPayloadLength(YRPacketHeaderEACKGetPayloadHeader(header), payloadLength);
-		YRPacketHeaderSetEACKs(header, sequences, *ioSequencesCount);
+		YRPacketHeaderEACKSetEACKs(header, sequences, *ioSequencesCount);
 	);
 	
-	return YRPacketSerializeEACK(header, stream);
+	return YRPacketSerializeEACK(header, stream, packetLength);
 }
 
 YRPacketRef YRPacketCreateWithPayload(
@@ -161,7 +167,8 @@ YRPacketRef YRPacketCreateWithPayload(
 	YRSequenceNumberType ackNumber,
 	const void *payload,
 	YRPayloadLengthType payloadLength,
-	YROutputStreamRef stream
+	YROutputStreamRef stream,
+	YRPayloadLengthType *packetLength
 ) {
 	bool hasACK = true;
 	uint8_t rawHeader[kYRPacketHeaderMaxDataStructureLength];
@@ -172,7 +179,7 @@ YRPacketRef YRPacketCreateWithPayload(
 		YRPacketPayloadHeaderSetPayloadLength(header, payloadLength);
 	);
 	
-	return YRPacketSerializeWithPayload(header, payload, payloadLength, stream);
+	return YRPacketSerializeWithPayload(header, payload, payloadLength, stream, packetLength);
 }
 
 #pragma mark - Private
@@ -188,4 +195,6 @@ void YRPacketBuildHeader(
 	if (hasACK) {
 		YRPacketHeaderSetAckNumber(header, ackNumber);
 	}
+	
+	YRPacketHeaderSetProtocolVersion(header, kYRProtocolVersion);
 }

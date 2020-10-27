@@ -283,7 +283,7 @@ YRPacketRef YRPacketCreateEACKWithPayload(YRSequenceNumberType seqNumber,
             YRPacketHeaderEACKRef eackHeader = (YRPacketHeaderEACKRef)header;
 
             if (ioSequencesCount && *ioSequencesCount > 0) {
-                YRPacketHeaderSetEACKs(eackHeader, sequences, *ioSequencesCount);
+                YRPacketHeaderEACKSetEACKs(eackHeader, sequences, *ioSequencesCount);
             }
 
             YRPacketHeaderSetPayloadLength(payloadHeader, payloadLength);
@@ -588,7 +588,7 @@ YRPacketRef YRPacketDeserializeAt(YRLightweightInputStreamRef stream, void *pack
             eacks[i] = YRLightweightInputStreamReadInt16(stream);
         }
 
-        YRPacketHeaderSetEACKs(eackHeader, eacks, eacksCount);
+        YRPacketHeaderEACKSetEACKs(eackHeader, eacks, eacksCount);
     }
 
     if (payloadLength > 0) {

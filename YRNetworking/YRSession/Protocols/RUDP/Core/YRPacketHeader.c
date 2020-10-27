@@ -176,6 +176,7 @@ YRPacketHeaderRef YRPacketHeaderSYNGetBaseHeader(YRPacketHeaderSYNRef synHeader)
 }
 
 void YRPacketHeaderSYNSetConfiguration(YRPacketHeaderSYNRef synHeader, YRRUDPConnectionConfiguration configuration) {
+	YRPacketHeaderSetSYN(YRPacketHeaderSYNGetBaseHeader(synHeader));
     synHeader->connectionConfiguration = configuration;
 }
 
@@ -190,6 +191,7 @@ YRPacketHeaderRef YRPacketHeaderRSTGetBaseHeader(YRPacketHeaderRSTRef rstHeader)
 }
 
 void YRPacketHeaderRSTSetErrorCode(YRPacketHeaderRSTRef rstHeader, YRRUDPError errCode) {
+	YRPacketHeaderSetRST(YRPacketHeaderRSTGetBaseHeader(rstHeader));
 	YRPacketHeaderSetReserved(&rstHeader->base, errCode);
 }
 
@@ -225,7 +227,7 @@ YRPacketHeaderRef YRPacketHeaderEACKGetBaseHeader(YRPacketHeaderEACKRef eackHead
 	return YRPacketPayloadHeaderGetBaseHeader(YRPacketHeaderEACKGetPayloadHeader(eackHeader));
 }
 
-void YRPacketHeaderSetEACKs(
+void YRPacketHeaderEACKSetEACKs(
 	YRPacketHeaderEACKRef eackHeader,
 	YRSequenceNumberType *eacks,
 	YRHeaderLengthType eacksCount
@@ -238,7 +240,7 @@ void YRPacketHeaderSetEACKs(
     memcpy(eackHeader->eacks, eacks, eacksCount * sizeof(YRSequenceNumberType));
 }
 
-YRSequenceNumberType *YRPacketHeaderGetEACKs(
+YRSequenceNumberType *YRPacketHeaderEACKGetEACKs(
 	YRPacketHeaderEACKRef eackHeader,
 	YRHeaderLengthType *eacksCount
 ) {

@@ -32,22 +32,28 @@ typedef struct YROutputStream *YROutputStreamRef;
 
 YROutputStreamRef YROutputStreamGetGlobal(void);
 YROutputStreamRef YROutputStreamGet(void *buffer, uint16_t bufferSize);
-YROutputStreamRef YROutputStreamEmpty(void);
+YROutputStreamRef YROutputStreamCreateEmpty(void);
 YROutputStreamRef YROutputStreamCreate(void *buffer, uint16_t bufferSize);
 void YROutputStreamDestroy(YROutputStreamRef stream);
 
 #pragma mark - Introspection
 
+const void *YROutputStreamBufferStart(YROutputStreamRef stream);
 const void *YROutputStreamGetBytes(YROutputStreamRef stream);
-uint16_t YROutputStreamGetWrittenSize(YROutputStreamRef stream);
+uint16_t YROutputStreamBytesWritten(YROutputStreamRef stream);
+uint16_t YROutputStreamCurrentIndex(YROutputStreamRef stream);
 
 #pragma mark - Interface
 
 void YROutputStreamReset(YROutputStreamRef stream);
 void YROutputStreamSetTo(YROutputStreamRef stream, void *buffer, uint16_t bufferSize);
+bool YROutputStreamSetIndexTo(YROutputStreamRef stream, uint16_t index);
 void YROutputStreamWriteUInt8(YROutputStreamRef stream, uint8_t value);
 void YROutputStreamWriteUInt16(YROutputStreamRef stream, uint16_t value);
 void YROutputStreamWriteUInt32(YROutputStreamRef stream, uint32_t value);
+void YROutputStreamWriteUInt64(YROutputStreamRef stream, uint64_t value);
+void YROutputStreamWriteFloat(YROutputStreamRef stream, float value);
+void YROutputStreamWriteDouble(YROutputStreamRef stream, double value);
 void YROutputStreamAppend(YROutputStreamRef stream, const void *payload, uint16_t size);
 
 #endif /* __YROutputStream__ */
