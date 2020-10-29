@@ -1,5 +1,5 @@
 //
-// YRRUDPStates.h
+// YROutputStream+Internal.h
 //
 // The MIT License (MIT)
 //
@@ -23,25 +23,13 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRRUDPStates__
-#define __YRRUDPStates__
+#ifndef __YROutputStream_Internal__
+#define __YROutputStream_Internal__
 
-#ifndef __YRNETWORKING_INDIRECT__
-#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
-#endif
+typedef struct YROutputStream {
+    uint8_t *data;
+    uint16_t size;
+    uint16_t index;
+} YROutputStream;
 
-typedef struct YRRUDPState YRRUDPState;
-
-struct YRRUDPState {
-	YRRUDPSessionState representedState;
-    void (*onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prevState);
-    void (*onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState nextState);
-	
-	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks;
-	YRSessionProtocolCallbacks protocolCallbacks;
-	YRPacketHandlers packetHandlers;
-};
-
-YRRUDPState YRRUDPStateForState(YRRUDPSessionState state);
-
-#endif
+#endif // __YROutputStream_Internal__

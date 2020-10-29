@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TODO: <RF> Rename to YRSessionProtocol
 #ifndef __YRRUDPSessionProtocol__
 #define __YRRUDPSessionProtocol__
 
@@ -32,14 +33,33 @@
 
 typedef struct YRRUDPSessionProtocol *YRRUDPSessionProtocolRef;
 
-
 typedef struct {
     YRSessionProtocolClientCallbacks clientCallbacks;
 	// TODO: Error callbacks
 } YRRUDPSessionProtocolCallbacks;
 
+typedef struct {
+	YRRUDPConnectionConfiguration connectionConfig;
+} YRSessionProtocolConfig;
+
+typedef struct {
+	YRRUDPConnectionConfiguration localConnectionConfiguration;
+	YRRUDPConnectionConfiguration remoteConnectionConfiguration;
+
+	// Send-related
+	YRSequenceNumberType sendInitialSequenceNumber;
+	YRSequenceNumberType sendNextSequenceNumber;
+	YRSequenceNumberType sendLatestUnackSegment;
+	
+	// Receive-related
+	YRSequenceNumberType rcvLatestAckedSegment;
+	YRSequenceNumberType rcvInitialSequenceNumber;
+	
+	bool shouldKeepAlive;
+} YRRUDPSessionInfo;
+
 #pragma mark - Interface
 
-YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRPayloadLengthType MTU);
+YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRSessionProtocolConfig config);
 
 #endif 

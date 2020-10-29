@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TODO: <RF> Rename to YRSessionProtocolDeclarations
 #ifndef __YRRUDPBase__
 #define __YRRUDPBase__
 
@@ -30,14 +31,12 @@
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
-//#define YRMakeMultipleTo(what, to) (((what) + ((to) - 1)) & (~((to) - 1)))
-
 typedef uint8_t YRPacketDescriptionType;
 typedef uint8_t YRProtocolVersionType;
 typedef uint8_t YRHeaderLengthType;
 typedef uint16_t YRPayloadLengthType;
 typedef uint16_t YRSequenceNumberType;
-typedef uint32_t YRChecksumType;
+typedef uint16_t YRChecksumType;
 
 enum YRPacketDescription {
     // Synchronization segment. Mutually exclusive with RST && NUL.
@@ -79,7 +78,6 @@ typedef enum {
     // Session is disconnecting from it's peer.
     kYRRUDPSessionStateDisconnecting
 } YRRUDPSessionState;
-
 
 typedef enum {
 	// Uknown error.

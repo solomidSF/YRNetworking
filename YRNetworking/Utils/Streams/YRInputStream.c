@@ -25,12 +25,6 @@
 
 #include "YRInternal.h"
 
-typedef struct YRInputStream {
-    uint8_t *data;
-    uint16_t size;
-    uint16_t index;
-} YRInputStream;
-
 static YRInputStream gInputStream;
 
 #pragma mark - Lifecycle

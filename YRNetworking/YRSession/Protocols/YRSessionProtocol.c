@@ -25,36 +25,40 @@
 
 #include "YRInternal.h"
 
-#define YR_DO_CALLOUT(callbacks, name, ...) \
+#define DO_CALLOUT(callbacks, name, ...) \
     !protocol->callbacks.name ?: protocol->callbacks.name(__VA_ARGS__)
 
-#define YR_DO_LIFECYCLE_CALLOUT(name, ...) YR_DO_CALLOUT(lifecycleCallbacks, name, __VA_ARGS__)
-#define YR_DO_PROTOCOL_CALLOUT(name, ...) YR_DO_CALLOUT(protocolCallbacks, name, __VA_ARGS__)
-#define YR_DO_CLIENT_CALLOUT(name, ...) YR_DO_CALLOUT(clientCallbacks, name, __VA_ARGS__)
+#define DO_LIFECYCLE_CALLOUT(name, ...) DO_CALLOUT(lifecycleCallbacks, name, __VA_ARGS__)
+#define DO_PROTOCOL_CALLOUT(name, ...) DO_CALLOUT(protocolCallbacks, name, __VA_ARGS__)
+#define DO_CLIENT_CALLOUT(name, ...) DO_CALLOUT(clientCallbacks, name, __VA_ARGS__)
 
 #pragma mark - Lifecycle
 
 void YRSessionProtocolInvalidate(YRSessionProtocolRef protocol) {
-    YR_DO_LIFECYCLE_CALLOUT(invalidateCallback, protocol);
+    DO_LIFECYCLE_CALLOUT(invalidateCallback, protocol);
 }
 
 void YRSessionProtocolDestroy(YRSessionProtocolRef protocol) {
-    YR_DO_LIFECYCLE_CALLOUT(destroyCallback, protocol);
+    DO_LIFECYCLE_CALLOUT(destroyCallback, protocol);
 }
 
 #pragma mark - Configuration
 
-void YRSessionProtocolSetCallbacks(YRSessionProtocolRef protocol,
-                                   YRSessionProtocolLifecycleCallbacks lifecycleCallbacks,
-                                   YRSessionProtocolCallbacks protocolCallbacks,
-                                   YRSessionProtocolClientCallbacks clientCallbacks) {
+void YRSessionProtocolSetCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks,
+	YRSessionProtocolCallbacks protocolCallbacks,
+	YRSessionProtocolClientCallbacks clientCallbacks
+) {
     YRSessionProtocolSetLifecycleCallbacks(protocol, lifecycleCallbacks);
     YRSessionProtocolSetProtocolCallbacks(protocol, protocolCallbacks);
     YRSessionProtocolSetClientCallbacks(protocol, clientCallbacks);
 }
 
-void YRSessionProtocolSetLifecycleCallbacks(YRSessionProtocolRef protocol,
-                                            YRSessionProtocolLifecycleCallbacks lifecycleCallbacks) {
+void YRSessionProtocolSetLifecycleCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks
+) {
     YR_COPY_FP(lifecycleCallbacks.invalidateCallback);
     YR_COPY_FP(lifecycleCallbacks.destroyCallback);
 
@@ -64,8 +68,10 @@ void YRSessionProtocolSetLifecycleCallbacks(YRSessionProtocolRef protocol,
     protocol->lifecycleCallbacks = lifecycleCallbacks;
 }
 
-void YRSessionProtocolSetProtocolCallbacks(YRSessionProtocolRef protocol,
-                                           YRSessionProtocolCallbacks protocolCallbacks) {
+void YRSessionProtocolSetProtocolCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolCallbacks protocolCallbacks
+) {
     YR_COPY_FP(protocolCallbacks.connectCallback);
     YR_COPY_FP(protocolCallbacks.waitCallback);
     YR_COPY_FP(protocolCallbacks.closeCallback);
@@ -81,8 +87,10 @@ void YRSessionProtocolSetProtocolCallbacks(YRSessionProtocolRef protocol,
     protocol->protocolCallbacks = protocolCallbacks;
 }
 
-void YRSessionProtocolSetClientCallbacks(YRSessionProtocolRef protocol,
-                                         YRSessionProtocolClientCallbacks clientCallbacks) {
+void YRSessionProtocolSetClientCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolClientCallbacks clientCallbacks
+) {
     YR_COPY_FP(clientCallbacks.sendCallback);
     YR_COPY_FP(clientCallbacks.receiveCallback);
     
@@ -107,25 +115,25 @@ YRSessionProtocolClientCallbacks YRSessionProtocolGetClientCallbacks(YRSessionPr
 #pragma mark - Connection
 
 void YRSessionProtocolConnect(YRSessionProtocolRef protocol) {
-    YR_DO_PROTOCOL_CALLOUT(connectCallback, protocol);
+    DO_PROTOCOL_CALLOUT(connectCallback, protocol);
 }
 
 void YRSessionProtocolWait(YRSessionProtocolRef protocol) {
-    YR_DO_PROTOCOL_CALLOUT(waitCallback, protocol);
+    DO_PROTOCOL_CALLOUT(waitCallback, protocol);
 }
 
 void YRSessionProtocolClose(YRSessionProtocolRef protocol) {
-    YR_DO_PROTOCOL_CALLOUT(closeCallback, protocol);
+    DO_PROTOCOL_CALLOUT(closeCallback, protocol);
 }
 
 #pragma mark - Communication
 
 void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, uint16_t length) {
-    YR_DO_PROTOCOL_CALLOUT(receiveCallback, protocol, payload, length);
+    DO_PROTOCOL_CALLOUT(receiveCallback, protocol, payload, length);
 }
 
 void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, uint16_t length) {
-    YR_DO_PROTOCOL_CALLOUT(sendCallback, protocol, payload, length);
+    DO_PROTOCOL_CALLOUT(sendCallback, protocol, payload, length);
 }
 
 #pragma mark - Concepts

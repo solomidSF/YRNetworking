@@ -25,13 +25,14 @@
 
 #include "YRInternal.h"
 
+// TODO: <RF> Update to reflect actual layout
 // Network Packets Layout:
 
 // SYN Segment:
 // 0             7 8            15
 //+-+-+-+-+-+-+-+-+---------------+
 //| | | |A| | | | |               |
-//|1|0|0|C|0|0|0|0|       22      |
+//|1|0|0|C|0|0|0|0|       20      |
 //| | | |K| | | | |               |
 //+-+-+-+-+-+-+-+-+---------------+
 //|   Protocol    |    Reserved   |
@@ -41,8 +42,6 @@
 //|           Ack Number          |
 //+---------------+---------------+
 //|            Checksum           |
-//+                               +
-//|      (32 bits in length)      |
 //+---------------+---------------+
 //|         Options (zero)        |
 //+---------------+---------------+
@@ -59,7 +58,7 @@
 // 0 1 2 3 4 5 6 7 8            15
 //+-+-+-+-+-+-+-+-+---------------+
 //| | | |A| | | | |               |
-//|0|1|0|C|0|0|0|0|       12      |
+//|0|1|0|C|0|0|0|0|       10      |
 //| | | |K| | | | |               |
 //+-+-+-+-+-+-+-+-+---------------+
 //|   Protocol    |   Error Code  |
@@ -69,14 +68,12 @@
 //|           Ack Number          |
 //+---------------+---------------+
 //|         Header Checksum       |
-//+                               +
-//|      (32 bits in length)      |
 //+---------------+---------------+
 
 // NUL segment:
 // 0 1 2 3 4 5 6 7 8            15
 //+-+-+-+-+-+-+-+-+---------------+
-//|0|0|1|1|0|0|0|0|       12      |
+//|0|0|1|1|0|0|0|0|       10      |
 //+-+-+-+-+-+-+-+-+---------------+
 //|   Protocol    |    Reserved   |
 //+---------------+---------------+
@@ -85,14 +82,12 @@
 //|           Ack Number          |
 //+---------------+---------------+
 //|            Checksum           |
-//+                               +
-//|      (32 bits in length)      |
 //+---------------+---------------+
 
 // ACK segment:
 // 0 1 2 3 4 5 6 7 8            15
 //+-+-+-+-+-+-+-+-+---------------+
-//|0|0|0|1|0|0|0|0|      14       |
+//|0|0|0|1|0|0|0|0|      12       |
 //+-+-+-+-+-+-+-+-+---------------+
 //|   Protocol    |    Reserved   |
 //+---------------+---------------+
@@ -101,18 +96,16 @@
 //|           Ack Number          |
 //+---------------+---------------+
 //|            Checksum           |
-//+                               +
-//|      (32 bits in length)      |
 //+---------------+---------------+
 //|         Payload Length        |
 //+---------------+---------------+
-//|            Payload            |
+//|         ...Payload...         |
 //+---------------+---------------+
 
 // EACK segment:
 // 0 1 2 3 4 5 6 7 8            15
 //+-+-+-+-+-+-+-+-+---------------+
-//|0|0|0|1|1|0|0|0|   2 * N + 14  |
+//|0|0|0|1|1|0|0|0|   2 * N + 12  |
 //+-+-+-+-+-+-+-+-+---------------+
 //|   Protocol    |    Reserved   |
 //+---------------+---------------+
@@ -121,8 +114,6 @@
 //|           Ack Number          |
 //+---------------+---------------+
 //|            Checksum           |
-//+                               +
-//|      (32 bits in length)      |
 //+---------------+---------------+
 //|         Payload Length        |
 //+---------------+---------------+
@@ -132,10 +123,10 @@
 //+---------------+---------------+
 //|   Nth out of seq ack number   |
 //+---------------+---------------+
-//|            Payload            |
+//|         ...Payload...         |
 //+---------------+---------------+
 
-#define YRPacketDoSerialize(code) \
+#define SERIALIZE(code) \
 	do { \
 		YRPacketSerializeHeader(base, stream); \
 		code \
@@ -156,7 +147,7 @@
 		return (YRPacketRef)YROutputStreamGetBytes(stream); \
 	} while (0)
 
-#define YRPacketDoSerializeWithPayload(code) \
+#define SERIALIZE_WITH_PAYLOAD(code) \
 	do { \
 		YRPacketSerializeHeader(base, stream); \
 		YROutputStreamWriteUInt16(stream, payloadLength); \
@@ -202,7 +193,7 @@ YRPacketRef YRPacketSerializeSYN(
 	YRPacketHeaderRef base = YRPacketHeaderSYNGetBaseHeader(synHeader);
 	YRRUDPConnectionConfiguration config = YRPacketHeaderSYNGetConfiguration(synHeader);
 	
-	YRPacketDoSerialize(
+	SERIALIZE(
 		YROutputStreamWriteUInt16(stream, config.options);
 		YROutputStreamWriteUInt16(stream, config.retransmissionTimeoutValue);
 		YROutputStreamWriteUInt16(stream, config.nullSegmentTimeoutValue);
@@ -219,7 +210,7 @@ YRPacketRef YRPacketSerializeRST(
 ) {
 	YRPacketHeaderRef base = YRPacketHeaderRSTGetBaseHeader(rstHeader);
 
-	YRPacketDoSerialize();
+	SERIALIZE();
 }
 
 YRPacketRef YRPacketSerializeNUL(
@@ -229,7 +220,7 @@ YRPacketRef YRPacketSerializeNUL(
 ) {
 	YRPacketHeaderRef base = nulHeader;
 	
-	YRPacketDoSerialize();
+	SERIALIZE();
 }
 
 YRPacketRef YRPacketSerializeEACK(
@@ -249,7 +240,7 @@ YRPacketRef YRPacketSerializeEACKWithPayload(
 ) {
 	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(eackHeader);
 	
-	YRPacketDoSerializeWithPayload(
+	SERIALIZE_WITH_PAYLOAD(
 		YRHeaderLengthType count = 0;
 		YRSequenceNumberType *eacks = YRPacketHeaderEACKGetEACKs(eackHeader, &count);
 		
@@ -269,7 +260,7 @@ YRPacketRef YRPacketSerializeWithPayload(
 	YRPayloadLengthType *packetLength
 ) {
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
-	YRPacketDoSerializeWithPayload();
+	SERIALIZE_WITH_PAYLOAD();
 }
 
 void YRPacketDeserialize(
@@ -277,7 +268,7 @@ void YRPacketDeserialize(
 	YRPacketHandlers handlers,
 	void *context
 ) {
-#define YREnsureOperationSucceeded(err, op) \
+#define ENSURE_OP_SUCCESSFUL(err, op) \
 	op\
 	if (!successful) { \
 		!handlers.invalid ?: handlers.invalid(context, err); \
@@ -286,28 +277,28 @@ void YRPacketDeserialize(
 
 	// 1. Read base header
 
-#define YRInputStreamSafeRead(variable, size) \
-	YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid, \
+#define SAFE_READ(variable, size) \
+	ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid, \
 		variable = YRInputStreamRead##size(iStream, &successful); \
 	)
 		
 	bool successful = true;
 	
-	YRInputStreamSafeRead(YRPacketDescriptionType packetDescription, UInt8)
-	YRInputStreamSafeRead(YRProtocolVersionType protocol, UInt8)
-	YRInputStreamSafeRead(uint8_t reserved, UInt8)
-    YRInputStreamSafeRead(YRHeaderLengthType headerLength, UInt8)
-    YRInputStreamSafeRead(YRSequenceNumberType seqNumber, UInt16)
-    YRInputStreamSafeRead(YRSequenceNumberType ackNumber, UInt16)
-    YRInputStreamSafeRead(YRChecksumType checksum, UInt32)
+	SAFE_READ(YRPacketDescriptionType packetDescription, UInt8)
+	SAFE_READ(YRProtocolVersionType protocol, UInt8)
+	SAFE_READ(uint8_t reserved, UInt8)
+    SAFE_READ(YRHeaderLengthType headerLength, UInt8)
+    SAFE_READ(YRSequenceNumberType seqNumber, UInt16)
+    SAFE_READ(YRSequenceNumberType ackNumber, UInt16)
+    SAFE_READ(YRChecksumType checksum, UInt32)
     
     // 2. Validate packet
     
-    YREnsureOperationSucceeded(kYRRUDPErrorProtocolVersionMismatch,
+    ENSURE_OP_SUCCESSFUL(kYRRUDPErrorProtocolVersionMismatch,
 		successful = (protocol == kYRProtocolVersion);
     )
     
-	YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+	ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 		successful = YRPacketValidatePacketDescription(packetDescription);
 	)
 	
@@ -317,15 +308,15 @@ void YRPacketDeserialize(
 	if (pdWithoutCHK == YRPacketDescriptionACK ||
 		pdWithoutCHK == YRPacketDescriptionEACK ||
 		pdWithoutCHK == (YRPacketDescriptionACK | YRPacketDescriptionEACK)) {
-		YRInputStreamSafeRead(payloadLength, UInt16)
+		SAFE_READ(payloadLength, UInt16)
 	}
 	
-	YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+	ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 		YRPayloadLengthType packetLength = headerLength + payloadLength;
 		successful = (packetLength == YRInputStreamSize(iStream));
 	)
 
-	YREnsureOperationSucceeded(kYRRUDPErrorChecksumMismatch,
+	ENSURE_OP_SUCCESSFUL(kYRRUDPErrorChecksumMismatch,
 		YRChecksumType calculatedChecksum = YRPacketCalculateChecksum(
 			headerLength,
 			packetDescription & YRPacketDescriptionCHK,
@@ -338,7 +329,7 @@ void YRPacketDeserialize(
 	
 	// 3. Validate packet based on it's type and do callout
 	
-#define YRFillBaseHeader(code) \
+#define FILL_BASE_HEADER(code) \
 	do { \
 		YRPacketHeaderRef base = code;\
 		YRPacketHeaderSetPacketDescription(base, packetDescription); \
@@ -357,17 +348,17 @@ void YRPacketDeserialize(
 	
 	if (packetDescription & YRPacketDescriptionSYN) {
 		YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)buffer;
-		YRFillBaseHeader(YRPacketHeaderSYNGetBaseHeader(header));
+		FILL_BASE_HEADER(YRPacketHeaderSYNGetBaseHeader(header));
 		
 		YRRUDPConnectionConfiguration config;
-		YRInputStreamSafeRead(config.options, UInt16);
-		YRInputStreamSafeRead(config.retransmissionTimeoutValue, UInt16);
-		YRInputStreamSafeRead(config.nullSegmentTimeoutValue, UInt16);
-		YRInputStreamSafeRead(config.maximumSegmentSize, UInt16);
-		YRInputStreamSafeRead(config.maxRetransmissions, UInt8);
-		YRInputStreamSafeRead(config.maxNumberOfOutstandingSegments, UInt8);
+		SAFE_READ(config.options, UInt16);
+		SAFE_READ(config.retransmissionTimeoutValue, UInt16);
+		SAFE_READ(config.nullSegmentTimeoutValue, UInt16);
+		SAFE_READ(config.maximumSegmentSize, UInt16);
+		SAFE_READ(config.maxRetransmissions, UInt8);
+		SAFE_READ(config.maxNumberOfOutstandingSegments, UInt8);
 				
-		YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+		ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 			successful = (headerLength == YRInputStreamBytesRead(iStream));
 		)
 		
@@ -379,7 +370,7 @@ void YRPacketDeserialize(
 	
 	if (packetDescription & YRPacketDescriptionRST) {
 		YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)buffer;
-		YRFillBaseHeader(YRPacketHeaderRSTGetBaseHeader(header));
+		FILL_BASE_HEADER(YRPacketHeaderRSTGetBaseHeader(header));
 
 		YRPacketHeaderRSTSetErrorCode(header, reserved);
 		
@@ -389,7 +380,7 @@ void YRPacketDeserialize(
 	
 	if (packetDescription & YRPacketDescriptionNUL) {
 		YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
-		YRFillBaseHeader(header);
+		FILL_BASE_HEADER(header);
 		
 		!handlers.nul ?: handlers.nul(context, header);
 		return;
@@ -397,7 +388,7 @@ void YRPacketDeserialize(
 	
 	if (packetDescription & YRPacketDescriptionEACK) {
 		YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)buffer;
-		YRFillBaseHeader(YRPacketHeaderEACKGetBaseHeader(header));
+		FILL_BASE_HEADER(YRPacketHeaderEACKGetBaseHeader(header));
 		
 		YRPacketPayloadHeaderSetPayloadLength(
 			YRPacketHeaderEACKGetPayloadHeader(header),
@@ -405,7 +396,7 @@ void YRPacketDeserialize(
 		);
 		
 		// iStream is pointing into EACK area, double check for correctness
-		YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+		ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 			successful = headerLength > YRInputStreamBytesRead(iStream) &&
 				(headerLength - YRInputStreamBytesRead(iStream)) % sizeof(YRSequenceNumberType) == 0;
 		)
@@ -414,13 +405,13 @@ void YRPacketDeserialize(
 		YRSequenceNumberType eacks[eacksCount];
 		
 		for (YRHeaderLengthType i = 0; i < eacksCount; i++) {
-			YRInputStreamSafeRead(eacks[i], UInt16)
+			SAFE_READ(eacks[i], UInt16)
 		}
 		
 		YRPacketHeaderEACKSetEACKs(header, eacks, eacksCount);
 
 		// iStream points into payload start, double check for correctness
-		YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+		ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 			successful = (payloadLength == YRInputStreamBytesLeft(iStream));
 		)
 		
@@ -435,12 +426,12 @@ void YRPacketDeserialize(
 	
 	if (packetDescription & YRPacketDescriptionACK) {
 		YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)buffer;
-		YRFillBaseHeader(YRPacketPayloadHeaderGetBaseHeader(header));
+		FILL_BASE_HEADER(YRPacketPayloadHeaderGetBaseHeader(header));
 
 		YRPacketPayloadHeaderSetPayloadLength(header, payloadLength);
 		
 		// Double check payload length
-		YREnsureOperationSucceeded(kYRRUDPErrorPacketInvalid,
+		ENSURE_OP_SUCCESSFUL(kYRRUDPErrorPacketInvalid,
 			successful = (payloadLength == YRInputStreamBytesLeft(iStream));
 		)
 		
@@ -518,10 +509,10 @@ YRChecksumType YRPacketCalculateChecksum(
 	YRChecksumType length = usePayload ? packetLength : headerLength;
 	const void *iterator = packetStart;
 	
-	while (length > sizeof(YRChecksumType) - 1) {
-		sum += ntohl(*((YRChecksumType *)iterator));
-		length -= sizeof(YRChecksumType);
-		iterator = ((YRChecksumType *)iterator) + 1;
+	while (length > 3) {
+		sum += ntohl(*((uint32_t *)iterator));
+		length -= sizeof(uint32_t);
+		iterator = ((uint32_t *)iterator) + 1;
 	}
 	
 	while (length > 1) {

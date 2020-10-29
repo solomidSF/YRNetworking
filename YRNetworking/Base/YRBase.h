@@ -34,8 +34,6 @@
 
 #define YR_FP_IMPL(name, ...) void (^(name)) (__VA_ARGS__) = ^(__VA_ARGS__)
 
-#define YR_FP(name) name
-
 #define YR_COPY_FP(fp) \
     do { \
         if ((fp)) { \
@@ -54,7 +52,7 @@
 
 #define YR_TYPEDEF_FP(name, ...) typedef void (*(name)) (__VA_ARGS__)
 
-#define YR_FP_IMPL(fp, name, ...) void (name) (__VA_ARGS__)
+#define YR_FP_IMPL(name, ...) void (name) (__VA_ARGS__)
 
 #define YR_COPY_FP(fp)
 #define YR_RELEASE_FP(fp)

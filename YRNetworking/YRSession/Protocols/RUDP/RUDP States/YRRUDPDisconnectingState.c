@@ -25,56 +25,72 @@
 
 #include "YRInternal.h"
 
+#define STATE_PREFIX disconnecting
+//            if (isRST) {
+//                //                [_disconnectingTimer invalidate];
+//
+//                YRSessionTransiteToState(session, kYRSessionStateClosed);
+//            }
+//            break;
+
 #pragma mark - Lifecycle
 
-void onEnterDisconnected(YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
-	
-}
+void STATE_FP_PREFIX(onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
 
-void onExitDisconnected(YRRUDPSessionProtocolRef protocol, YRRUDPState next) {
-	
+}
+void STATE_FP_PREFIX(onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
+
 }
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
-YR_FP_IMPL(invalidateDisconnected, YRSessionProtocolRef protocol) {
-	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
-	
+STATE_FP_IMPL(invalidate, YRSessionProtocolRef protocol) {
+
 };
 
-YR_FP_IMPL(destroyDisconnected, YRSessionProtocolRef protocol) {
-	
-};
+STATE_FP_IMPL(destroy, YRSessionProtocolRef protocol) {};
 
 #pragma mark - YRSessionProtocolCallbacks
 
-YR_FP_IMPL(connectDisconnected, YRSessionProtocolRef protocol) {
-	
+STATE_FP_IMPL(connect, YRSessionProtocolRef protocol) {
 };
 
+STATE_FP_IMPL(wait, YRSessionProtocolRef protocol) {
+};
 
-YR_FP_IMPL(waitDisconnected, YRSessionProtocolRef protocol) {
+STATE_FP_IMPL(close, YRSessionProtocolRef protocol) {
+};
+
+STATE_FP_IMPL(send, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+STATE_FP_IMPL(receive, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+#pragma mark - YRPacketHandlers
+
+void STATE_FP_PREFIX(syn) (void *context, YRPacketHeaderSYNRef header) {
 
 };
 
-YR_FP_IMPL(closeDisconnected, YRSessionProtocolRef protocol) {
+void STATE_FP_PREFIX(rst) (void *context, YRPacketHeaderRSTRef header) {
 
 };
 
-YR_FP_IMPL(sendDisconnected, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
+void STATE_FP_PREFIX(nul) (void *context, YRPacketHeaderRef header) {
 
 };
 
-YR_FP_IMPL(receiveDisconnected, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
+void STATE_FP_PREFIX(eack) (void *context, YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+void STATE_FP_PREFIX(regular) (void *context, YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+void STATE_FP_PREFIX(invalid) (void *context, YRRUDPError protocol) {
 
 };
 
 YRRUDPState YRRUDPDisconnectingState() {
-	return (YRRUDPState) {
-		kYRRUDPSessionStateDisconnecting,
-		onEnterDisconnected,
-		onExitDisconnected,
-		{invalidateDisconnected, destroyDisconnected},
-		{connectDisconnected, waitDisconnected, closeDisconnected, sendDisconnected, receiveDisconnected},
-	};
+	return STATE_DECL(kYRRUDPSessionStateDisconnecting);
 }

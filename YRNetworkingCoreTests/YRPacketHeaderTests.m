@@ -124,7 +124,7 @@
 
 - (void)testChecksum {
 	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
-	YRChecksumType expected = 0xFF432;
+	YRChecksumType expected = 0xFF42;
 	
 	YRPacketHeaderSetChecksum(header, expected);
 	XCTAssertEqual(expected, YRPacketHeaderGetChecksum(header));

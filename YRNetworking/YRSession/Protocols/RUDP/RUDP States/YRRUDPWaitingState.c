@@ -25,56 +25,113 @@
 
 #include "YRInternal.h"
 
+#define STATE_PREFIX waiting
+
 #pragma mark - Lifecycle
 
-void onEnterWaiting(YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
-	
-}
-
-void onExitWaiting(YRRUDPSessionProtocolRef protocol, YRRUDPState next) {
-	
-}
+void STATE_FP_PREFIX(onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {}
+void STATE_FP_PREFIX(onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {}
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
-YR_FP_IMPL(invalidateWaiting, YRSessionProtocolRef protocol) {
-	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
-	
+STATE_FP_IMPL(invalidate, YRSessionProtocolRef protocol) {
+
 };
 
-YR_FP_IMPL(destroyWaiting, YRSessionProtocolRef protocol) {
-	
+STATE_FP_IMPL(destroy, YRSessionProtocolRef protocol) {
+
 };
 
 #pragma mark - YRSessionProtocolCallbacks
 
-YR_FP_IMPL(connectWaiting, YRSessionProtocolRef protocol) {
+STATE_FP_IMPL(connect, YRSessionProtocolRef protocol) {
+};
+
+STATE_FP_IMPL(wait, YRSessionProtocolRef protocol) {
+};
+
+STATE_FP_IMPL(close, YRSessionProtocolRef protocol) {
+	YRRUDPSessionProtocolRef sessionProtocol = (YRRUDPSessionProtocolRef)protocol;
+	YRRUDPSessionEnterState(sessionProtocol, YRRUDPStateForState(kYRRUDPSessionStateClosed));
+};
+
+STATE_FP_IMPL(send, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
+	// TODO: Warning <Send not handled in this state>
+};
+
+STATE_FP_IMPL(receive, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+#pragma mark - YRPacketHandlers
+
+//            // Waiting for SYN packet.
+//            if (isSYN) {
+//                session->sessionInfo.rcvLatestAckedSegment = rcvSeqNumber;
+//                session->sessionInfo.rcvInitialSequenceNumber = rcvSeqNumber;
+//
+//                YRPacketHeaderSYNRef synHeader = (YRPacketHeaderSYNRef)receivedHeader;
+//
+//                session->remoteConnectionConfiguration = YRPacketSYNHeaderGetConfiguration(synHeader);
+//
+//                YRSessionTransiteToState(session, kYRSessionStateConnecting);
+//
+//                YRSessionDoReliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+//                    YRPacketCreateSYN(session->localConnectionConfiguration, seqNumber, ackNumber, true, packetBuffer);
+//                }, YRPacketSYNLength());
+//
+//                break;
+//            }
+//
+//            if (isRST) {
+//                break;
+//            }
+//
+
+void STATE_FP_PREFIX(syn) (void *context, YRPacketHeaderSYNRef header) {
+	YRPacketHeaderRef base = YRPacketHeaderSYNGetBaseHeader(header);
+	YRRUDPSessionProtocolRef protocol = (YRRUDPSessionProtocolRef)context;
 	
+	YRRUDPSessionInfo info = YRRUDPSessionGetInfo(protocol);
+	info.rcvLatestAckedSegment = YRPacketHeaderGetSequenceNumber(base);
+	info.remoteConnectionConfiguration = YRPacketHeaderSYNGetConfiguration(header);
+
+	YRRUDPSessionUpdateInfo(protocol, info);
+	
+	YRRUDPSessionEnterState(protocol, YRRUDPStateForState(kYRRUDPSessionStateConnecting));
 };
 
-
-YR_FP_IMPL(waitWaiting, YRSessionProtocolRef protocol) {
-
+void STATE_FP_PREFIX(rst) (void *context, YRPacketHeaderRSTRef header) {
+	// no-op
 };
 
-YR_FP_IMPL(closeWaiting, YRSessionProtocolRef protocol) {
-
+void STATE_FP_PREFIX(nul) (void *context, YRPacketHeaderRef header) {
+//            if (hasACK || isNUL) {
+//                YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+//                    YRPacketCreateRST(0, rcvAckNumber + 1, 0, false, packetBuffer);
+//                }, YRPacketRSTLength());
+//
+//                break;
+//            }
 };
 
-YR_FP_IMPL(sendWaiting, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-
+void STATE_FP_PREFIX(eack) (void *context, YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength) {
+	// no-op?
 };
 
-YR_FP_IMPL(receiveWaiting, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
+void STATE_FP_PREFIX(regular) (void *context, YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength) {
+//            if (hasACK || isNUL) {
+//                YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+//                    YRPacketCreateRST(0, rcvAckNumber + 1, 0, false, packetBuffer);
+//                }, YRPacketRSTLength());
+//
+//                break;
+//            }
+};
+
+void STATE_FP_PREFIX(invalid) (void *context, YRRUDPError protocol) {
 
 };
 
 YRRUDPState YRRUDPWaitingState() {
-	return (YRRUDPState) {
-		kYRRUDPSessionStateWaiting,
-		onEnterWaiting,
-		onExitWaiting,
-		{invalidateWaiting, destroyWaiting},
-		{connectWaiting, waitWaiting, closeWaiting, sendWaiting, receiveWaiting},
-	};
+	return STATE_DECL(kYRRUDPSessionStateWaiting);
 }

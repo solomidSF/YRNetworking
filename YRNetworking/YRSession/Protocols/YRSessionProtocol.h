@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TODO: Rename to YRSessionProtocolInterface
 #ifndef __YRSessionProtocol__
 #define __YRSessionProtocol__
 
@@ -61,6 +62,7 @@ typedef struct {
     YRSessionProtocolReceiveCallback receiveCallback;
 } YRSessionProtocolClientCallbacks;
 
+// TODO: Make internal
 typedef struct YRSessionProtocol {
     YRSessionProtocolLifecycleCallbacks lifecycleCallbacks;
     YRSessionProtocolCallbacks protocolCallbacks;
@@ -74,19 +76,27 @@ void YRSessionProtocolDestroy(YRSessionProtocolRef protocol);
 
 #pragma mark - Configuration
 
-void YRSessionProtocolSetCallbacks(YRSessionProtocolRef protocol,
-                                   YRSessionProtocolLifecycleCallbacks lifecycleCallbacks,
-                                   YRSessionProtocolCallbacks protocolCallbacks,
-                                   YRSessionProtocolClientCallbacks clientCallbacks);
+void YRSessionProtocolSetCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks,
+	YRSessionProtocolCallbacks protocolCallbacks,
+	YRSessionProtocolClientCallbacks clientCallbacks
+);
 
-void YRSessionProtocolSetLifecycleCallbacks(YRSessionProtocolRef protocol,
-                                            YRSessionProtocolLifecycleCallbacks lifecycleCallbacks);
+void YRSessionProtocolSetLifecycleCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks
+);
 
-void YRSessionProtocolSetProtocolCallbacks(YRSessionProtocolRef protocol,
-                                           YRSessionProtocolCallbacks protocolCallbacks);
+void YRSessionProtocolSetProtocolCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolCallbacks protocolCallbacks
+);
 
-void YRSessionProtocolSetClientCallbacks(YRSessionProtocolRef protocol,
-                                         YRSessionProtocolClientCallbacks clientCallbacks);
+void YRSessionProtocolSetClientCallbacks(
+	YRSessionProtocolRef protocol,
+	YRSessionProtocolClientCallbacks clientCallbacks
+);
 
 YRSessionProtocolLifecycleCallbacks YRSessionProtocolGetLifecycleCallbacks(YRSessionProtocolRef protocol);
 YRSessionProtocolCallbacks YRSessionProtocolGetCallbacks(YRSessionProtocolRef protocol);
@@ -103,6 +113,7 @@ void YRSessionProtocolClose(YRSessionProtocolRef protocol);
 void YRSessionProtocolReceive(YRSessionProtocolRef protocol, void *payload, uint16_t length);
 void YRSessionProtocolSend(YRSessionProtocolRef protocol, void *payload, uint16_t length);
 
+// TODO:
 #pragma mark - Concepts
 
 void YRSessionProtocolInstallModules(YRSessionProtocolRef protocol, void *modules);

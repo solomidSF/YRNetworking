@@ -32,6 +32,7 @@
 
 #pragma mark - Declarations
 
+// TODO: <RF> Drop this symbol?
 typedef struct YRPacket *YRPacketRef;
 
 typedef struct {

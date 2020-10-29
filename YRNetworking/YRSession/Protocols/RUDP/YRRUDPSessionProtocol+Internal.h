@@ -28,4 +28,15 @@
 
 void YRRUDPSessionEnterState(YRRUDPSessionProtocolRef protocol, YRRUDPState state);
 
-#endif
+YRRUDPSessionInfo YRRUDPSessionGetInfo(YRRUDPSessionProtocolRef protocol);
+void YRRUDPSessionUpdateInfo(YRRUDPSessionProtocolRef protocol, YRRUDPSessionInfo info);
+
+void *YRRUDPSessionGetPacketBuffer(YRRUDPSessionProtocolRef protocol);
+//void YRRUDPSessionScheduleSend(YRPacketRef packet, YRPayloadLengthType length);
+
+void YRRUDPSessionSendSYN(YRRUDPSessionProtocolRef protocol);
+void YRRUDPSessionSendRST(YRRUDPSessionProtocolRef protocol, YRRUDPError error);
+void YRRUDPSessionSendNUL(YRRUDPSessionProtocolRef protocol);
+void YRRUDPSessionSendACK(YRRUDPSessionProtocolRef protocol);
+
+#endif // __YRRUDPSessionProtocol_Internal__

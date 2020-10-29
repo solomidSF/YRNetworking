@@ -48,6 +48,7 @@ uint16_t YROutputStreamCurrentIndex(YROutputStreamRef stream);
 void YROutputStreamReset(YROutputStreamRef stream);
 void YROutputStreamSetTo(YROutputStreamRef stream, void *buffer, uint16_t bufferSize);
 bool YROutputStreamSetIndexTo(YROutputStreamRef stream, uint16_t index);
+
 void YROutputStreamWriteUInt8(YROutputStreamRef stream, uint8_t value);
 void YROutputStreamWriteUInt16(YROutputStreamRef stream, uint16_t value);
 void YROutputStreamWriteUInt32(YROutputStreamRef stream, uint32_t value);

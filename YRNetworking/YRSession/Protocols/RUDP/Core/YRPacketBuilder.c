@@ -68,7 +68,7 @@ YRPacketRef YRPacketCreateSYN(
 }
 
 YRPacketRef YRPacketCreateRST(
-	uint8_t errorCode,
+	YRRUDPError errorCode,
 	YRSequenceNumberType seqNumber,
 	YRSequenceNumberType ackNumber,
 	bool hasACK,

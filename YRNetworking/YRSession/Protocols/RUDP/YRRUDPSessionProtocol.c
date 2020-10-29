@@ -3,7 +3,7 @@
 //
 // The MIT License (MIT)
 //
-// Copyright (c) 2019 Yuri R.
+// Copyright (c) 2020 Yurii Romanchenko
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -25,83 +25,114 @@
 
 #include "YRInternal.h"
 
-#define YR_FP_INVOKE(fp, ...) !(fp) ?: (fp(__VA_ARGS__))
-#define YR_FP_FORWARD(fp, ...) \
+// Invokes function if it's present
+#define FP_INVOKE(fp, ...) !(fp) ?: (fp(__VA_ARGS__))
+
+// Calls given function with passed arguments on current state
+#define FORWARD_TO_STATE(fp, ...) \
 	do { \
 		YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol; \
-		YR_FP_INVOKE(rudp->currentState.fp, __VA_ARGS__); \
+		FP_INVOKE(rudp->currentState.fp, __VA_ARGS__); \
 	} while(0)
+	
+// Appends prefix to function name
+#define FORWARDING_FP(name) yr_session_##name
 
+// Declares function that forwards call to current state
+#define DECL_FORWARDING(name, fp) \
+	YR_FP_IMPL(FORWARDING_FP(name), YRSessionProtocolRef protocol) { \
+		FORWARD_TO_STATE(fp, protocol); \
+	}
+	
+// Declares function that forwards call with payload to current state
+#define DECL_FORWARDING_WITH_PAYLOAD(name, fp) \
+	YR_FP_IMPL(FORWARDING_FP(name), YRSessionProtocolRef protocol, const void *payload, uint16_t payloadLength) { \
+		FORWARD_TO_STATE(fp, protocol, payload, payloadLength); \
+	}
+	
 #pragma mark - Declarations
 
-typedef struct YRRUDPSessionInfo {
-	// Send-related
-	YRSequenceNumberType sendInitialSequenceNumber;
-	YRSequenceNumberType sendNextSequenceNumber;
-	YRSequenceNumberType sendLatestUnackSegment;
-	
-	// Receive-related
-	YRSequenceNumberType rcvLatestAckedSegment;
-	YRSequenceNumberType rcvInitialSequenceNumber;
-} YRRUDPSessionInfo;
-
 typedef struct YRRUDPSessionProtocol {
-    struct YRSessionProtocol rawProtocol;
-	struct YRRUDPState currentState;
-	YRPayloadLengthType MTU;
+    YRSessionProtocol rawProtocol;
+	YRRUDPState currentState;
+	YRPacketHandlers packetHandlers;
+	YRRUDPSessionInfo sessionInfo;
+	YRInputStream iStream;
+	YROutputStream oStream;
+	YRSessionProtocolConfig config;
 } YRRUDPSessionProtocol;
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
-YR_FP_IMPL(invalidate, YRSessionProtocolRef protocol) {
-	YR_FP_FORWARD(lifecycleCallbacks.invalidateCallback, protocol);
-};
-
-YR_FP_IMPL(destroy, YRSessionProtocolRef protocol) {
-	YR_FP_FORWARD(lifecycleCallbacks.destroyCallback, protocol);
-};
+DECL_FORWARDING(invalidate, lifecycleCallbacks.invalidateCallback);
+DECL_FORWARDING(destroy, lifecycleCallbacks.destroyCallback);
 
 #pragma mark - YRSessionProtocolCallbacks
 
-YR_FP_IMPL(rudpConnect, YRSessionProtocolRef protocol) {
-	YR_FP_FORWARD(protocolCallbacks.connectCallback, protocol);
+DECL_FORWARDING(connect, protocolCallbacks.connectCallback);
+DECL_FORWARDING(wait, protocolCallbacks.waitCallback);
+DECL_FORWARDING(close, protocolCallbacks.closeCallback);
+DECL_FORWARDING_WITH_PAYLOAD(send, protocolCallbacks.sendCallback);
+
+YR_FP_IMPL(FORWARDING_FP(receive), YRSessionProtocolRef protocol, const void *payload, uint16_t payloadLength) {
+	YRRUDPSessionProtocol *sessionProtocol = (YRRUDPSessionProtocol *)protocol;
+
+	YRInputStreamSetTo(&sessionProtocol->iStream, payload, payloadLength);
+	YRPacketDeserialize(&sessionProtocol->iStream, sessionProtocol->packetHandlers, protocol);
 };
 
-YR_FP_IMPL(rudpWait, YRSessionProtocolRef protocol) {
-	YR_FP_FORWARD(protocolCallbacks.waitCallback, protocol);
-};
+#pragma mark - YRPacketHandlers
 
-YR_FP_IMPL(rudpClose, YRSessionProtocolRef protocol) {
-	YR_FP_FORWARD(protocolCallbacks.closeCallback, protocol);
-};
-
-YR_FP_IMPL(rudpSend, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-	YR_FP_FORWARD(protocolCallbacks.sendCallback, protocol, payload, length);
-};
-
-YR_FP_IMPL(rudpReceive, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-	YR_FP_FORWARD(protocolCallbacks.receiveCallback, protocol, payload, length);
-};
+// Declares packet handler function which forwards call to current state
+#define DECL_FORWARING_DESERIALIZE(name, arg1_type) \
+	void FORWARDING_FP(name)(void *context, arg1_type arg) { \
+		YRRUDPSessionProtocol *protocol = (YRRUDPSessionProtocol *)context; \
+		FP_INVOKE(protocol->currentState.packetHandlers.name, context, arg); \
+	}
+	
+// Declares packet handler function which forwards call with payload to current state
+#define DECL_FORWARING_DESERIALIZE_WITH_PAYLOAD(name, header_type) \
+	void FORWARDING_FP(name)(void *context, header_type header, const void *payload, YRPayloadLengthType payloadLength) { \
+		YRRUDPSessionProtocol *protocol = (YRRUDPSessionProtocol *)context; \
+		FP_INVOKE(protocol->currentState.packetHandlers.name, context, header, payload, payloadLength); \
+	}
+	
+DECL_FORWARING_DESERIALIZE(syn, YRPacketHeaderSYNRef);
+DECL_FORWARING_DESERIALIZE(rst, YRPacketHeaderRSTRef);
+DECL_FORWARING_DESERIALIZE(nul, YRPacketHeaderRef);
+DECL_FORWARING_DESERIALIZE_WITH_PAYLOAD(eack, YRPacketHeaderEACKRef);
+DECL_FORWARING_DESERIALIZE_WITH_PAYLOAD(regular, YRPacketPayloadHeaderRef);
+DECL_FORWARING_DESERIALIZE(invalid, YRRUDPError);
 
 #pragma mark - Interface
 
-YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRPayloadLengthType MTU) {
+YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRSessionProtocolConfig config) {
 	static YRSessionProtocolLifecycleCallbacks rudpLifecycleCallbacks;
 	static YRSessionProtocolCallbacks rudpProtocolCallbacks;
+	static YRPacketHandlers packetHandlers;
 	static bool isRUDPProtocolInitialized = false;
 
 	if (!isRUDPProtocolInitialized) {
 		rudpLifecycleCallbacks = (YRSessionProtocolLifecycleCallbacks) {
-			invalidate,
-			destroy
+			FORWARDING_FP(invalidate),
+			FORWARDING_FP(destroy)
 		};
 		
 		rudpProtocolCallbacks = (YRSessionProtocolCallbacks) {
-			rudpConnect,
-			rudpWait,
-			rudpClose,
-			rudpSend,
-			rudpReceive
+			FORWARDING_FP(connect),
+			FORWARDING_FP(wait),
+			FORWARDING_FP(close),
+			FORWARDING_FP(send),
+			FORWARDING_FP(receive)
+		};
+		
+		packetHandlers = (YRPacketHandlers) {
+			FORWARDING_FP(syn),
+			FORWARDING_FP(rst),
+			FORWARDING_FP(nul),
+			FORWARDING_FP(eack),
+			FORWARDING_FP(regular),
+			FORWARDING_FP(invalid)
 		};
 		
 		isRUDPProtocolInitialized = true;
@@ -113,17 +144,39 @@ YRSessionRef YRRUDPSessionCreate(YRRUDPSessionProtocolCallbacks callbacks, YRPay
 	YRSessionProtocolSetProtocolCallbacks(&protocol->rawProtocol, rudpProtocolCallbacks);
 	YRSessionProtocolSetClientCallbacks(&protocol->rawProtocol, callbacks.clientCallbacks);
 	
+	protocol->packetHandlers = packetHandlers;
+	protocol->config = config;
+	
 	YRRUDPSessionEnterState(protocol, YRRUDPStateForState(kYRRUDPSessionStateClosed));
 
-	protocol->MTU = MTU;
-	
 	YRSessionRef session = YRSessionCreate(&protocol->rawProtocol);
 
     return session;
 }
 
+#pragma mark - Internal
+
 void YRRUDPSessionEnterState(YRRUDPSessionProtocolRef protocol, YRRUDPState state) {
-	YR_FP_INVOKE(protocol->currentState.onExit, protocol, protocol->currentState);
+	FP_INVOKE(protocol->currentState.onExit, protocol, protocol->currentState);
 	protocol->currentState = state;
-	YR_FP_INVOKE(protocol->currentState.onEnter, protocol, state);
+	FP_INVOKE(protocol->currentState.onEnter, protocol, state);
+}
+
+YRRUDPSessionInfo YRRUDPSessionGetInfo(YRRUDPSessionProtocolRef protocol) {
+	return protocol->sessionInfo;
+}
+
+void YRRUDPSessionUpdateInfo(YRRUDPSessionProtocolRef protocol, YRRUDPSessionInfo info) {
+	protocol->sessionInfo = info;
+}
+
+void YRRUDPSessionSendSYN(YRRUDPSessionProtocolRef protocol) {
+//	YRPacketCreateSYN(
+//		protocol->sessionInfo.localConnectionConfiguration,
+//		protocol->sessionInfo.sendInitialSequenceNumber,
+//		<#YRSequenceNumberType ackNumber#>,
+//		<#bool hasACK#>,
+//		<#YROutputStreamRef stream#>,
+//		<#YRPayloadLengthType *packetLength#>
+//	)
 }

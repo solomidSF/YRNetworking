@@ -11,8 +11,11 @@
 
 #include "YRNetworking.h"
 
-// RUDP
+#define YR_MAKE_MULTIPLE_TO(what, to) (((what) + ((to) - 1)) & (~((to) - 1)))
+
+#include "YRUtils+Internal.h"
 #include "YRRUDPSessionProtocol+Internal.h"
+#include "YRRUDPStates+Internal.h"
 
 #define __YRNETWORKING_INDIRECT__
 #include "YRRef.h"

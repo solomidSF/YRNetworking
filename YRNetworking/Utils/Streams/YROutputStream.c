@@ -24,12 +24,6 @@
 // SOFTWARE.
 
 #include "YRInternal.h"
- 
-typedef struct YROutputStream {
-    uint8_t *data;
-    uint16_t size;
-    uint16_t index;
-} YROutputStream;
 
 static YROutputStream gOutputStream;
 

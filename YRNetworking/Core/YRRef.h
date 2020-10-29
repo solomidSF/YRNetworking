@@ -6,6 +6,7 @@
 //  Copyright © 2019 Yuriy Romanchenko. All rights reserved.
 //
 
+// TODO: <RF> Remove
 #ifndef __YRRef__
 #define __YRRef__
 

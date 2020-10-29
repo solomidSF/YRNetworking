@@ -25,52 +25,117 @@
 
 #include "YRInternal.h"
 
+#define STATE_PREFIX closed
+
+#pragma mark - Prototypes
+
+void YRRUDPClosedStateUpdateSessionInfo(YRRUDPSessionProtocolRef protocol, YRSequenceNumberType seqNumber, bool keepAlive);
+
 #pragma mark - Lifecycle
 
-void onEnterClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {}
+void STATE_FP_PREFIX(onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
+	// TODO: Cleanup
+}
 
-void onExitClosed(YRRUDPSessionProtocolRef protocol, YRRUDPState next) {}
+void STATE_FP_PREFIX(onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState prev) {
+	// no-op
+}
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks
 
-YR_FP_IMPL(invalidateClosed, YRSessionProtocolRef protocol) {
-
+STATE_FP_IMPL(invalidate, YRSessionProtocolRef protocol) {
+	// no-op
 };
 
-YR_FP_IMPL(destroyClosed, YRSessionProtocolRef protocol) {
-	
+STATE_FP_IMPL(destroy, YRSessionProtocolRef protocol) {
+	// no-op
 };
 
 #pragma mark - YRSessionProtocolCallbacks
 
-YR_FP_IMPL(connectClosed, YRSessionProtocolRef protocol) {
-	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
-	YRRUDPSessionEnterState(rudp, YRRUDPStateForState(kYRRUDPSessionStateInitiating));
+STATE_FP_IMPL(connect, YRSessionProtocolRef protocol) {
+	YRRUDPSessionProtocolRef sessionProtocol = (YRRUDPSessionProtocolRef)protocol;
+
+	YRRUDPClosedStateUpdateSessionInfo(sessionProtocol, arc4random(), false);
+
+	YRRUDPSessionEnterState(sessionProtocol, YRRUDPStateForState(kYRRUDPSessionStateInitiating));
 };
 
-YR_FP_IMPL(waitClosed, YRSessionProtocolRef protocol) {
-	YRRUDPSessionProtocolRef rudp = (YRRUDPSessionProtocolRef)protocol;
-	YRRUDPSessionEnterState(rudp, YRRUDPStateForState(kYRRUDPSessionStateWaiting));
+STATE_FP_IMPL(wait, YRSessionProtocolRef protocol) {
+	YRRUDPSessionProtocolRef sessionProtocol = (YRRUDPSessionProtocolRef)protocol;
+	
+	YRRUDPClosedStateUpdateSessionInfo(sessionProtocol, arc4random(), true);
+	
+	YRRUDPSessionEnterState(sessionProtocol, YRRUDPStateForState(kYRRUDPSessionStateWaiting));
 };
 
-YR_FP_IMPL(closeClosed, YRSessionProtocolRef protocol) {
+STATE_FP_IMPL(close, YRSessionProtocolRef protocol) {
 	// no-op
 };
 
-YR_FP_IMPL(sendClosed, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
+STATE_FP_IMPL(send, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
 	// TODO: Warning <Send not handled in this state>
 };
 
-YR_FP_IMPL(receiveClosed, YRSessionProtocolRef protocol, const void *payload, uint16_t length) {
-	// TODO: Send RST to peer
+STATE_FP_IMPL(receive, YRSessionProtocolRef protocol, const void *payload, YRPayloadLengthType payloadLength) {
+	// no-op
 };
 
+#pragma mark - YRPacketHandlers
+
+void STATE_FP_PREFIX(syn) (void *context, YRPacketHeaderSYNRef header) {
+
+};
+
+void STATE_FP_PREFIX(rst) (void *context, YRPacketHeaderRSTRef header) {
+	// no-op
+};
+
+void STATE_FP_PREFIX(nul) (void *context, YRPacketHeaderRef header) {
+
+};
+
+void STATE_FP_PREFIX(eack) (void *context, YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+void STATE_FP_PREFIX(regular) (void *context, YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength) {
+};
+
+void STATE_FP_PREFIX(invalid) (void *context, YRRUDPError protocol) {
+
+};
+
+//
+//            if (hasACK || isNUL) {
+//                YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+//                    YRPacketCreateRST(0, rcvAckNumber + 1, 0, false, packetBuffer);
+//                }, YRPacketRSTLength());
+//            } else {
+//                YRSessionDoUnreliableSend(session, ^(void *packetBuffer, YRSequenceNumberType seqNumber, YRSequenceNumberType ackNumber) {
+//                    YRPacketCreateRST(0, 0, rcvSeqNumber, true, packetBuffer);
+//                }, YRPacketRSTLength());
+//            }
+//
+//            break;
+
 YRRUDPState YRRUDPClosedState() {
-	return (YRRUDPState) {
-		kYRRUDPSessionStateClosed,
-		onEnterClosed,
-		onExitClosed,
-		{invalidateClosed, destroyClosed},
-		{connectClosed, waitClosed, closeClosed, sendClosed, receiveClosed},
-	};
+	return STATE_DECL(kYRRUDPSessionStateClosed);
+}
+
+#pragma mark - Private
+
+void YRRUDPClosedStateUpdateSessionInfo(YRRUDPSessionProtocolRef protocol, YRSequenceNumberType seqNumber, bool keepAlive) {
+	YRRUDPSessionInfo info = YRRUDPSessionGetInfo(protocol);
+	info.sendInitialSequenceNumber = seqNumber;
+	info.sendNextSequenceNumber = seqNumber;
+	info.shouldKeepAlive = keepAlive;
+	YRRUDPSessionUpdateInfo(protocol, info);
+}
+
+void YRRUDPClosedStateSendRST(YRPacketHeaderRef header) {
+	if (YRPacketHeaderHasACK(header) || YRPacketHeaderIsNUL(header)) {
+//		YRPacketCreateRST(<#uint8_t errorCode#>, <#YRSequenceNumberType seqNumber#>, <#YRSequenceNumberType ackNumber#>, <#bool hasACK#>, <#YROutputStreamRef stream#>, <#YRPayloadLengthType *packetLength#>)
+	} else {
+		
+	}
 }

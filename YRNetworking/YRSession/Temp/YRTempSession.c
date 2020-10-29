@@ -34,16 +34,6 @@ typedef struct {
     uint8_t retransmissions;
 } YRSessionSendOperation;
 
-// TODO: Transite to this abstract type.
-//typedef struct YRSession {
-//    YRSessionState state; // TODO: Reduce size of this one
-//    YRSessionFlags flags; // Some flags. We will need them, right?
-//    YRSessionCallbacks callbacks;
-//
-//    void* protocol;
-//    void* sessionContext;
-//} YRSession;
-
 typedef struct YRSession {
     YRSessionState state; // TODO: Reduce size of this one
     YRSessionFlags flags; // Some flags. We will need them, right?
@@ -97,29 +87,29 @@ void YRSessionSendPacket(YRSessionRef session, YRPacketRef packet);
 #pragma mark - Sizes
 #pragma mark - Lifecycle
 
-YRSessionRef YRSessionCreateWithConfiguration(YRConnectionConfiguration configuration, YRSessionCallbacks callbacks) {
-    YRSessionRef session = calloc(1, sizeof(YRSession));
-    
-    if (!session) {
-        return NULL;
-    }
-    
-    session->state = kYRSessionStateClosed;
-    session->localConnectionConfiguration = configuration;
-    
-    YRSessionSetCallbacks(session, callbacks);
-    
-    return session;
-}
-
-void YRSessionDestroy(YRSessionRef session) {
-    if (session) {
-        // TODO: Implement proper destruction
-        YRSessionSetCallbacks(session, kYRNullSessionCallbacks);
-        
-        free(session);
-    }
-}
+//YRSessionRef YRSessionCreateWithConfiguration(YRConnectionConfiguration configuration, YRSessionCallbacks callbacks) {
+//    YRSessionRef session = calloc(1, sizeof(YRSession));
+//
+//    if (!session) {
+//        return NULL;
+//    }
+//
+//    session->state = kYRSessionStateClosed;
+//    session->localConnectionConfiguration = configuration;
+//
+//    YRSessionSetCallbacks(session, callbacks);
+//
+//    return session;
+//}
+//
+//void YRSessionDestroy(YRSessionRef session) {
+//    if (session) {
+//        // TODO: Implement proper destruction
+//        YRSessionSetCallbacks(session, kYRNullSessionCallbacks);
+//
+//        free(session);
+//    }
+//}
 
 #pragma mark - Configuration
 
@@ -638,21 +628,21 @@ void YRSessionSend(YRSessionRef session, void *payload, YRPayloadLengthType leng
 
 #pragma mark - State
 
-YRSessionState YRSessionGetState(YRSessionRef session) {
-    return session->state;
-}
-
-YRSessionInfo YRSessionGetSessionInfo(YRSessionRef session) {
-    return session->sessionInfo;
-}
-
-YRConnectionConfiguration YRSessionGetLocalConnectionInfo(YRSessionRef session) {
-    return session->localConnectionConfiguration;
-}
-
-YRConnectionConfiguration YRSessionGetRemoteConnectionInfo(YRSessionRef session) {
-    return session->remoteConnectionConfiguration;
-}
+//YRSessionState YRSessionGetState(YRSessionRef session) {
+//    return session->state;
+//}
+//
+//YRSessionInfo YRSessionGetSessionInfo(YRSessionRef session) {
+//    return session->sessionInfo;
+//}
+//
+//YRConnectionConfiguration YRSessionGetLocalConnectionInfo(YRSessionRef session) {
+//    return session->localConnectionConfiguration;
+//}
+//
+//YRConnectionConfiguration YRSessionGetRemoteConnectionInfo(YRSessionRef session) {
+//    return session->remoteConnectionConfiguration;
+//}
 
 #pragma mark - Private
 
@@ -660,33 +650,33 @@ void YRSessionInvalidateConnection(YRSessionRef session) {
     // TODO: Clean-up all packets to be sent, remove all timers, delete remote configuration and do callout.
 }
 
-void YRSessionSetCallbacks(YRSessionRef session, YRSessionCallbacks callbacks) {
-    if (callbacks.connectionStateCallout) {
-        callbacks.connectionStateCallout = _Block_copy(callbacks.connectionStateCallout);
-    }
-    
-    if (callbacks.sendCallout) {
-        callbacks.sendCallout = _Block_copy(callbacks.sendCallout);
-    }
-    
-    if (callbacks.receiveCallout) {
-        callbacks.receiveCallout = _Block_copy(callbacks.receiveCallout);
-    }
-    
-    if (session->callbacks.connectionStateCallout) {
-        _Block_release(session->callbacks.connectionStateCallout);
-    }
-    
-    if (session->callbacks.sendCallout) {
-        _Block_release(session->callbacks.sendCallout);
-    }
-    
-    if (session->callbacks.receiveCallout) {
-        _Block_release(session->callbacks.receiveCallout);
-    }
-    
-    session->callbacks = callbacks;
-}
+//void YRSessionSetCallbacks(YRSessionRef session, YRSessionCallbacks callbacks) {
+//    if (callbacks.connectionStateCallout) {
+//        callbacks.connectionStateCallout = _Block_copy(callbacks.connectionStateCallout);
+//    }
+//
+//    if (callbacks.sendCallout) {
+//        callbacks.sendCallout = _Block_copy(callbacks.sendCallout);
+//    }
+//
+//    if (callbacks.receiveCallout) {
+//        callbacks.receiveCallout = _Block_copy(callbacks.receiveCallout);
+//    }
+//
+//    if (session->callbacks.connectionStateCallout) {
+//        _Block_release(session->callbacks.connectionStateCallout);
+//    }
+//
+//    if (session->callbacks.sendCallout) {
+//        _Block_release(session->callbacks.sendCallout);
+//    }
+//
+//    if (session->callbacks.receiveCallout) {
+//        _Block_release(session->callbacks.receiveCallout);
+//    }
+//
+//    session->callbacks = callbacks;
+//}
 
 YRPacketsQueueRef YRSessionGetSendQueue(YRSessionRef session) {
     if (!session->sendQueue && session->remoteConnectionConfiguration.maximumSegmentSize > 0) {

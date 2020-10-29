@@ -114,17 +114,4 @@ YRSequenceNumberType *YRPacketHeaderEACKGetEACKs(
 
 void YRPacketHeaderDebugInfo(char *buffer);
 
-// TODO: Remove
-//
-///**
-// *  Determines how much bytes needed to fit given eacks. (Note: Maximum header size is 256, so on return ioCount will contain how much eacks can be set to header)
-// */
-//YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount);
-//
-///**
-// *  Determines how much eack's can fit into given length.
-// */
-//YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength);
-//YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader);
-
 #endif // __YRPacketHeader__

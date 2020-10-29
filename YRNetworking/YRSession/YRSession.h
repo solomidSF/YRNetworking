@@ -39,7 +39,7 @@ typedef struct YRSession *YRSessionRef;
 
 YRSessionRef YRSessionCreate(YRSessionProtocolRef protocol);
 
-// TODO: Remove
+// TODO: <RF> Remove
 void YRSessionRetain(YRSessionRef session);
 void YRSessionRelease(YRSessionRef session);
 

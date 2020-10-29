@@ -64,7 +64,7 @@ typedef struct YRPacketHeaderEACK {
 YRProtocolVersionType const kYRProtocolVersion = 0x01;
 
 size_t const kYRPacketHeaderMaxDataStructureLength =
-	sizeof(YRPacketHeaderEACK) + (YRHeaderLengthType)(~0);
+	sizeof(YRPacketHeaderEACK) + YRMaxPacketHeaderSize;
 
 #pragma mark - Common
 
@@ -260,61 +260,20 @@ YRSequenceNumberType *YRPacketHeaderEACKGetEACKs(
 void YRPacketHeaderDebugInfo(char *buffer) {
 	int offset = 0;
 
-	#define YRWrite(s) \
-		offset += sprintf(buffer + offset, s"\n")
+#define WRITE_BUF(s) \
+	offset += sprintf(buffer + offset, s"\n")
 
-	#define YRWriteA(s, ...) \
-		offset += sprintf(buffer + offset, s"\n", __VA_ARGS__)
+#define WRITE_BUF_A(s, ...) \
+	offset += sprintf(buffer + offset, s"\n", __VA_ARGS__)
 
-	YRWrite("<YRPacketHeader>");
-	YRWriteA("Protocol version: %d", kYRProtocolVersion);
-	YRWrite("Data structure sizes:");
-	YRWriteA("\tYRPacketHeader: %zu", sizeof(YRPacketHeader));
-	YRWriteA("\tYRPacketHeaderSYN: %zu", sizeof(YRPacketHeaderSYN));
-	YRWriteA("\tYRPacketHeaderRST: %zu", sizeof(YRPacketHeaderRST));
-	YRWriteA("\tYRPacketHeaderNUL: %zu", sizeof(YRPacketHeader));
-	YRWriteA("\tYRPacketPayloadHeader: %zu", sizeof(YRPacketPayloadHeader));
-	YRWriteA("\tYRPacketHeaderEACK: %zu", sizeof(YRPacketHeaderEACK));
-	YRWriteA("\tMax data structure length: %zu", kYRPacketHeaderMaxDataStructureLength);
+	WRITE_BUF("<YRPacketHeader>");
+	WRITE_BUF_A("Protocol version: %d", kYRProtocolVersion);
+	WRITE_BUF("Data structure sizes:");
+	WRITE_BUF_A("\tYRPacketHeader: %zu", sizeof(YRPacketHeader));
+	WRITE_BUF_A("\tYRPacketHeaderSYN: %zu", sizeof(YRPacketHeaderSYN));
+	WRITE_BUF_A("\tYRPacketHeaderRST: %zu", sizeof(YRPacketHeaderRST));
+	WRITE_BUF_A("\tYRPacketHeaderNUL: %zu", sizeof(YRPacketHeader));
+	WRITE_BUF_A("\tYRPacketPayloadHeader: %zu", sizeof(YRPacketPayloadHeader));
+	WRITE_BUF_A("\tYRPacketHeaderEACK: %zu", sizeof(YRPacketHeaderEACK));
+	WRITE_BUF_A("\tMax data structure length: %zu", kYRPacketHeaderMaxDataStructureLength);
 }
-
-///
-// TODO: Remove
-
-//YRHeaderLengthType YRPacketHeaderEACKLength(YRSequenceNumberType *ioCount) {
-//    size_t eackTypeSize = sizeof(YRSequenceNumberType);
-//
-//    YRSequenceNumberType eacksCount = ioCount ? *ioCount : 0;
-//
-//    YRHeaderLengthType bytesTaken = sizeof(YRPacketHeaderEACK);
-//    YRHeaderLengthType bytesLeft = YRMaxPacketHeaderSize - bytesTaken;
-//
-//    if (eacksCount == 0) {
-//        return bytesTaken;
-//    }
-//
-//    YRSequenceNumberType eacksThatFit = YRPacketHeaderEACKsCountThatFit(bytesLeft);
-//
-//    if (eacksCount > eacksThatFit) {
-//        eacksCount = eacksThatFit;
-//    }
-//
-//    if (ioCount) {
-//        *ioCount = eacksCount;
-//    }
-//
-//    return bytesTaken + eacksCount * eackTypeSize;
-//}
-//
-//YRSequenceNumberType YRPacketHeaderEACKsCountThatFit(YRHeaderLengthType headerLength) {
-//    size_t eackTypeSize = sizeof(YRSequenceNumberType);
-//
-//    return headerLength / eackTypeSize;
-//}
-//
-//YRSequenceNumberType YRPacketHeaderEACKsCount(YRPacketHeaderEACKRef eackHeader) {
-//    YRHeaderLengthType headerLength = YRPacketHeaderGetHeaderLength(&eackHeader->payloadHeader.base);
-//
-//    return YRPacketHeaderEACKsCountThatFit(headerLength - kYRPacketPayloadHeaderLength);
-//}
-//

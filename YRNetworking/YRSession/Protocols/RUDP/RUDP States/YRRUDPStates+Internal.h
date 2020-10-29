@@ -1,5 +1,5 @@
 //
-// YRRUDPStates.h
+// YRRUDPStates+Internal.h
 //
 // The MIT License (MIT)
 //
@@ -23,25 +23,26 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRRUDPStates__
-#define __YRRUDPStates__
+#ifndef __YRRUDPStates_Internal__
+#define __YRRUDPStates_Internal__	
 
-#ifndef __YRNETWORKING_INDIRECT__
-#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
-#endif
+#define STATE_DEFAULT_PREFIX yr_session_state
 
-typedef struct YRRUDPState YRRUDPState;
+#define STATE_FP_PREFIX(name) STATE_COMBINE(STATE_COMBINE(STATE_DEFAULT_PREFIX, STATE_PREFIX), name)
+#define STATE_COMBINE(prefix, name) STATE_COMBINE2(prefix, name)
+#define STATE_COMBINE2(prefix, name) prefix ## _ ## name
 
-struct YRRUDPState {
-	YRRUDPSessionState representedState;
-    void (*onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prevState);
-    void (*onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState nextState);
-	
-	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks;
-	YRSessionProtocolCallbacks protocolCallbacks;
-	YRPacketHandlers packetHandlers;
-};
+#define STATE_FP_IMPL(name, ...) \
+	YR_FP_IMPL(STATE_FP_PREFIX(name), __VA_ARGS__)
 
-YRRUDPState YRRUDPStateForState(YRRUDPSessionState state);
+#define STATE_DECL(represented_state) \
+	(YRRUDPState) { \
+			represented_state, \
+			STATE_FP_PREFIX(onEnter), \
+			STATE_FP_PREFIX(onExit), \
+			{STATE_FP_PREFIX(invalidate), STATE_FP_PREFIX(destroy)}, \
+			{STATE_FP_PREFIX(connect), STATE_FP_PREFIX(wait), STATE_FP_PREFIX(close), STATE_FP_PREFIX(send), STATE_FP_PREFIX(receive)}, \
+			{STATE_FP_PREFIX(syn), STATE_FP_PREFIX(rst), STATE_FP_PREFIX(nul), STATE_FP_PREFIX(eack), STATE_FP_PREFIX(regular), STATE_FP_PREFIX(invalid)} \
+		}
 
-#endif
+#endif // __YRRUDPStates_Internal__

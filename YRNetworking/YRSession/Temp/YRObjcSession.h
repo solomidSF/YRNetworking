@@ -12,7 +12,7 @@
 
 // Types
 #import "YRRUDPBase.h"
-#import "YRSessionState.h"
+#import "YRNetworking.h"
 
 /**
  *  Represents session between two peers: local and remote.
@@ -20,7 +20,7 @@
 @interface YRObjcSession : NSObject
 
 @property (nonatomic, readonly) NSData *peerAddress;
-@property (nonatomic, readonly) YRSessionState state;
+@property (nonatomic, readonly) YRRUDPSessionState state;
 
 #pragma mark - Init
 

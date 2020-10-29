@@ -1,5 +1,5 @@
 //
-// YRRUDPStates.h
+// YRTransmissionQueue.c
 //
 // The MIT License (MIT)
 //
@@ -22,26 +22,3 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
-
-#ifndef __YRRUDPStates__
-#define __YRRUDPStates__
-
-#ifndef __YRNETWORKING_INDIRECT__
-#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
-#endif
-
-typedef struct YRRUDPState YRRUDPState;
-
-struct YRRUDPState {
-	YRRUDPSessionState representedState;
-    void (*onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prevState);
-    void (*onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState nextState);
-	
-	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks;
-	YRSessionProtocolCallbacks protocolCallbacks;
-	YRPacketHandlers packetHandlers;
-};
-
-YRRUDPState YRRUDPStateForState(YRRUDPSessionState state);
-
-#endif

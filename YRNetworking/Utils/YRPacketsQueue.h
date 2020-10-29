@@ -9,12 +9,6 @@
 #ifndef __YRPacketsQueue__
 #define __YRPacketsQueue__
 
-#include "YRInternal.h"
-
-#include <stdio.h>
-
-// Rename to packets allocator/memory pool or smthng like that
-
 /**
  *  Simple data structure for storing packets data.
  */
@@ -23,8 +17,6 @@ typedef struct YRPacketsQueue *YRPacketsQueueRef;
 #pragma mark - Lifecycle
 
 YRPacketsQueueRef YRPacketsQueueCreate(YRPayloadLengthType bufferSize, uint8_t buffersCount);
-// TODO: Investigate this idea.
-//YRPacketsQueueRef YRPacketsQueueCreate(YRPayloadLengthType bufferSize, uint8_t buffersCount, uint8_t buffersAlignment);
 void YRPacketsQueueDestroy(YRPacketsQueueRef queue);
 
 #pragma mark - Base Segment

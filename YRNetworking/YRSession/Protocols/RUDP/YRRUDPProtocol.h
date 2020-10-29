@@ -23,6 +23,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// TODO: <RF> Rename to YRSessionProtocol
 #ifndef __YRRUDPProtocol__
 #define __YRRUDPProtocol__
 
@@ -30,11 +31,14 @@
 #error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
 #endif
 
+// Inspired by RFC-908 and RFC-1151
+
 #include "YRRUDPBase.h"
-#include "YRRUDPSessionProtocol.h"
-#include "YRRUDPStates.h"
 #include "YRPacketHeader.h"
 #include "YRPacket.h"
 #include "YRPacketBuilder.h"
+#include "YRPacketBuffer.h"
+#include "YRRUDPSessionProtocol.h"
+#include "YRRUDPStates.h"
 
 #endif 

@@ -1,5 +1,5 @@
 //
-// YRRUDPStates.h
+// YRRuntimeEnvironment.h
 //
 // The MIT License (MIT)
 //
@@ -23,25 +23,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRRUDPStates__
-#define __YRRUDPStates__
+#ifndef __YRRuntimeEnvironment__
+#define __YRRuntimeEnvironment__
 
-#ifndef __YRNETWORKING_INDIRECT__
-#error "Please #include <YRNetworking/YRNetworking.h> instead of this file directly."
-#endif
+typedef struct YRRuntimeEnvironment *YRRuntimeEnvironmentRef;
 
-typedef struct YRRUDPState YRRUDPState;
+YRRuntimeEnvironmentRef YRRuntimeEnvironmentGet(void);
 
-struct YRRUDPState {
-	YRRUDPSessionState representedState;
-    void (*onEnter) (YRRUDPSessionProtocolRef protocol, YRRUDPState prevState);
-    void (*onExit) (YRRUDPSessionProtocolRef protocol, YRRUDPState nextState);
-	
-	YRSessionProtocolLifecycleCallbacks lifecycleCallbacks;
-	YRSessionProtocolCallbacks protocolCallbacks;
-	YRPacketHandlers packetHandlers;
-};
-
-YRRUDPState YRRUDPStateForState(YRRUDPSessionState state);
-
-#endif
+#endif // __YRRuntimeEnvironment__
