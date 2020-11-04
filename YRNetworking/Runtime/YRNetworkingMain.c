@@ -1,5 +1,5 @@
 //
-// YRTimerInterface.c
+// YRNetworkingMain.c
 //
 // The MIT License (MIT)
 //
@@ -23,4 +23,12 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "YRTimerInterface.h"
+#include "YRInternal.h"
+
+__attribute__((constructor))
+void YRNetworkingInit() {
+	YRRuntimeEnvironmentInit();
+}
+
+__attribute__((destructor))
+void YRNetworkingDeinit() {}

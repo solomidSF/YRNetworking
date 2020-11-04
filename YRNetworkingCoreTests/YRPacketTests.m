@@ -1,10 +1,27 @@
 //
-//  YRPacketTests.m
-//  YRNetworkingCoreTests
+// YRPacketTests.m
 //
-//  Created by Yurii Romanchenko on 10/22/20.
-//  Copyright © 2020 Yuriy Romanchenko. All rights reserved.
+// The MIT License (MIT)
 //
+// Copyright (c) 2020 Yurii Romanchenko
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #import <XCTest/XCTest.h>
 #import "YRNetworking.h"
@@ -25,33 +42,32 @@ typedef struct {
 } YRMockPayload;
 
 @interface YRPacketTests : XCTestCase
-
 @end
 
 @implementation YRPacketTests {
-	YROutputStreamRef oStream;
-	YRInputStreamRef iStream;
-	void *buffer;
-	void *headerBuffer;
-	YRPayloadLengthType packetLength;
-	YRPacketHandlers defaultHandlers;
-	void (^synHandler) (YRPacketHeaderSYNRef header);
-	void (^rstHandler) (YRPacketHeaderRSTRef header);
-	void (^nulHandler) (YRPacketHeaderRef header);
-	void (^eackHandler) (YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength);
-	void (^regularHandler) (YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength);
-	void (^invalidHandler) (YRRUDPError error);
+	YROutputStreamRef _oStream;
+	YRInputStreamRef _iStream;
+	void *_buffer;
+	void *_headerBuffer;
+	YRPayloadLengthType _packetLength;
+	YRPacketHandlers _defaultHandlers;
+	void (^_synHandler) (YRPacketHeaderSYNRef header);
+	void (^_rstHandler) (YRPacketHeaderRSTRef header);
+	void (^_nulHandler) (YRPacketHeaderRef header);
+	void (^_eackHandler) (YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength);
+	void (^_regularHandler) (YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength);
+	void (^_invalidHandler) (YRRUDPError error);
 }
 
 - (void)setUp {
 	YRSequenceNumberType bufferSize = (YRSequenceNumberType)(~0);
-	buffer = malloc(bufferSize);
-	oStream = YROutputStreamGet(buffer, bufferSize);
-	iStream = YRInputStreamGet(buffer, bufferSize);
+	_buffer = malloc(bufferSize);
+	_oStream = YROutputStreamGet(_buffer, bufferSize);
+	_iStream = YRInputStreamGet(_buffer, bufferSize);
 	
-	headerBuffer = calloc(1, kYRPacketHeaderMaxDataStructureLength);
+	_headerBuffer = calloc(1, kYRPacketHeaderMaxDataStructureLength);
 	
-	defaultHandlers = (YRPacketHandlers) {
+	_defaultHandlers = (YRPacketHandlers) {
 		&syn,
 		&rst,
 		&nul,
@@ -60,21 +76,21 @@ typedef struct {
 		&invalid
 	};
 	
-	synHandler = ^(YRPacketHeaderSYNRef h) { XCTFail("Unhandled syn packet"); };
-	rstHandler = ^(YRPacketHeaderRSTRef h) { XCTFail("Unhandled rst packet"); };
-	nulHandler = ^(YRPacketHeaderRef h) { XCTFail("Unhandled nul packet"); };
-	eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) { XCTFail("Unhandled eack packet"); };
-	regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) { XCTFail("Unhandled regular packet"); };
-	invalidHandler = ^(YRRUDPError e) { XCTFail("Unhandled invalid packet"); };
+	_synHandler = ^(YRPacketHeaderSYNRef h) { XCTFail("Unhandled syn packet"); };
+	_rstHandler = ^(YRPacketHeaderRSTRef h) { XCTFail("Unhandled rst packet"); };
+	_nulHandler = ^(YRPacketHeaderRef h) { XCTFail("Unhandled nul packet"); };
+	_eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) { XCTFail("Unhandled eack packet"); };
+	_regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) { XCTFail("Unhandled regular packet"); };
+	_invalidHandler = ^(YRRUDPError e) { XCTFail("Unhandled invalid packet"); };
 }
 
 - (void)tearDown {
-	free(buffer);
-	free(headerBuffer);
+	free(_buffer);
+	free(_headerBuffer);
 }
 
 - (void)testSerializeSYN {
-	YRPacketHeaderSYNRef header = headerBuffer;
+	YRPacketHeaderSYNRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderSYNGetBaseHeader(header);
 	YRSequenceNumberType seq = 65001;
 	YRRUDPConnectionConfiguration expected;
@@ -90,14 +106,14 @@ typedef struct {
 	YRPacketHeaderSYNSetConfiguration(header, expected);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeSYN(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeSYN(header, _oStream, &_packetLength);
 	
 	__block YRPacketHeaderSYNRef actual = NULL;
 	
-	synHandler = ^(YRPacketHeaderSYNRef h) { actual = h; };
+	_synHandler = ^(YRPacketHeaderSYNRef h) { actual = h; };
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("SYN parse handler wasn't called");
@@ -107,8 +123,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketHeaderSYNGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -134,7 +150,7 @@ typedef struct {
 }
 
 - (void)testSerializeSYNACK {
-	YRPacketHeaderSYNRef header = headerBuffer;
+	YRPacketHeaderSYNRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderSYNGetBaseHeader(header);
 	YRSequenceNumberType seq = 65001;
 	YRSequenceNumberType ack = 22433;
@@ -152,14 +168,14 @@ typedef struct {
 	YRPacketHeaderSYNSetConfiguration(header, expected);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeSYN(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeSYN(header, _oStream, &_packetLength);
 	
 	__block YRPacketHeaderSYNRef actual = NULL;
 	
-	synHandler = ^(YRPacketHeaderSYNRef h) { actual = h; };
+	_synHandler = ^(YRPacketHeaderSYNRef h) { actual = h; };
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("SYN parse handler wasn't called");
@@ -169,8 +185,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketHeaderSYNGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -197,7 +213,7 @@ typedef struct {
 }
 
 - (void)testSerializeRST {
-	YRPacketHeaderRSTRef header = headerBuffer;
+	YRPacketHeaderRSTRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderRSTGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 254;
@@ -208,14 +224,14 @@ typedef struct {
 	YRPacketHeaderRSTSetErrorCode(header, expected);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeRST(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeRST(header, _oStream, &_packetLength);
 	
 	__block YRPacketHeaderRSTRef actual = NULL;
 	
-	rstHandler = ^(YRPacketHeaderRSTRef h) { actual = h; };
+	_rstHandler = ^(YRPacketHeaderRSTRef h) { actual = h; };
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("RST parse handler wasn't called");
@@ -225,8 +241,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketHeaderRSTGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -247,7 +263,7 @@ typedef struct {
 }
 
 - (void)testSerializeNUL {
-	YRPacketHeaderRef header = headerBuffer;
+	YRPacketHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = header;
 	
 	YRSequenceNumberType seq = 254;
@@ -256,14 +272,14 @@ typedef struct {
 	YRPacketHeaderSetNUL(header);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeNUL(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeNUL(header, _oStream, &_packetLength);
 	
 	__block YRPacketHeaderRef actual = NULL;
 	
-	nulHandler = ^(YRPacketHeaderRef h) { actual = h; };
+	_nulHandler = ^(YRPacketHeaderRef h) { actual = h; };
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("NUL parse handler wasn't called");
@@ -271,8 +287,8 @@ typedef struct {
 	}
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -289,7 +305,7 @@ typedef struct {
 }
 
 - (void)testSerializeEACK {
-	YRPacketHeaderEACKRef header = headerBuffer;
+	YRPacketHeaderEACKRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 25333;
@@ -306,18 +322,18 @@ typedef struct {
 	YRPacketHeaderEACKSetEACKs(header, eacks, eacksCount);
 
 	__unused
-	YRPacketRef packet = YRPacketSerializeEACK(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeEACK(header, _oStream, &_packetLength);
 	
 	__block YRPacketHeaderEACKRef actual = NULL;
 	
-	eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) {
+	_eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) {
 		XCTAssert(p == nil);
 		XCTAssertEqual(0, pl);
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("EACK parse handler wasn't called");
@@ -327,8 +343,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketHeaderEACKGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -354,7 +370,7 @@ typedef struct {
 }
 
 - (void)testSerializeEACKWithPayload {
-	YRPacketHeaderEACKRef header = headerBuffer;
+	YRPacketHeaderEACKRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 553;
@@ -377,21 +393,21 @@ typedef struct {
 		header,
 		&expected,
 		sizeof(expected),
-		oStream,
-		&packetLength
+		_oStream,
+		&_packetLength
 	);
 	
 	__block YRPacketHeaderEACKRef actual = NULL;
 	__block const void *actualP = NULL;
 	__block YRPayloadLengthType actualPL = 0;
-	eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) {
+	_eackHandler = ^(YRPacketHeaderEACKRef h, const void *p, YRPayloadLengthType pl) {
 		actualP = p;
 		actualPL = pl;
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("EACK parse handler wasn't called");
@@ -401,8 +417,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketHeaderEACKGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -445,7 +461,7 @@ typedef struct {
 }
 
 - (void)testSerializeWithPayload {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -462,21 +478,21 @@ typedef struct {
 		header,
 		&expected,
 		sizeof(expected),
-		oStream,
-		&packetLength
+		_oStream,
+		&_packetLength
 	);
 	
 	__block YRPacketPayloadHeaderRef actual = NULL;
 	__block const void *actualP = NULL;
 	__block YRPayloadLengthType actualPL = 0;
-	regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
+	_regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
 		actualP = p;
 		actualPL = pl;
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("Regular parse handler wasn't called");
@@ -486,8 +502,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketPayloadHeaderGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -521,7 +537,7 @@ typedef struct {
 }
 
 - (void)testSerializeWithCheksummedPayload {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -539,21 +555,21 @@ typedef struct {
 		header,
 		&expected,
 		sizeof(expected),
-		oStream,
-		&packetLength
+		_oStream,
+		&_packetLength
 	);
 	
 	__block YRPacketPayloadHeaderRef actual = NULL;
 	__block const void *actualP = NULL;
 	__block YRPayloadLengthType actualPL = 0;
-	regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
+	_regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
 		actualP = p;
 		actualPL = pl;
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("Regular parse handler wasn't called");
@@ -563,8 +579,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketPayloadHeaderGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -598,7 +614,7 @@ typedef struct {
 }
 
 - (void)testSerializeWithByteOrderIndependentPayload {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -630,8 +646,8 @@ typedef struct {
 		header,
 		YROutputStreamGetBytes(poStream),
 		YROutputStreamBytesWritten(poStream),
-		oStream,
-		&packetLength
+		_oStream,
+		&_packetLength
 	);
 	
 	YROutputStreamDestroy(poStream);
@@ -639,14 +655,14 @@ typedef struct {
 	__block YRPacketPayloadHeaderRef actual = NULL;
 	__block const void *actualP = NULL;
 	__block YRPayloadLengthType actualPL = 0;
-	regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
+	_regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
 		actualP = p;
 		actualPL = pl;
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("Regular parse handler wasn't called");
@@ -656,8 +672,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketPayloadHeaderGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -692,7 +708,7 @@ typedef struct {
 }
 
 - (void)testSerializeWithChecksummedByteOrderIndependentPayload {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -725,8 +741,8 @@ typedef struct {
 		header,
 		YROutputStreamGetBytes(poStream),
 		YROutputStreamBytesWritten(poStream),
-		oStream,
-		&packetLength
+		_oStream,
+		&_packetLength
 	);
 	
 	YROutputStreamDestroy(poStream);
@@ -734,14 +750,14 @@ typedef struct {
 	__block YRPacketPayloadHeaderRef actual = NULL;
 	__block const void *actualP = NULL;
 	__block YRPayloadLengthType actualPL = 0;
-	regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
+	_regularHandler = ^(YRPacketPayloadHeaderRef h, const void *p, YRPayloadLengthType pl) {
 		actualP = p;
 		actualPL = pl;
 		actual = h;
 	};
 	
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	if (actual == NULL) {
 		XCTFail("Regular parse handler wasn't called");
@@ -751,8 +767,8 @@ typedef struct {
 	YRPacketHeaderRef actualBase = YRPacketPayloadHeaderGetBaseHeader(actual);
 	
 	XCTAssertEqual(
-		YROutputStreamBytesWritten(oStream),
-		packetLength
+		YROutputStreamBytesWritten(_oStream),
+		_packetLength
 	);
 
 	XCTAssertEqual(
@@ -787,7 +803,7 @@ typedef struct {
 }
 
 - (void)testDeserializeWithNonCompleteHeader {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -801,21 +817,21 @@ typedef struct {
 	int32_t payload = 42;
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), _oStream, &packetLength);
 
 	YRRUDPError expected = kYRRUDPErrorPacketInvalid;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, 7);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, 7);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 
 	XCTAssertEqual(actual, expected);
 }
 
 - (void)testDeserializeWithIncorrectProtocol {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -829,21 +845,21 @@ typedef struct {
 	int32_t payload = 42;
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), _oStream, &packetLength);
 
 	YRRUDPError expected = kYRRUDPErrorProtocolVersionMismatch;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 
 	XCTAssertEqual(actual, expected);
 }
 
 - (void)testDeserializeWithIncorrectPacketDescription {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -859,21 +875,21 @@ typedef struct {
 	int32_t payload = 42;
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), _oStream, &packetLength);
 
 	YRRUDPError expected = kYRRUDPErrorPacketInvalid;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 
 	XCTAssertEqual(actual, expected);
 }
 
 - (void)testDeserializePacketWithIncorrectSize {
-	YRPacketPayloadHeaderRef header = headerBuffer;
+	YRPacketPayloadHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 44334;
@@ -887,21 +903,21 @@ typedef struct {
 	int32_t payload = 42;
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeWithPayload(header, &payload, sizeof(int32_t), _oStream, &packetLength);
 
 	YRRUDPError expected = kYRRUDPErrorPacketInvalid;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, packetLength * 2);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, packetLength * 2);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 
 	XCTAssertEqual(actual, expected);
 }
 
 - (void)testDeserializeWithIncorrectChecksum {
-	YRPacketHeaderRef header = headerBuffer;
+	YRPacketHeaderRef header = _headerBuffer;
 	YRPacketHeaderRef base = header;
 	
 	YRSequenceNumberType seq = 254;
@@ -910,24 +926,24 @@ typedef struct {
 	YRPacketHeaderSetNUL(header);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeNUL(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeNUL(header, _oStream, &_packetLength);
 	// Simulate malformed packet
-	YROutputStreamSetIndexTo(oStream, packetLength - 1);
-	YROutputStreamWriteUInt8(oStream, 0xde);
+	YROutputStreamSetIndexTo(_oStream, _packetLength - 1);
+	YROutputStreamWriteUInt8(_oStream, 0xde);
 
 	YRRUDPError expected = kYRRUDPErrorChecksumMismatch;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 	
 	XCTAssertEqual(actual, expected);
 }
 
 - (void)testDeserializeEACKWithNoEACKS {
-	YRPacketHeaderEACKRef header = headerBuffer;
+	YRPacketHeaderEACKRef header = _headerBuffer;
 	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(header);
 	
 	YRSequenceNumberType seq = 10233;
@@ -938,15 +954,15 @@ typedef struct {
 	YRPacketHeaderEACKSetEACKs(header, NULL, eacksCount);
 	
 	__unused
-	YRPacketRef packet = YRPacketSerializeEACK(header, oStream, &packetLength);
+	YRPacketRef packet = YRPacketSerializeEACK(header, _oStream, &_packetLength);
 	
 	YRRUDPError expected = kYRRUDPErrorPacketInvalid;
 	__block YRRUDPError actual = kYRRUDPErrorUnknown;
 	
-	invalidHandler = ^(YRRUDPError e) { actual = e; };
+	_invalidHandler = ^(YRRUDPError e) { actual = e; };
 
-	iStream = YRInputStreamGet(buffer, packetLength);
-	YRPacketDeserialize(iStream, defaultHandlers, (__bridge void *)(self));
+	_iStream = YRInputStreamGet(_buffer, _packetLength);
+	YRPacketDeserialize(_iStream, _defaultHandlers, (__bridge void *)(self));
 
 	XCTAssertEqual(actual, expected);
 }
@@ -972,32 +988,32 @@ YRMockPayload defaultMockPayload() {
 
 void syn(void *context, YRPacketHeaderSYNRef header) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->synHandler(header);
+	test->_synHandler(header);
 }
 
 void rst(void *context, YRPacketHeaderRSTRef header) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->rstHandler(header);
+	test->_rstHandler(header);
 }
 
 void nul(void *context, YRPacketHeaderRef header) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->nulHandler(header);
+	test->_nulHandler(header);
 }
 
 void eack(void *context, YRPacketHeaderEACKRef header, const void *payload, YRPayloadLengthType payloadLength) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->eackHandler(header, payload, payloadLength);
+	test->_eackHandler(header, payload, payloadLength);
 }
 
 void regular(void *context, YRPacketPayloadHeaderRef header, const void *payload, YRPayloadLengthType payloadLength) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->regularHandler(header, payload, payloadLength);
+	test->_regularHandler(header, payload, payloadLength);
 }
 
 void invalid(void *context, YRRUDPError error) {
 	YRPacketTests *test = (__bridge YRPacketTests *)(context);
-	test->invalidHandler(error);
+	test->_invalidHandler(error);
 }
 
 @end

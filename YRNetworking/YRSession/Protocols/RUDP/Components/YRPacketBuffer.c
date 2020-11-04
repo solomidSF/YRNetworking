@@ -30,32 +30,32 @@
 typedef struct YRPacketBufferElement *YRPacketBufferElementRef;
 
 typedef struct YRPacketBufferElement {
-    YRPacketBufferElementRef next;
-    YRPacketBufferElementRef prev;
-    YRPayloadLengthType usedSize;
-    //	uint8_t next;
+	YRPacketBufferElementRef next;
+	YRPacketBufferElementRef prev;
+	YRPayloadLengthType usedSize;
+	//	uint8_t next;
 	//	uint8_t prev;
-
-    // Pointer is for alignment
-    uint8_t *bufferBlob[];
+	
+	// Pointer is for alignment
+	uint8_t *bufferBlob[];
 } YRPacketBufferElement;
 
 typedef struct YRPacketBuffer {
-    YRPacketBufferElementRef headBufferInUse;
+	YRPacketBufferElementRef headBufferInUse;
 	YRPacketBufferElementRef tailBufferInUse;
-
-    YRPayloadLengthType bufferSize;
-    YRSequenceNumberType base;
-
-//    uint8_t headBufferInUse;
-//    uint8_t tailBufferInUse;
-
-    uint8_t currentIndex;
-    uint8_t buffersInUseCount;
-//    YRPacketBufferFlags flags;
-
+	
+	YRPayloadLengthType bufferSize;
+	YRSequenceNumberType base;
+	
+	//    uint8_t headBufferInUse;
+	//    uint8_t tailBufferInUse;
+	
+	uint8_t currentIndex;
+	uint8_t buffersInUseCount;
+	//    YRPacketBufferFlags flags;
+	
 	uint8_t buffersCount;
-
+	
 	YRPacketBufferElementRef elements[];
 } YRPacketBuffer;
 
@@ -76,18 +76,18 @@ static inline YRSequenceNumberType YRPacketBufferSeqForElementInlined(
 #pragma mark - Lifecycle
 
 YRPacketBufferRef YRPacketBufferCreate(YRPayloadLengthType bufferSize, uint8_t buffersCount) {
-    if (buffersCount == 0) {
-        buffersCount = 1;
-    }
-    
-    bufferSize = (bufferSize < YRMaxPacketHeaderSize) ? YRMaxPacketHeaderSize : bufferSize;
-    
-    YRPacketBufferRef buffer = calloc(1, YRPacketBufferSizeForBufferSize(bufferSize, buffersCount));
-    
-    buffer->bufferSize = bufferSize;
-    buffer->buffersCount = buffersCount;
-    
-    return buffer;
+	if (buffersCount == 0) {
+		buffersCount = 1;
+	}
+	
+	bufferSize = (bufferSize < YRMaxPacketHeaderSize) ? YRMaxPacketHeaderSize : bufferSize;
+	
+	YRPacketBufferRef buffer = calloc(1, YRPacketBufferSizeForBufferSize(bufferSize, buffersCount));
+	
+	buffer->bufferSize = bufferSize;
+	buffer->buffersCount = buffersCount;
+	
+	return buffer;
 }
 
 void YRPacketBufferDestroy(YRPacketBufferRef buffer) {
@@ -113,56 +113,56 @@ uint8_t YRPacketBufferGetBuffersInUseNum(YRPacketBufferRef buffer) {
 #pragma mark - Base
 
 void YRPacketBufferSetBase(YRPacketBufferRef buffer, YRSequenceNumberType base) {
-    buffer->base = base;
-    buffer->currentIndex = 0;
-    
-    YRPacketBufferElementRef currentElement = buffer->headBufferInUse;
-    
-    while (currentElement != NULL) {
-        YRPacketBufferElementRef elementToCleanup = currentElement;
-        
-        currentElement = currentElement->next;
-        
-        elementToCleanup->usedSize = 0;
-        elementToCleanup->next = NULL;
-        elementToCleanup->prev = NULL;
-    }
-    
-    // Clear all in-use buffers.
-    buffer->headBufferInUse = NULL;
-    buffer->tailBufferInUse = NULL;
-    buffer->buffersInUseCount = 0;
+	buffer->base = base;
+	buffer->currentIndex = 0;
+	
+	YRPacketBufferElementRef currentElement = buffer->headBufferInUse;
+	
+	while (currentElement != NULL) {
+		YRPacketBufferElementRef elementToCleanup = currentElement;
+		
+		currentElement = currentElement->next;
+		
+		elementToCleanup->usedSize = 0;
+		elementToCleanup->next = NULL;
+		elementToCleanup->prev = NULL;
+	}
+	
+	// Clear all in-use buffers.
+	buffer->headBufferInUse = NULL;
+	buffer->tailBufferInUse = NULL;
+	buffer->buffersInUseCount = 0;
 }
 
 YRSequenceNumberType YRPacketBufferGetBase(YRPacketBufferRef buffer) {
-    return buffer->base;
+	return buffer->base;
 }
 
 void YRPacketBufferAdvanceBase(YRPacketBufferRef buffer, YRSequenceNumberType by) {
-    if (by >= buffer->buffersCount) {
-        YRPacketBufferSetBase(buffer, buffer->base + by);
-    } else {
-        // Unmark possible buffers in use that fall in range base + by
-        // Worst case scenario 'by == buffersCount == UINT8_MAX'
-        // In this one we probably can check some treshold and request buffers in use and iterate through them.
-        for (YRSequenceNumberType seq = 0; seq < by; seq++) {
-            YRPacketBufferUnmarkBufferInUse(buffer, buffer->base + seq);
-        }
-                
-        buffer->base += by;
-        buffer->currentIndex += by;
-    }
+	if (by >= buffer->buffersCount) {
+		YRPacketBufferSetBase(buffer, buffer->base + by);
+	} else {
+		// Unmark possible buffers in use that fall in range base + by
+		// Worst case scenario 'by == buffersCount == UINT8_MAX'
+		// In this one we probably can check some treshold and request buffers in use and iterate through them.
+		for (YRSequenceNumberType seq = 0; seq < by; seq++) {
+			YRPacketBufferUnmarkBufferInUse(buffer, buffer->base + seq);
+		}
+		
+		buffer->base += by;
+		buffer->currentIndex += by;
+	}
 }
 
 #pragma mark - Buffers
 
 bool YRPacketBufferIsBufferInUse(YRPacketBufferRef buffer, YRSequenceNumberType seq) {
-    return YRPacketBufferIsBufferInUseInlined(buffer, YRPacketBufferElementForSeqInlined(buffer, seq));
+	return YRPacketBufferIsBufferInUseInlined(buffer, YRPacketBufferElementForSeqInlined(buffer, seq));
 }
 
 void *YRPacketBufferGetBuffer(YRPacketBufferRef buffer, YRSequenceNumberType seq, YRPayloadLengthType *length, bool *inUse) {
 	YRPacketBufferElementRef element = YRPacketBufferElementForSeqInlined(buffer, seq);
-
+	
 	if (length) {
 		*length = element ? element->usedSize : 0;
 	}
@@ -184,51 +184,51 @@ void YRPacketBufferMarkBufferInUse(YRPacketBufferRef buffer, YRSequenceNumberTyp
 	if (element && !YRPacketBufferIsBufferInUseInlined(buffer, element)) {
 		buffer->buffersInUseCount++;
 		
-        if (buffer->headBufferInUse == NULL) {
-            // No elements in use currently.
-            buffer->headBufferInUse = element;
-            buffer->tailBufferInUse = element;
-        } else {
-            YRPacketBufferElementRef tail = buffer->tailBufferInUse;
-            
-            tail->next = element;
-            element->prev = tail;
-            
-            buffer->tailBufferInUse = element;
-        }
+		if (buffer->headBufferInUse == NULL) {
+			// No elements in use currently.
+			buffer->headBufferInUse = element;
+			buffer->tailBufferInUse = element;
+		} else {
+			YRPacketBufferElementRef tail = buffer->tailBufferInUse;
+			
+			tail->next = element;
+			element->prev = tail;
+			
+			buffer->tailBufferInUse = element;
+		}
 	}
 }
 
 void YRPacketBufferUnmarkBufferInUse(YRPacketBufferRef buffer, YRSequenceNumberType seq) {
 	YRPacketBufferElementRef element = YRPacketBufferElementForSeqInlined(buffer, seq);
-
+	
 	if (YRPacketBufferIsBufferInUseInlined(buffer, element)) {
 		buffer->buffersInUseCount--;
-        
-        YRPacketBufferElementRef nextElement = element->next;
-        YRPacketBufferElementRef previousElement = element->prev;
-
+		
+		YRPacketBufferElementRef nextElement = element->next;
+		YRPacketBufferElementRef previousElement = element->prev;
+		
 		element->usedSize = 0;
-        element->next = NULL;
-        element->prev = NULL;
-        
-        if (nextElement != NULL) {
-            nextElement->prev = previousElement;
-        }
-        
-        if (previousElement != NULL) {
-            previousElement->next = nextElement;
-        }
-        
-        if (element == buffer->tailBufferInUse) {
-            // We're unmarking last element in use.
-            buffer->tailBufferInUse = previousElement;
-        }
-        
-        if (element == buffer->headBufferInUse) {
-            // We're unmarking first element in use.
-            buffer->headBufferInUse = nextElement;
-        }
+		element->next = NULL;
+		element->prev = NULL;
+		
+		if (nextElement != NULL) {
+			nextElement->prev = previousElement;
+		}
+		
+		if (previousElement != NULL) {
+			previousElement->next = nextElement;
+		}
+		
+		if (element == buffer->tailBufferInUse) {
+			// We're unmarking last element in use.
+			buffer->tailBufferInUse = previousElement;
+		}
+		
+		if (element == buffer->headBufferInUse) {
+			// We're unmarking first element in use.
+			buffer->headBufferInUse = nextElement;
+		}
 	}
 }
 
@@ -245,29 +245,29 @@ size_t YRPacketBufferSizeForBufferSize(YRPayloadLengthType bufferSize, uint8_t b
 }
 
 bool YRPacketBufferIsBufferInUseInlined(YRPacketBufferRef buffer, YRPacketBufferElementRef element) {
-    if (!element) {
-        // No element for given segment.
-        return false;
-    }
-    
-    return element->next != NULL || element->prev != NULL || element == buffer->headBufferInUse;
+	if (!element) {
+		// No element for given segment.
+		return false;
+	}
+	
+	return element->next != NULL || element->prev != NULL || element == buffer->headBufferInUse;
 }
 
 YRPacketBufferElementRef YRPacketBufferElementForSeqInlined(YRPacketBufferRef buffer, YRSequenceNumberType seq) {
-    // Overflow is ok
-    YRSequenceNumberType offset = seq - buffer->base;
-        
-    if (offset >= buffer->buffersCount) {
-        // Segment is not in range.
-        return NULL;
-    }
-    
-    uint8_t index = (buffer->currentIndex + offset) % buffer->buffersCount;
-    size_t elementSize = YRPacketBufferElementSizeForBufferSize(buffer->bufferSize);
-    
-    YRPacketBufferElementRef element = (YRPacketBufferElementRef)((uint8_t *)buffer->elements + (index * elementSize));
-    
-    return element;
+	// Overflow is ok
+	YRSequenceNumberType offset = seq - buffer->base;
+	
+	if (offset >= buffer->buffersCount) {
+		// Segment is not in range.
+		return NULL;
+	}
+	
+	uint8_t index = (buffer->currentIndex + offset) % buffer->buffersCount;
+	size_t elementSize = YRPacketBufferElementSizeForBufferSize(buffer->bufferSize);
+	
+	YRPacketBufferElementRef element = (YRPacketBufferElementRef)((uint8_t *)buffer->elements + (index * elementSize));
+	
+	return element;
 }
 
 YRSequenceNumberType YRPacketBufferSeqForElementInlined(YRPacketBufferRef buffer, YRPacketBufferElementRef element) {
@@ -320,7 +320,7 @@ void YRPacketBufferDump(YRPacketBufferRef bufferRef, char *buffer) {
 	if (i) {
 		WRITE_BUF("Buffers:");
 	}
-
+	
 	while (i) {
 		WRITE_BUF_A("\t<YRPacketBufferElement %p>", i);
 		WRITE_BUF_A("\t\tRepresented seq#: %d", YRPacketBufferSeqForElementInlined(bufferRef, i));

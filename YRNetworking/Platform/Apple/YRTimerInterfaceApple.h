@@ -1,5 +1,5 @@
 //
-// YRTimerInterface.h
+// YRTimerInterfaceApple.h
 //
 // The MIT License (MIT)
 //
@@ -23,24 +23,6 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#ifndef __YRTimerInterface__
-#define __YRTimerInterface__
+#include "YRTimerInterface.h"
 
-typedef uint64_t YRTimerOrchestrator;
-typedef uint32_t YRTimerHandle;
-
-typedef struct {
-	YRTimerOrchestrator (*createOrchestrator) (void);
-	void (*destroyOrchestrator)(YRTimerOrchestrator o);
-
-	YRTimerHandle (*schedule)(
-		YRTimerOrchestrator o,
-		double timeout,
-		void *context,
-		void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context, bool *reschedule)
-	);
-	void (*cancel)(YRTimerOrchestrator o, YRTimerHandle handle);
-	void (*cancelAll) (YRTimerOrchestrator o);
-} YRTimerInterface;
-
-#endif // __YRTimerInterface__
+YRTimerInterface YRTimerInterfaceGet(void);

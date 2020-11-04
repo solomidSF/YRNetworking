@@ -28,6 +28,6 @@
 
 typedef struct YRRuntimeEnvironment *YRRuntimeEnvironmentRef;
 
-YRRuntimeEnvironmentRef YRRuntimeEnvironmentGet(void);
+YRTimerInterface YRRuntimeEnvironmentGetTimerInterface(void);
 
 #endif // __YRRuntimeEnvironment__

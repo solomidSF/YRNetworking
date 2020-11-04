@@ -1,10 +1,27 @@
 //
-//  YRPacketBufferTests.m
-//  YRNetworkingCoreTests
+// YRPacketBufferTests.m
 //
-//  Created by Yurii Romanchenko on 10/28/20.
-//  Copyright © 2020 Yuriy Romanchenko. All rights reserved.
+// The MIT License (MIT)
 //
+// Copyright (c) 2020 Yurii Romanchenko
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 #import <XCTest/XCTest.h>
 #import "YRNetworking.h"
@@ -13,22 +30,22 @@
 @end
 
 @implementation YRPacketBufferTests {
-	char buffer[UINT16_MAX];
+	char _buffer[UINT16_MAX];
 }
 
 - (void)testPacketBuffer {
-	YRPacketBufferDebugInfo(buffer);
+	YRPacketBufferDebugInfo(_buffer);
 	
-	NSLog(@"%s", buffer);
+	NSLog(@"%s", _buffer);
 }
 
 - (void)testPacketBufferCreateWithZeroBuffers {
 	YRPacketBufferRef pb = YRPacketBufferCreate(0, 0);
 		
-	YRPacketBufferDump(pb, buffer);
+	YRPacketBufferDump(pb, _buffer);
 		
-	XCTAssert(YRPacketBufferGetBufferSize(pb) >= YRMaxPacketHeaderSize, @"%s", buffer);
-	XCTAssert(YRPacketBufferGetBuffersCount(pb) > 0, @"%s", buffer);
+	XCTAssert(YRPacketBufferGetBufferSize(pb) >= YRMaxPacketHeaderSize, @"%s", _buffer);
+	XCTAssert(YRPacketBufferGetBuffersCount(pb) > 0, @"%s", _buffer);
 	
 	YRPacketBufferDestroy(pb);
 }
@@ -43,18 +60,18 @@
 			
 			void *buf = YRPacketBufferGetBuffer(pb, pow(2, bc) - 1, &l, &inUse);
 			
-			YRPacketBufferDump(pb, buffer);
+			YRPacketBufferDump(pb, _buffer);
 			
-			XCTAssert(YRPacketBufferGetBufferSize(pb) >= bs, @"%s", buffer);
-			XCTAssert(YRPacketBufferGetBuffersCount(pb) >= bc, @"%s", buffer);
-			XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == 0, @"%s", buffer);
+			XCTAssert(YRPacketBufferGetBufferSize(pb) >= bs, @"%s", _buffer);
+			XCTAssert(YRPacketBufferGetBuffersCount(pb) >= bc, @"%s", _buffer);
+			XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == 0, @"%s", _buffer);
 			
-			XCTAssert(buf != NULL, "%s", buffer);
+			XCTAssert(buf != NULL, "%s", _buffer);
 			XCTAssertEqual(l, 0);
 			XCTAssertEqual(inUse, false);
             
 			void *wrongBuf = YRPacketBufferGetBuffer(pb, pow(2, bc), &l, &inUse);
-			XCTAssert(wrongBuf == NULL, "%s", buffer);
+			XCTAssert(wrongBuf == NULL, "%s", _buffer);
 			
 			YRPacketBufferDestroy(pb);
         }
@@ -132,14 +149,14 @@
 		YRPacketBufferMarkBufferInUse(pb, seq, len);
 	}
 
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 
 	for (NSArray *meta in testData) {
 		YRSequenceNumberType seq = [meta[0] unsignedIntValue];
 		YRPayloadLengthType len = [meta[1] unsignedIntValue];
 	
-		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", buffer);
+		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", _buffer);
 		
 		bool inUse = false;
 		YRPayloadLengthType actualLen = 0;
@@ -149,9 +166,9 @@
 			*((int *)buf + i) = arc4random();
 		}
 		
-		XCTAssert(inUse, @"%s", buffer);
-		XCTAssert(actualLen == MIN(bufferSize, len), @"%s", buffer);
-		XCTAssert(buf != NULL, @"%s", buffer);
+		XCTAssert(inUse, @"%s", _buffer);
+		XCTAssert(actualLen == MIN(bufferSize, len), @"%s", _buffer);
+		XCTAssert(buf != NULL, @"%s", _buffer);
 	}
 		
 	YRSequenceNumberType outOfRangeSeq = buffersCount;
@@ -161,10 +178,10 @@
 	YRPayloadLengthType actualLen = 0;
 	void *buf = YRPacketBufferGetBuffer(pb, outOfRangeSeq, &actualLen, &inUse);
 
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(!inUse, @"%s", buffer);
-	XCTAssert(actualLen == 0, @"%s", buffer);
-	XCTAssert(buf == NULL, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(!inUse, @"%s", _buffer);
+	XCTAssert(actualLen == 0, @"%s", _buffer);
+	XCTAssert(buf == NULL, @"%s", _buffer);
 	
 	YRPacketBufferDestroy(pb);
 }
@@ -187,13 +204,13 @@
 		YRPacketBufferMarkBufferInUse(pb, seq, len);
 	}
 
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 		
 	YRPacketBufferSetBase(pb, 65333);
 	
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == 0, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == 0, @"%s", _buffer);
 		
 	YRPacketBufferDestroy(pb);
 }
@@ -217,29 +234,29 @@
 		YRPacketBufferMarkBufferInUse(pb, seq, len);
 	}
 
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 
 	YRPacketBufferAdvanceBase(pb, 1);
 	
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 
 	for (NSArray *meta in testData) {
 		YRSequenceNumberType seq = [meta[0] unsignedIntValue];
-		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", buffer);
+		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", _buffer);
 	}
 
 	// Advance once more
 	[testData removeObjectAtIndex:0];
 	YRPacketBufferAdvanceBase(pb, 1);
 	
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 
 	for (NSArray *meta in testData) {
 		YRSequenceNumberType seq = [meta[0] unsignedIntValue];
-		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", buffer);
+		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", _buffer);
 	}
 
 	YRPacketBufferDestroy(pb);
@@ -266,8 +283,8 @@
 	YRPacketBufferUnmarkBufferInUse(pb, buffersCount);
 
 	YRSequenceNumberType inUse = YRPacketBufferGetBuffersInUseNum(pb);
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(inUse == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(inUse == testData.count, @"%s", _buffer);
 	
 	for (NSArray *meta in [testData reverseObjectEnumerator]) {
 		YRSequenceNumberType seq = [meta[0] unsignedIntValue];
@@ -275,8 +292,8 @@
 		YRPacketBufferUnmarkBufferInUse(pb, seq);
 		inUse -= 1;
 		
-		YRPacketBufferDump(pb, buffer);
-		XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == inUse, @"%s", buffer);
+		YRPacketBufferDump(pb, _buffer);
+		XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == inUse, @"%s", _buffer);
 	}
 	
 	YRPacketBufferDestroy(pb);
@@ -303,22 +320,22 @@
 		YRPacketBufferMarkBufferInUse(pb, seq, len);
 	}
 
-	YRPacketBufferDump(pb, buffer);
-	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", buffer);
+	YRPacketBufferDump(pb, _buffer);
+	XCTAssert(YRPacketBufferGetBuffersInUseNum(pb) == testData.count, @"%s", _buffer);
 
 	for (NSArray *meta in testData) {
 		YRSequenceNumberType seq = [meta[0] unsignedIntValue];
 		YRPayloadLengthType len = [meta[1] unsignedIntValue];
 	
-		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", buffer);
+		XCTAssert(YRPacketBufferIsBufferInUse(pb, seq), @"%s", _buffer);
 		
 		bool inUse = false;
 		YRPayloadLengthType actualLen = 0;
 		void *buf = YRPacketBufferGetBuffer(pb, seq, &actualLen, &inUse);
 		
-		XCTAssert(inUse, @"%s", buffer);
-		XCTAssert(actualLen == MIN(bufferSize, len), @"%s", buffer);
-		XCTAssert(buf != NULL, @"%s", buffer);
+		XCTAssert(inUse, @"%s", _buffer);
+		XCTAssert(actualLen == MIN(bufferSize, len), @"%s", _buffer);
+		XCTAssert(buf != NULL, @"%s", _buffer);
 	}
 	
 	YRPacketBufferDestroy(pb);

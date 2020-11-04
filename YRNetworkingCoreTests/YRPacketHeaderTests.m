@@ -30,15 +30,15 @@
 @end
 
 @implementation YRPacketHeaderTests {
-	uint8_t *buffer;
+	uint8_t *_buffer;
 }
 
 - (void)setUp {
-	buffer = calloc(1, kYRPacketHeaderMaxDataStructureLength);
+	_buffer = calloc(1, kYRPacketHeaderMaxDataStructureLength);
 }
 
 - (void)tearDown {
-	free(buffer);
+	free(_buffer);
 }
 
 - (void)testPrologue {
@@ -50,7 +50,7 @@
 #pragma mark - Base Header
 
 - (void)testPacketDescription {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 	
 	XCTAssertEqual(false, YRPacketHeaderIsSYN(header));
 	YRPacketHeaderSetSYN(header);
@@ -84,7 +84,7 @@
 }
 
 - (void)testProtocolVersion {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 
 	YRProtocolVersionType expected = 255;
 	YRPacketHeaderSetProtocolVersion(header, expected);
@@ -92,7 +92,7 @@
 }
 
 - (void)testReserved {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 
 	uint8_t expected = 127;
 	YRPacketHeaderSetReserved(header, expected);
@@ -100,7 +100,7 @@
 }
 
 - (void)testHeaderLength {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 	
 	YRHeaderLengthType expected = 100;
 	YRPacketHeaderSetHeaderLength(header, expected);
@@ -108,7 +108,7 @@
 }
 
 - (void)testFlowControl {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 
 	YRSequenceNumberType ack = 9993;
 	YRSequenceNumberType seq = 12333;
@@ -123,7 +123,7 @@
 }
 
 - (void)testChecksum {
-	YRPacketHeaderRef header = (YRPacketHeaderRef)buffer;
+	YRPacketHeaderRef header = (YRPacketHeaderRef)_buffer;
 	YRChecksumType expected = 0xFF42;
 	
 	YRPacketHeaderSetChecksum(header, expected);
@@ -133,12 +133,12 @@
 #pragma mark - SYN Header
 
 - (void)testSYNBaseHeader {
-	YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)buffer;
+	YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)_buffer;
 	XCTAssert(YRPacketHeaderSYNGetBaseHeader(header) != NULL);
 }
 
 - (void)testSYNConfiguration {
-	YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)buffer;
+	YRPacketHeaderSYNRef header = (YRPacketHeaderSYNRef)_buffer;
 	YRRUDPConnectionConfiguration config = (YRRUDPConnectionConfiguration) {
 		500,
 		30,
@@ -163,12 +163,12 @@
 #pragma mark - RST Header
 
 - (void)testRSTBaseHeader {
-	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)buffer;
+	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)_buffer;
 	XCTAssert(YRPacketHeaderRSTGetBaseHeader(header) != NULL);
 }
 
 - (void)testRSTErrorCode {
-	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)buffer;
+	YRPacketHeaderRSTRef header = (YRPacketHeaderRSTRef)_buffer;
 	YRRUDPError expected = kYRRUDPErrorUnknown;
 	
 	YRPacketHeaderRSTSetErrorCode(header, expected);
@@ -178,12 +178,12 @@
 #pragma mark - Payload Header
 
 - (void)testPayloadBaseHeader {
-	YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)buffer;
+	YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)_buffer;
 	XCTAssert(YRPacketPayloadHeaderGetBaseHeader(header) != NULL);
 }
 
 - (void)testPayloadPayloadLength {
-	YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)buffer;
+	YRPacketPayloadHeaderRef header = (YRPacketPayloadHeaderRef)_buffer;
 	YRPacketHeaderRef base = YRPacketPayloadHeaderGetBaseHeader(header);
 	YRPayloadLengthType expected = 45645;
 
@@ -195,17 +195,17 @@
 #pragma mark - EACK Header
 
 - (void)testEACKPayloadHeader {
-	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)buffer;
+	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)_buffer;
 	XCTAssert(YRPacketHeaderEACKGetPayloadHeader(header) != NULL);
 }
 
 - (void)testEACKBaseHeader {
-	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)buffer;
+	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)_buffer;
 	XCTAssert(YRPacketHeaderEACKGetBaseHeader(header) != NULL);
 }
 
 - (void)testEACKs {
-	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)buffer;
+	YRPacketHeaderEACKRef header = (YRPacketHeaderEACKRef)_buffer;
 	YRPacketHeaderRef base = YRPacketHeaderEACKGetBaseHeader(header);
 	YRHeaderLengthType eacksCount = (YRHeaderLengthType)(~0) / sizeof(YRSequenceNumberType);
 	YRSequenceNumberType *eacks = malloc(sizeof(YRSequenceNumberType) * eacksCount);

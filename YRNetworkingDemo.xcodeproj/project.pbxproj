@@ -39,7 +39,6 @@
 		7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */ = {isa = PBXBuildFile; fileRef = 7DC4EB2420FB537500486ED9 /* YRSharedLogger.m */; };
 		7DD194822234646A00C2E236 /* YRRUDPStates.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DD194812234646A00C2E236 /* YRRUDPStates.c */; };
 		DA17AA882548C66D000B94C8 /* YRRuntimeEnvironment.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */; };
-		DA17AA972548C987000B94C8 /* YRTimerInterface.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA962548C987000B94C8 /* YRTimerInterface.c */; };
 		DA17AAA025490656000B94C8 /* YRPacketBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA9F25490656000B94C8 /* YRPacketBuffer.c */; };
 		DA17AABC25491615000B94C8 /* YRTransmissionQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AABB25491615000B94C8 /* YRTransmissionQueue.c */; };
 		DA1DBA7A254A1C3900BF1EA0 /* YRPacketBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA9F25490656000B94C8 /* YRPacketBuffer.c */; };
@@ -56,8 +55,15 @@
 		DA51B71025205E6300573CB1 /* YRRUDPWaitingState.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B70F25205E6300573CB1 /* YRRUDPWaitingState.c */; };
 		DA51B713252325FE00573CB1 /* YRInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B712252325FE00573CB1 /* YRInputStream.c */; };
 		DA51B71925232B3B00573CB1 /* YROutputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B71825232B3B00573CB1 /* YROutputStream.c */; };
+		DA5C837B254CB4D000DBC7EC /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DA5C8376254CB4C800DBC7EC /* Foundation.framework */; };
+		DA5C8383254CB5A900DBC7EC /* YRTimerInterfaceApple.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */; };
+		DA5C8395254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DA5C8394254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m */; };
+		DA5C839F254D3D3E00DBC7EC /* YRRuntimeEnvironment.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */; };
+		DA5C83A3254D3D5100DBC7EC /* YRTimerInterfaceApple.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */; };
+		DA5C83A7254D3D6400DBC7EC /* YRNetworkingMain.c in Sources */ = {isa = PBXBuildFile; fileRef = DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */; };
 		DA6A8DB3253F99C300528FFE /* YRPacketBuilder.c in Sources */ = {isa = PBXBuildFile; fileRef = DA6A8DB2253F99C300528FFE /* YRPacketBuilder.c */; };
 		DA90B6A4252C4DE0009ED65E /* YRPacketHeader.c in Sources */ = {isa = PBXBuildFile; fileRef = DA90B6A3252C4DE0009ED65E /* YRPacketHeader.c */; };
+		DAC671DD254B83C4002B0DF3 /* YRNetworkingMain.c in Sources */ = {isa = PBXBuildFile; fileRef = DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */; };
 		DADD2FFD254400750039DA9D /* YRPacket.c in Sources */ = {isa = PBXBuildFile; fileRef = DA2D527A252C5D1F0067AAE7 /* YRPacket.c */; };
 		DADD3002254400850039DA9D /* YRInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B712252325FE00573CB1 /* YRInputStream.c */; };
 		DADD3007254400890039DA9D /* YROutputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B71825232B3B00573CB1 /* YROutputStream.c */; };
@@ -167,7 +173,6 @@
 		DA17AA862548C66D000B94C8 /* YRRuntimeEnvironment.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRRuntimeEnvironment.h; sourceTree = "<group>"; };
 		DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRRuntimeEnvironment.c; sourceTree = "<group>"; };
 		DA17AA952548C987000B94C8 /* YRTimerInterface.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRTimerInterface.h; sourceTree = "<group>"; };
-		DA17AA962548C987000B94C8 /* YRTimerInterface.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRTimerInterface.c; sourceTree = "<group>"; };
 		DA17AA9E25490656000B94C8 /* YRPacketBuffer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketBuffer.h; sourceTree = "<group>"; };
 		DA17AA9F25490656000B94C8 /* YRPacketBuffer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketBuffer.c; sourceTree = "<group>"; };
 		DA17AAA7254915A7000B94C8 /* YROutputStream+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "YROutputStream+Internal.h"; sourceTree = "<group>"; };
@@ -189,11 +194,17 @@
 		DA51B71725232B3B00573CB1 /* YROutputStream.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YROutputStream.h; sourceTree = "<group>"; };
 		DA51B71825232B3B00573CB1 /* YROutputStream.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YROutputStream.c; sourceTree = "<group>"; };
 		DA51B71A25232C3A00573CB1 /* YRUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRUtils.h; sourceTree = "<group>"; };
+		DA5C8376254CB4C800DBC7EC /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		DA5C8394254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRRuntimeEnvironmentTests.m; sourceTree = "<group>"; };
 		DA6A8DB1253F99C300528FFE /* YRPacketBuilder.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketBuilder.h; sourceTree = "<group>"; };
 		DA6A8DB2253F99C300528FFE /* YRPacketBuilder.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketBuilder.c; sourceTree = "<group>"; };
 		DA90B6A12529B887009ED65E /* YRRUDPSessionProtocol+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "YRRUDPSessionProtocol+Internal.h"; sourceTree = "<group>"; };
 		DA90B6A2252C4DE0009ED65E /* YRPacketHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketHeader.h; sourceTree = "<group>"; };
 		DA90B6A3252C4DE0009ED65E /* YRPacketHeader.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketHeader.c; sourceTree = "<group>"; };
+		DAC671D0254B4C16002B0DF3 /* YRRuntimeEnvironment+Internal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "YRRuntimeEnvironment+Internal.h"; sourceTree = "<group>"; };
+		DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRNetworkingMain.c; sourceTree = "<group>"; };
+		DAC671E2254CB1A5002B0DF3 /* YRTimerInterfaceApple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRTimerInterfaceApple.h; sourceTree = "<group>"; };
+		DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRTimerInterfaceApple.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -208,6 +219,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA5C837B254CB4D000DBC7EC /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -281,6 +293,7 @@
 				DA4D96C02541237700ECA722 /* YRPacketHeaderTests.m */,
 				DA4D96D3254237B600ECA722 /* YRPacketTests.m */,
 				DA1DBA7E254A877B00BF1EA0 /* YRPacketBufferTests.m */,
+				DA5C8394254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m */,
 				7D5BAAE3213305FF0010F6DD /* Info.plist */,
 			);
 			path = YRNetworkingCoreTests;
@@ -329,6 +342,7 @@
 				7DEB3B7121123B1500486DA4 /* YRNetworkingDemoTests */,
 				7D5BAAE0213305FF0010F6DD /* YRNetworkingCoreTests */,
 				7D91067E20EE897700974F48 /* Products */,
+				DA5C8375254CB4C800DBC7EC /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -467,6 +481,7 @@
 				7DA6E83A20F51A1900FC7997 /* YRSession */,
 				7D4E5AA1220CAC1100D3D112 /* Utils */,
 				DA17AA4B2547D3AB000B94C8 /* Runtime */,
+				DAC671E1254CB182002B0DF3 /* Platform */,
 				7D4E5AA0220CABEA00D3D112 /* In-Progress */,
 			);
 			path = YRNetworking;
@@ -571,9 +586,10 @@
 			isa = PBXGroup;
 			children = (
 				DA17AA862548C66D000B94C8 /* YRRuntimeEnvironment.h */,
+				DAC671D0254B4C16002B0DF3 /* YRRuntimeEnvironment+Internal.h */,
 				DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */,
 				DA17AA952548C987000B94C8 /* YRTimerInterface.h */,
-				DA17AA962548C987000B94C8 /* YRTimerInterface.c */,
+				DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */,
 			);
 			path = Runtime;
 			sourceTree = "<group>";
@@ -587,6 +603,31 @@
 				DA17AABB25491615000B94C8 /* YRTransmissionQueue.c */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		DA5C8375254CB4C800DBC7EC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				DA5C8376254CB4C800DBC7EC /* Foundation.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		DA5C8387254CBB9600DBC7EC /* Apple */ = {
+			isa = PBXGroup;
+			children = (
+				DAC671E2254CB1A5002B0DF3 /* YRTimerInterfaceApple.h */,
+				DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */,
+			);
+			path = Apple;
+			sourceTree = "<group>";
+		};
+		DAC671E1254CB182002B0DF3 /* Platform */ = {
+			isa = PBXGroup;
+			children = (
+				DA5C8387254CBB9600DBC7EC /* Apple */,
+			);
+			path = Platform;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -728,7 +769,11 @@
 				DADD3007254400890039DA9D /* YROutputStream.c in Sources */,
 				DA4D96CE25412A2F00ECA722 /* YRPacketHeader.c in Sources */,
 				DADD3002254400850039DA9D /* YRInputStream.c in Sources */,
+				DA5C839F254D3D3E00DBC7EC /* YRRuntimeEnvironment.c in Sources */,
+				DA5C83A7254D3D6400DBC7EC /* YRNetworkingMain.c in Sources */,
+				DA5C83A3254D3D5100DBC7EC /* YRTimerInterfaceApple.m in Sources */,
 				7D30A09E2227602600C03B6D /* YRSessionTests.m in Sources */,
+				DA5C8395254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m in Sources */,
 				DA1DBA7A254A1C3900BF1EA0 /* YRPacketBuffer.c in Sources */,
 				7D30A09F222760C900C03B6D /* YRSession.c in Sources */,
 				DADD2FFD254400750039DA9D /* YRPacket.c in Sources */,
@@ -745,13 +790,13 @@
 				DA51B70D25205E4200573CB1 /* YRRUDPConnectingState.c in Sources */,
 				DA51B704250B013200573CB1 /* YRRUDPClosedState.c in Sources */,
 				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
-				DA17AA972548C987000B94C8 /* YRTimerInterface.c in Sources */,
 				7D46DA7420FFA88F00575665 /* YRLightweightOutputStream.c in Sources */,
 				DA6A8DB3253F99C300528FFE /* YRPacketBuilder.c in Sources */,
 				DA17AAA025490656000B94C8 /* YRPacketBuffer.c in Sources */,
 				7DA6E85E20F51A1900FC7997 /* YRUDPClient.m in Sources */,
 				DA2D527C252C5D1F0067AAE7 /* YRPacket.c in Sources */,
 				7D91068D20EE897800974F48 /* main.m in Sources */,
+				DAC671DD254B83C4002B0DF3 /* YRNetworkingMain.c in Sources */,
 				7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */,
 				DA17AABC25491615000B94C8 /* YRTransmissionQueue.c in Sources */,
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
@@ -760,6 +805,7 @@
 				DA51B70C25205E4200573CB1 /* YRRUDPDisconnectingState.c in Sources */,
 				DA90B6A4252C4DE0009ED65E /* YRPacketHeader.c in Sources */,
 				DA51B713252325FE00573CB1 /* YRInputStream.c in Sources */,
+				DA5C8383254CB5A900DBC7EC /* YRTimerInterfaceApple.m in Sources */,
 				DA17AA882548C66D000B94C8 /* YRRuntimeEnvironment.c in Sources */,
 				7DD194822234646A00C2E236 /* YRRUDPStates.c in Sources */,
 				7D9106E520EE902C00974F48 /* GCDAsyncSocket.m in Sources */,
@@ -971,6 +1017,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -989,6 +1036,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = YES;
 				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

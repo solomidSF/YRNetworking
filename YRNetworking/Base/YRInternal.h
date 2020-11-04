@@ -16,6 +16,7 @@
 #include "YRUtils+Internal.h"
 #include "YRRUDPSessionProtocol+Internal.h"
 #include "YRRUDPStates+Internal.h"
+#include "YRRuntimeEnvironment+Internal.h"
 
 #define __YRNETWORKING_INDIRECT__
 #include "YRRef.h"

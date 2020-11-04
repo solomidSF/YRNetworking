@@ -23,14 +23,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "YRRuntimeEnvironment.h"
+#include "YRInternal.h"
+
+#if __APPLE__
+#include "YRTimerInterfaceApple.h"
+#endif
 
 typedef struct YRRuntimeEnvironment {
-	// TODO:
+	YRTimerInterface timerInterface;
 } YRRuntimeEnvironment;
 
 YRRuntimeEnvironment gEnvironment;
 
-YRRuntimeEnvironmentRef YRRuntimeEnvironmentGet(void) {
-	return &gEnvironment;
+void YRRuntimeEnvironmentInit(void) {
+	YRRuntimeEnvironmentSetTimerInterface(YRTimerInterfaceGet());
+}
+
+#pragma mark - Interface
+
+void YRRuntimeEnvironmentSetTimerInterface(YRTimerInterface interface) {
+	gEnvironment.timerInterface = interface;
+}
+
+YRTimerInterface YRRuntimeEnvironmentGetTimerInterface(void) {
+	return gEnvironment.timerInterface;
 }
