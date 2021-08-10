@@ -83,7 +83,11 @@ YRPacketBufferRef YRPacketBufferCreate(YRPayloadLengthType bufferSize, uint8_t b
 	bufferSize = (bufferSize < YRMaxPacketHeaderSize) ? YRMaxPacketHeaderSize : bufferSize;
 	
 	YRPacketBufferRef buffer = calloc(1, YRPacketBufferSizeForBufferSize(bufferSize, buffersCount));
-	
+
+	// TODO: Use malloc?
+//	YRPacketBufferRef buffer = malloc(YRPacketBufferSizeForBufferSize(bufferSize, buffersCount));
+//	memset(buffer, 0, sizeof(YRPacketBuffer));
+
 	buffer->bufferSize = bufferSize;
 	buffer->buffersCount = buffersCount;
 	

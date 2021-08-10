@@ -36,8 +36,10 @@ typedef struct {
 	YRTimerHandle (*schedule)(
 		YRTimerOrchestrator o,
 		double timeout,
-		void *context,
-		void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context, bool *reschedule)
+		void *context1,
+		void *context2,
+		bool calloutImmediately,
+		void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context1, void *context2, bool *reschedule)
 	);
 	void (*cancel)(YRTimerOrchestrator o, YRTimerHandle handle);
 	void (*cancelAll) (YRTimerOrchestrator o);

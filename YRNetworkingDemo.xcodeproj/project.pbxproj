@@ -40,7 +40,6 @@
 		7DD194822234646A00C2E236 /* YRRUDPStates.c in Sources */ = {isa = PBXBuildFile; fileRef = 7DD194812234646A00C2E236 /* YRRUDPStates.c */; };
 		DA17AA882548C66D000B94C8 /* YRRuntimeEnvironment.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */; };
 		DA17AAA025490656000B94C8 /* YRPacketBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA9F25490656000B94C8 /* YRPacketBuffer.c */; };
-		DA17AABC25491615000B94C8 /* YRTransmissionQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AABB25491615000B94C8 /* YRTransmissionQueue.c */; };
 		DA1DBA7A254A1C3900BF1EA0 /* YRPacketBuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA9F25490656000B94C8 /* YRPacketBuffer.c */; };
 		DA1DBA7F254A877B00BF1EA0 /* YRPacketBufferTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DA1DBA7E254A877B00BF1EA0 /* YRPacketBufferTests.m */; };
 		DA2D527C252C5D1F0067AAE7 /* YRPacket.c in Sources */ = {isa = PBXBuildFile; fileRef = DA2D527A252C5D1F0067AAE7 /* YRPacket.c */; };
@@ -61,12 +60,15 @@
 		DA5C839F254D3D3E00DBC7EC /* YRRuntimeEnvironment.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AA872548C66D000B94C8 /* YRRuntimeEnvironment.c */; };
 		DA5C83A3254D3D5100DBC7EC /* YRTimerInterfaceApple.m in Sources */ = {isa = PBXBuildFile; fileRef = DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */; };
 		DA5C83A7254D3D6400DBC7EC /* YRNetworkingMain.c in Sources */ = {isa = PBXBuildFile; fileRef = DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */; };
+		DA5C83AE25527EFA00DBC7EC /* YRTransmissionQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AABB25491615000B94C8 /* YRTransmissionQueue.c */; };
 		DA6A8DB3253F99C300528FFE /* YRPacketBuilder.c in Sources */ = {isa = PBXBuildFile; fileRef = DA6A8DB2253F99C300528FFE /* YRPacketBuilder.c */; };
+		DA78C35025E252970089ECC7 /* YRTransmissionQueue.c in Sources */ = {isa = PBXBuildFile; fileRef = DA17AABB25491615000B94C8 /* YRTransmissionQueue.c */; };
 		DA90B6A4252C4DE0009ED65E /* YRPacketHeader.c in Sources */ = {isa = PBXBuildFile; fileRef = DA90B6A3252C4DE0009ED65E /* YRPacketHeader.c */; };
 		DAC671DD254B83C4002B0DF3 /* YRNetworkingMain.c in Sources */ = {isa = PBXBuildFile; fileRef = DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */; };
 		DADD2FFD254400750039DA9D /* YRPacket.c in Sources */ = {isa = PBXBuildFile; fileRef = DA2D527A252C5D1F0067AAE7 /* YRPacket.c */; };
 		DADD3002254400850039DA9D /* YRInputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B712252325FE00573CB1 /* YRInputStream.c */; };
 		DADD3007254400890039DA9D /* YROutputStream.c in Sources */ = {isa = PBXBuildFile; fileRef = DA51B71825232B3B00573CB1 /* YROutputStream.c */; };
+		DAE099572566225500F82D60 /* YRTransmissionQueueTests.m in Sources */ = {isa = PBXBuildFile; fileRef = DAE099562566225500F82D60 /* YRTransmissionQueueTests.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -149,8 +151,6 @@
 		7DA6E84B20F51A1900FC7997 /* YRObjcSessionContext.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRObjcSessionContext.h; sourceTree = "<group>"; };
 		7DA6E84E20F51A1900FC7997 /* YRUDPClient.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YRUDPClient.h; sourceTree = "<group>"; };
 		7DA6E84F20F51A1900FC7997 /* YRUDPClient.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YRUDPClient.m; sourceTree = "<group>"; };
-		7DC224572142E1A800879F8F /* YRPacketsQueue.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRPacketsQueue.h; sourceTree = "<group>"; };
-		7DC224582142E1A800879F8F /* YRPacketsQueue.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRPacketsQueue.c; sourceTree = "<group>"; };
 		7DC4EB1920FA982700486ED9 /* ClientViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ClientViewController.h; sourceTree = "<group>"; };
 		7DC4EB1A20FA982700486ED9 /* ClientViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ClientViewController.m; sourceTree = "<group>"; };
 		7DC4EB1C20FA983500486ED9 /* ServerViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ServerViewController.h; sourceTree = "<group>"; };
@@ -205,6 +205,7 @@
 		DAC671DC254B83C4002B0DF3 /* YRNetworkingMain.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = YRNetworkingMain.c; sourceTree = "<group>"; };
 		DAC671E2254CB1A5002B0DF3 /* YRTimerInterfaceApple.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = YRTimerInterfaceApple.h; sourceTree = "<group>"; };
 		DAC671E3254CB1A5002B0DF3 /* YRTimerInterfaceApple.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRTimerInterfaceApple.m; sourceTree = "<group>"; };
+		DAE099562566225500F82D60 /* YRTransmissionQueueTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YRTransmissionQueueTests.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -279,8 +280,6 @@
 			children = (
 				DA51B71A25232C3A00573CB1 /* YRUtils.h */,
 				DA17AA652547EDC4000B94C8 /* YRUtils+Internal.h */,
-				7DC224572142E1A800879F8F /* YRPacketsQueue.h */,
-				7DC224582142E1A800879F8F /* YRPacketsQueue.c */,
 				7D46DA7120FFA87E00575665 /* Streams */,
 			);
 			path = Utils;
@@ -292,6 +291,7 @@
 				7D30A09D2227602600C03B6D /* YRSessionTests.m */,
 				DA4D96C02541237700ECA722 /* YRPacketHeaderTests.m */,
 				DA4D96D3254237B600ECA722 /* YRPacketTests.m */,
+				DAE099562566225500F82D60 /* YRTransmissionQueueTests.m */,
 				DA1DBA7E254A877B00BF1EA0 /* YRPacketBufferTests.m */,
 				DA5C8394254D39B500DBC7EC /* YRRuntimeEnvironmentTests.m */,
 				7D5BAAE3213305FF0010F6DD /* Info.plist */,
@@ -766,7 +766,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				DA4D96D4254237B600ECA722 /* YRPacketTests.m in Sources */,
+				DA78C35025E252970089ECC7 /* YRTransmissionQueue.c in Sources */,
 				DADD3007254400890039DA9D /* YROutputStream.c in Sources */,
+				DAE099572566225500F82D60 /* YRTransmissionQueueTests.m in Sources */,
 				DA4D96CE25412A2F00ECA722 /* YRPacketHeader.c in Sources */,
 				DADD3002254400850039DA9D /* YRInputStream.c in Sources */,
 				DA5C839F254D3D3E00DBC7EC /* YRRuntimeEnvironment.c in Sources */,
@@ -787,6 +789,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DA5C83AE25527EFA00DBC7EC /* YRTransmissionQueue.c in Sources */,
 				DA51B70D25205E4200573CB1 /* YRRUDPConnectingState.c in Sources */,
 				DA51B704250B013200573CB1 /* YRRUDPClosedState.c in Sources */,
 				7D91068520EE897700974F48 /* InitialViewController.m in Sources */,
@@ -798,7 +801,6 @@
 				7D91068D20EE897800974F48 /* main.m in Sources */,
 				DAC671DD254B83C4002B0DF3 /* YRNetworkingMain.c in Sources */,
 				7DC4EB2520FB537500486ED9 /* YRSharedLogger.m in Sources */,
-				DA17AABC25491615000B94C8 /* YRTransmissionQueue.c in Sources */,
 				7D9106E420EE902C00974F48 /* GCDAsyncUdpSocket.m in Sources */,
 				7D30A0A5222AF3A100C03B6D /* YRRUDPSessionProtocol.c in Sources */,
 				7DA6E85720F51A1900FC7997 /* YRObjcSessionContext.m in Sources */,

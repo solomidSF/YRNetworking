@@ -30,7 +30,7 @@
 
 typedef struct {
 	YRRuntimeEnvironmentTests *instance;
-	void *context;
+	void *context1;
 } YRTimerTestContext;
 
 @interface YRRuntimeEnvironmentTests : XCTestCase
@@ -39,18 +39,13 @@ typedef struct {
 @implementation YRRuntimeEnvironmentTests {
 	YRTimerInterface _timerInterface;
 	
-	void (^_timerHandle) (YRTimerOrchestrator o, YRTimerHandle h, void *ctx, bool *reschedule);
+	void (^_timerHandle) (YRTimerOrchestrator o, YRTimerHandle h, void *ctx, void *ctx2, bool *reschedule);
 }
 
 - (void)setUp {
-    // Put setup code here. This method is called before the invocation of each test method in the class.
     _timerInterface = YRRuntimeEnvironmentGetTimerInterface();
     
-    _timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *ctx, bool *reschedule) {};
-}
-
-- (void)tearDown {
-    // Put teardown code here. This method is called after the invocation of each test method in the class.
+    _timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *ctx, void *ctx2, bool *reschedule) {};
 }
 
 - (void)testTimerOrchestratorLifecycle {
@@ -64,18 +59,21 @@ typedef struct {
 - (void)testTimerSchedule {
 	YRTimerOrchestrator o1 = _timerInterface.createOrchestrator();
 
-	int context = 42;
+	int context1 = 42;
 	YRTimerTestContext ctx = {
 		self,
-		&context
+		&context1
 	};
 	
+	int context2 = 44;
+	
 	double timeout = 100;
-	YRTimerHandle handle = _timerInterface.schedule(o1, timeout, &ctx, &callout);
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	YRTimerHandle handle = _timerInterface.schedule(o1, timeout, &ctx, &context2, false, &callout);
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx1, void *actualCtx2, bool *reschedule) {
 		*reschedule = true;
 		
-		XCTAssert(*(int *)actualCtx == context);
+		XCTAssert(*(int *)actualCtx1 == context1);
+		XCTAssert(*(int *)actualCtx2 == context2);
 		XCTAssert(h == handle);
 	};
 	
@@ -93,8 +91,8 @@ typedef struct {
 	};
 	
 	double timeout = 100;
-	YRTimerHandle handle = _timerInterface.schedule(o1, timeout, &ctx, NULL);
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	YRTimerHandle handle = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, NULL);
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		XCTFail(@"Shouldn't be called");
 	};
 	
@@ -115,9 +113,9 @@ typedef struct {
 	
 	__block int retries = 4;
 	double timeout = 50;
-	YRTimerHandle handle1 = _timerInterface.schedule(o1, timeout, &ctx, callout);
+	YRTimerHandle handle1 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
 	__weak typeof(self) weakSelf = self;
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		retries -= 1;
 		
 		*reschedule = retries > 0;
@@ -125,7 +123,7 @@ typedef struct {
 		__strong typeof(self) strongSelf = weakSelf;
 		
 		if (strongSelf && retries <= 0) {
-			strongSelf->_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *ctx, bool *r) {
+			strongSelf->_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *ctx, void *ctx2, bool *r) {
 				XCTFail(@"Shouldn't be called");
 			};
 		}
@@ -133,9 +131,9 @@ typedef struct {
 	
 	[[NSRunLoop mainRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:0.31]];
 	
-	YRTimerHandle handle2 = _timerInterface.schedule(o1, timeout, &ctx, callout);
+	YRTimerHandle handle2 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
 	
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		XCTAssert(h == handle2);
 		XCTAssert(context == *(int *)actualCtx);
 		*reschedule = true;
@@ -159,13 +157,13 @@ typedef struct {
 	
 	double timeout = 50;
 
-	YRTimerHandle o1h1 = _timerInterface.schedule(o1, timeout, &ctx, callout);
-	YRTimerHandle o1h2 = _timerInterface.schedule(o1, timeout, &ctx, callout);
-	YRTimerHandle o1h3 = _timerInterface.schedule(o1, timeout, &ctx, callout);
-	YRTimerHandle o1h4 = _timerInterface.schedule(o1, timeout, &ctx, callout);
-	YRTimerHandle o2h1 = _timerInterface.schedule(o2, timeout, &ctx, callout);
-	YRTimerHandle o2h2 = _timerInterface.schedule(o2, timeout, &ctx, callout);
-	YRTimerHandle o2h3 = _timerInterface.schedule(o2, timeout, &ctx, callout);
+	YRTimerHandle o1h1 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o1h2 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o1h3 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o1h4 = _timerInterface.schedule(o1, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o2h1 = _timerInterface.schedule(o2, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o2h2 = _timerInterface.schedule(o2, timeout, &ctx, NULL, false, callout);
+	YRTimerHandle o2h3 = _timerInterface.schedule(o2, timeout, &ctx, NULL, false, callout);
 
 	__block int o1h1c = 0;
 	__block int o1h2c = 0;
@@ -175,7 +173,7 @@ typedef struct {
 	__block int o2h2c = 0;
 	__block int o2h3c = 0;
 	
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		*reschedule = true;
 		
 		if (o == o1) {
@@ -219,7 +217,7 @@ typedef struct {
 	o2h2c = 0;
 	o2h3c = 0;
 
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		*reschedule = true;
 		
 		XCTAssert(o != o1);
@@ -241,7 +239,7 @@ typedef struct {
 
 	_timerInterface.cancelAll(o2);
 	
-	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, bool *reschedule) {
+	_timerHandle = ^(YRTimerOrchestrator o, YRTimerHandle h, void *actualCtx, void *ctx2, bool *reschedule) {
 		*reschedule = true;
 		
 		XCTAssert(o != o1);
@@ -254,9 +252,9 @@ typedef struct {
 
 #pragma mark - Private
 
-void callout(YRTimerOrchestrator o, YRTimerHandle h, void *context, bool *reschedule) {
+void callout(YRTimerOrchestrator o, YRTimerHandle h, void *context, void *context2, bool *reschedule) {
 	YRTimerTestContext *ctx = context;
-	ctx->instance->_timerHandle(o, h, ctx->context, reschedule);
+	ctx->instance->_timerHandle(o, h, ctx->context1, context2, reschedule);
 }
 
 @end

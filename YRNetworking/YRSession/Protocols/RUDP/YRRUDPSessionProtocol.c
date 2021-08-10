@@ -53,6 +53,7 @@
 #pragma mark - Declarations
 
 typedef struct YRRUDPSessionProtocol {
+	YRTimerOrchestrator timerOrchestrator;
     YRSessionProtocol rawProtocol;
 	YRRUDPState currentState;
 	YRPacketHandlers packetHandlers;
@@ -60,6 +61,11 @@ typedef struct YRRUDPSessionProtocol {
 	YRInputStream iStream;
 	YROutputStream oStream;
 	YRSessionProtocolConfig config;
+	// packet buffer
+	// transmission queue
+	// flags:
+	// - timer orchestrator created
+	// - ???
 } YRRUDPSessionProtocol;
 
 #pragma mark - YRSessionProtocolLifecycleCallbacks

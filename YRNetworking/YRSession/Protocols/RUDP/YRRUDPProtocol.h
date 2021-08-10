@@ -38,6 +38,7 @@
 #include "YRPacket.h"
 #include "YRPacketBuilder.h"
 #include "YRPacketBuffer.h"
+#include "YRTransmissionQueue.h"
 #include "YRRUDPSessionProtocol.h"
 #include "YRRUDPStates.h"
 

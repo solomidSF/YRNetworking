@@ -26,13 +26,54 @@
 #ifndef __YRTransmissionQueue__
 #define __YRTransmissionQueue__
 
+/**
+ *  Simple data structure to encapsulate work with timers related to packet ttl.
+ */
 typedef struct YRTransmissionQueue *YRTransmissionQueueRef;
 
-struct YRTransmissionQueueEntry {
-	void *context;
-	void (*transmitHandler) (void *context);
-}
+typedef struct {
+	time_t startTime;
+	YRTimerHandle h;
+	uint8_t transmissionsSoFar;
+	bool inUse;
+} YRTransmissionQueueEntry;
 
-void YRTransmissionQueueAddEntry(YRTransmissionQueueRef tq);
+#pragma mark - Lifecycle
+
+YRTransmissionQueueRef YRTransmissionQueueCreate(
+	void *context,
+	void (*transmitHandler) (
+		YRTransmissionQueueRef tq,
+		YRTransmissionQueueEntry qe,
+		YRSequenceNumberType seq,
+		void *context,
+		bool *reschedule
+	),
+	YRTimerOrchestrator o,
+	uint8_t entriesCount
+);
+
+void YRTransmissionQueueDestroy(YRTransmissionQueueRef tq);
+
+#pragma mark - Base
+
+void YRTransmissionQueueSetBase(YRTransmissionQueueRef tq, YRSequenceNumberType base);
+YRSequenceNumberType YRTransmissionQueueGetBase(YRTransmissionQueueRef tq);
+void YRTransmissionQueueAdvanceBase(YRTransmissionQueueRef tq, YRSequenceNumberType by);
+
+#pragma mark - Entries
+
+uint8_t YRTransmissionQueueGetEntriesCount(YRTransmissionQueueRef tq);
+bool YRTransmissionQueueAddEntry(YRTransmissionQueueRef tq, YRSequenceNumberType seq, double timeout);
+/**
+ *	Removes previously scheduled entry for given seq #.
+ *	Must be called after AddEntry, otherwise - behavior is undefined.
+ */
+void YRTransmissionQueueRemoveEntry(YRTransmissionQueueRef tq, YRSequenceNumberType seq);
+
+#pragma mark - Utility
+
+void YRTransmissionQueueDebugInfo(char *buffer);
+void YRTransmissionQueueDump(YRTransmissionQueueRef tq, char *buffer);
 
 #endif // __YRTransmissionQueue__

@@ -18,6 +18,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #ifndef __has_feature        
 #define __has_feature(x) 0  // Compatibility with non-clang compilers.

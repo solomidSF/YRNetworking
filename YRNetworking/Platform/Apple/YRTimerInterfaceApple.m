@@ -33,8 +33,10 @@ void yrDestroyOrchestrator_apple(YRTimerOrchestrator o);
 YRTimerHandle yrSchedule_apple(
 	YRTimerOrchestrator o,
 	double timeout,
-	void *context,
-	void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context, bool *reschedule)
+	void *context1,
+	void *context2,
+	bool calloutImmediately,
+	void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context1, void *context2, bool *reschedule)
 );
 void yrCancel_apple(YRTimerOrchestrator o, YRTimerHandle handle);
 void yrCancelAll_apple(YRTimerOrchestrator o);
@@ -227,8 +229,10 @@ typedef struct YRTimerFreeList {
 
 - (YRTimerHandle)schedule:(YRTimerOrchestrator)o
 	timeout:(double)timeout
-	context:(void *)context
-	callback:(void (*)(YRTimerOrchestrator, YRTimerHandle, void *, bool *))callback {
+	context1:(void *)context1
+	context2:(void *)context2
+	calloutImmediately:(bool)calloutImmediately
+	callback:(void (*)(YRTimerOrchestrator, YRTimerHandle, void *, void *, bool *))callback {
 	if (!callback) {
 		return 0;
 	}
@@ -239,19 +243,24 @@ typedef struct YRTimerFreeList {
 	}
 	
 	__block YRTimerHandle handle;
-	
-	NSTimer *t = [NSTimer timerWithTimeInterval:timeout / 1000 repeats:YES block:^(NSTimer *timer) {
+	void (^timerCallback) (NSTimer *timer) = ^(NSTimer *timer) {
 		bool reschedule = false;
-		callback(o, handle, context, &reschedule);
+		callback(o, handle, context1, context2, &reschedule);
 		
 		if (!reschedule) {
 			[self cancel:o handle:handle];
 		}
-	}];
+	};
 	
+	NSTimer *t = [NSTimer timerWithTimeInterval:timeout / 1000 repeats:YES block:timerCallback];
+		
 	handle = [_cache[@(o)] createHandle:t];
 	[[NSRunLoop mainRunLoop] addTimer:t forMode:NSRunLoopCommonModes];
-	 
+	
+	if (calloutImmediately) {
+		timerCallback(t);
+	}
+	
 	return handle;
 }
 
@@ -281,10 +290,17 @@ void yrDestroyOrchestrator_apple(YRTimerOrchestrator o) {
 YRTimerHandle yrSchedule_apple(
 	YRTimerOrchestrator o,
 	double timeout,
-	void *context,
-	void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context, bool *reschedule)
+	void *context1,
+	void *context2,
+	bool calloutImmediately,
+	void (*callback) (YRTimerOrchestrator o, YRTimerHandle h, void *context1, void *context2, bool *reschedule)
 ) {
-	return [[YRTimerInterfaceApple shared] schedule:o timeout:timeout context:context callback:callback];
+	return [[YRTimerInterfaceApple shared] schedule:o
+											timeout:timeout
+										   context1:context1
+										   context2:context2
+								 calloutImmediately:calloutImmediately
+										   callback:callback];
 }
 
 void yrCancel_apple(YRTimerOrchestrator o, YRTimerHandle handle) {

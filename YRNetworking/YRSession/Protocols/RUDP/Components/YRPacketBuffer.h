@@ -57,7 +57,12 @@ void YRPacketBufferMarkBufferInUse(YRPacketBufferRef buffer, YRSequenceNumberTyp
 /** Unmarks buffer 'in-use' for given sequence number */
 void YRPacketBufferUnmarkBufferInUse(YRPacketBufferRef buffer, YRSequenceNumberType seq);
 /** Returns buffer with it's length or NULL and whether it's in use for given sequence number */
-void *YRPacketBufferGetBuffer(YRPacketBufferRef buffer, YRSequenceNumberType seq, YRPayloadLengthType *length, bool *inUse);
+void *YRPacketBufferGetBuffer(
+	YRPacketBufferRef buffer,
+	YRSequenceNumberType seq,
+	YRPayloadLengthType *length,
+	bool *inUse
+);
 
 #pragma mark - Utility
 
